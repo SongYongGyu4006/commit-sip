@@ -1,0 +1,52 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SolidCraft: 설치 없이 받아서 코드로 직접 검증해 본 기록 · 커밋 한 모금</title><meta name="description" content="Rust로 짠 오픈소스 파라메트릭 3D CAD인 SolidCraft 저장소를 내려받아, 인터넷·설치 없이 살펴보고 돌려볼 수 있는 범위만 실제로 돌려 본 기록이다. GUI·MCP는 못 돌려 봤지만, 코어 수학은 재현 실행으로 확인했다."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/blog/2026-10-18-solidcraft.html"><meta property="og:title" content="SolidCraft: 설치 없이 받아서 코드로 직접 검증해 본 기록"><meta property="og:description" content="Rust로 짠 오픈소스 파라메트릭 3D CAD인 SolidCraft 저장소를 내려받아, 인터넷·설치 없이 살펴보고 돌려볼 수 있는 범위만 실제로 돌려 본 기록이다. GUI·MCP는 못 돌려 봤지만, 코어 수학은 재현 실행으로 확인했다."><meta property="og:type" content="article"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "SolidCraft: 설치 없이 받아서 코드로 직접 검증해 본 기록", "description": "Rust로 짠 오픈소스 파라메트릭 3D CAD인 SolidCraft 저장소를 내려받아, 인터넷·설치 없이 살펴보고 돌려볼 수 있는 범위만 실제로 돌려 본 기록이다. GUI·MCP는 못 돌려 봤지만, 코어 수학은 재현 실행으로 확인했다.", "inLanguage": "ko", "datePublished": "2026-10-18", "author": {"@type": "Organization", "name": "커밋 한 모금"}, "mainEntityOfPage": "https://songyonggyu4006.github.io/commit-sip/blog/2026-10-18-solidcraft.html"}</script><style>body{margin:0;background:#f6f7fb;color:#1d2433;font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.75}main{max-width:720px;margin:0 auto;padding:28px 16px}a{color:#2f6bff}pre{overflow-x:auto;background:#0f1422;color:#e8ecf6;padding:14px;border-radius:10px;font-size:13px}code{font-size:.92em}img{max-width:100%;border-radius:12px}nav{font-size:14px;margin-bottom:18px}footer{margin-top:40px;font-size:13px;color:#667085}.post{display:block;background:#fff;border:1px solid #e3e6ee;border-radius:10px;padding:12px 14px;margin:8px 0;color:inherit;text-decoration:none}.post span{display:block;color:#667085;font-size:13px;margin-top:4px}</style></head><body><main><nav><a href="../">커밋 한 모금</a> › <a href="./">직접 해 본 기록</a></nav><img src="img/2026-10-18-solidcraft.jpg" alt=""><h1>SolidCraft: 설치 없이 받아서 코드로 직접 검증해 본 기록</h1>
+<h2>한 줄 요약</h2>
+<p>Rust로 짠 오픈소스 파라메트릭 3D CAD인 SolidCraft 저장소를 내려받아, 인터넷·설치 없이 살펴보고 돌려볼 수 있는 범위만 실제로 돌려 본 기록이다. GUI·MCP는 못 돌려 봤지만, 코어 수학은 재현 실행으로 확인했다.</p>
+<h2>무엇인가</h2>
+<p>SolidCraft는 순수 Rust로 만든 오픈소스 파라메트릭 3D CAD 애플리케이션이다. 스케치에 제약을 걸어 단단한 실체를 만들고, 외절·회전·스위프·필렛·셜·홀·패턴 같은 피처를 편집 가능한 타임라인 위에 쌓는다. 치수를 바꾸면 모델이 다시 구성된다. 데스크톱 앱(egui + wgpu), 브라우저, 헤드리스 CLI, 그리고 AI 에이전트가 CAD를 조작하는 MCP 서버 네 가지 경로로 쓰인다.</p>
+<p>저장소는 2026년 10월 7일 생성됐고, 확인 시점(2026-10-18 02:10 KST)에 스타 3883개, 포크 439개였다. 라이선스는 MIT OR Apache-2.0(선택 가능)이고, 549개 외부 크레이트를 의존한다. 읽은 README는 v0.15.0 기준이며, 스스로를 &quot;단순한 부품에는 쓸 만한 초기 단계&quot;라고 표현한다. 공개 참조 부품 76개 중 75개가 해석학·FreeCAD 계산 부피·면적·중심·바운딩박스와 일치하고, 나머지 하나는 추적 중인 버그라는 주장을 한다.</p>
+<h2>직접 해 본 것</h2>
+<p>저장소(로컬 클론, v0.15.0, 145MB)를 내려받아 설치 없이 살펴봤다. 이 환경에는 Rust 툴체인(cargo, rustc)이 없고 설치를 안 했기 때문에, SolidCraft 바이너리를 빌드·실행하는 것은 못 했다. 데스크톱 GUI, 브라우저, MCP 서버, 스냅샷 내보내기 역시 전부 못 돌려 봤다.</p>
+<p>대신 Rust 소스의 핵심 수식을 1:1 파이썬으로 옮겨, 시스템에 이미 있는 python3으로 실행했다. 실험은 세 가지다.</p>
+<p><strong>실험 1 — OBJ 파서 + 메시 측정.</strong> <code>crates/io/src/obj.rs</code>의 입력 읽기(잘못된 face 라인, NaN 정점, 범위 초과 인덱스, 음수 인덱스, o/g)와 <code>crates/geom/src/mesh.rs</code>의 발산 정리 기반 측정(부피·면적·중심)을 재구현하고 돌렸다.</p>
+<pre>$ python3 trial_obj_check.py
+[1] OBJ 파서: SolidCraft가 자체 테스트로 쓰는 입력
+   &#x27;f 1 2 3&#x27;                            -&gt; error: invalid face line
+   &#x27;v nan 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3&#x27; -&gt; ok, 1 mesh(es)
+   &#x27;v 0 0 0\nv 1 0 0\nv 0 1 0\nf -1 -2 -9&#x27; -&gt; ok, 1 mesh(es)
+
+[2] 단위 큐브 (8 정점, 12 삼각형)
+   tris = 12 (기대 12), pos = 8 (기대 8), warnings = []
+   measure: volume=1.000000 (기대 1), area=6.000000 (기대 6)
+   =&gt; PASS</pre>
+<p>잘못된 face 라인은 에러로 처리되고, NaN 정점·범위 초과 인덱스 같은 적대적 입력은 패닉 없이 무시되거나 메시 1개로 수렴했다. 단위 큐브는 부피 1·면적 6을 정확히 재현했다.</p>
+<p><strong>실험 2 — 설계 컨테이너 메시 코덱.</strong> <code>crates/io/src/design.rs</code>의 인코딩/디코딩/검증(magic, 카운트, 유한성)을 재구현하고, -0.0 부호 비트 보존 round-trip과 u64::MAX 카운트, NaN, magic 변형 같은 적대적 변형을 넣었다.</p>
+<pre>$ python3 trial_mesh_blob.py
+[1] round trip: 인코딩 108 bytes -&gt; 디코딩 ok, -0.0 부호 비트 보존: True
+   =&gt; PASS
+[2] 적대적 입력
+   count = u64::MAX (8)         -&gt; 거부 (invalid mesh blob lengths)
+   count = u64::MAX (16)        -&gt; 거부 (invalid mesh blob lengths)
+   position = NaN               -&gt; 거부 (invalid mesh coordinates)
+   last index = u32::MAX        -&gt; 거부 (invalid mesh coordinates)
+   바이트 0..108 전수 truncation -&gt; 전부 거부
+   magic 변형 (01 -&gt; 21)        -&gt; 거부 (unsupported mesh blob version)
+== 결과: 전부 PASS ==</pre>
+<p>정밀도 보존을 주장하는 근거가 되는 -0.0 round-trip이 그대로 재현됐고, 모든 적대적 입력을 거부했다.</p>
+<p><strong>실험 3 — FreeCAD 기준과 비교.</strong> CLI 측정에 쓰는 STL 판독·질량 특성·Hausdorff 거리 코드를 재구현하고, 저장소 안에 있는 FreeCAD가 만든 기준 STL 네 건을 읽어 기대값과 비교했다.</p>
+<pre>$ python3 trial_compare_check.py 58-phone-stand 34-chamfer-then-fillet 65-sketch-gear-tooth 23-bracket-multifeature
+   허용오차: 부피 3%·1mm, Hausdorff 1%·0.1mm
+   58-phone-stand             tris=276   volume=74560.6 mm3 (기대 74559.2, 편차 0.00%) =&gt; PASS
+   34-chamfer-then-fillet     tris=340   volume=22892.0 mm3 (기대 22892.4, 편차 0.00%) =&gt; PASS
+   65-sketch-gear-tooth       tris=252   volume=3987.7  mm3 (기대 3988.1,  편차 0.01%) =&gt; PASS
+   23-bracket-multifeature    tris=1768  volume=59333.6 mm3 (기대 59331.1, 편차 0.00%) =&gt; PASS
+== 결과: 전부 PASS ==</pre>
+<p>FreeCAD가 만든 기준 메시를 SolidCraft 측정에 쓰는 수식이 부피 편차 0.00~0.01%로 재현했다.</p>
+<p>솔직히 구분해 두면: 위 실험은 &quot;SolidCraft의 수식이 기준과 일치하는가&quot;를 재현한 것이지, SolidCraft 바이너리가 실제로 그 수식으로 메싱·내보내기하는지 확인한 게 아니다. 본체 정합성은 실행하지 못했다.</p>
+<h2>이 맥에서 쓸 수 있나</h2>
+<p>이 글을 쓴 환경은 Mac Studio(M5 Max, 48GB)로, 로컬 AI 모델 서버가 메모리 약 34GB를 상시 사용한다. 남은 메모리 여력이 충분해 SolidCraft 데스크톱 앱(egui + wgpu)을 실행하는 것은 가능해 보인다. 다만 실제로는 이 머리에 Rust 툴체인이 없어 빌드·실행을 못 했고, 브라우저 버전도 네트워크가 필요해 이 기록 범위 밖이다. 이번 실험으로 확인된 것은 코드 코어의 수학적 정확성이지, 이 맥에서의 실제 사용성은 아니다.</p>
+<h2>이런 분께</h2>
+<ul><li>오픈소스 CAD·기하 툴 코드가 얼마나 정직하게 쓰였는지 코드로 직접 보려는 개발자</li><li>&quot;참조 케이스 82개 전부 통과&quot; 같은 주장이 실제로 어떤 수식으로 성립하는지 재현으로 확인하고 싶은 사람</li><li>AI 에이전트가 CAD를 조작하는 MCP 패턴에 관심 있는 사람(단, 이번 기록은 MCP를 실행하지 못했으니 명세 읽기 수준이다)</li><li>Rust로 짠 기하·IO 코어의 방어적 검증 방식을 보고 싶은 학생</li></ul>
+<h2>주의할 점</h2>
+<ul><li><strong>본체 미검증.</strong> Rust 툴체인이 없어 바이너리를 빌드·실행하지 못했다. &quot;참조 케이스 82개 전부 통과, 1000건 이상 fuzz&quot;는 저장소 문서의 주장이고, 내 실험은 수식 재현에 한정된다.</li><li><strong>0.15.0은 개발판.</strong> README가 &quot;Active development&quot;라고 쓰고 있어, API·CLI 플래그·내보내기 형식이 버전마다 바뀔 수 있다. 프로덕션에 넣는다면 버전 고정과 업데이트 관리가 필요하다.</li><li><strong>내보내기 형식·시트메탈 DXF 범위.</strong> STL·OBJ·GLB·3MF·STEP·DXF를 지원한다고 하지만, 내가 실제로 필요한 형식이 전부인지, 시트메탈 DXF가 판금 제작용(굽힘선·킥아웃)인지 확인하지 못했다.</li><li><strong>MCP는 실행 못 해봄.</strong> 세션·도구 명세는 읽었지만, 서버가 실제로 잘 응답하는지 확인하지 못했다.</li><li><strong>다운로드에 서명 없음.</strong> README가 명시하듯 아직 다운로드에 서명이 없어, Windows SmartScreen/macOS 첫 실행에서 추가 확인이 필요하다.</li><li><strong>라이선스는 여유롭지만 방향은 다르다.</strong> MIT OR Apache-2.0으로 상업 사용·개조·재배포가 허용된다. 단, 자기 코드를 SolidCraft 안으로 넣는 방향은 원본 유지 조건이 어떻게 적용되는지 별도로 확인이 필요하다(이 글은 법률 자문이 아니다).</li></ul>
+<h2>출처</h2>
+<ul><li>SolidCraft GitHub: https://github.com/tangency-labs/solidcraft (2026-10-18 02:10 KST 확인)</li><li>저장소 로컬 클론 v0.15.0(145MB)에서 코드를 읽고, 시스템 python3으로 수식을 재구현·실행해 본 기록</li></ul><footer>2026-10-18 · 커밋 한 모금 — 새 오픈소스를 직접 받아 살펴본 기록입니다. 설치·실행 결과는 글쓴이 환경 기준이며 여러분 환경에서는 다를 수 있습니다.</footer></main></body></html>
