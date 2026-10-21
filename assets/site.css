@@ -242,3 +242,18 @@ article{padding:0 0 10px}
 .apps-line{flex-direction:column}.apps-line a{padding:14px 18px}
 .apps-line .al-main span{font-size:14px}
 }
+
+/* 10/21 home: one featured app (medium, horizontal) */
+.apps-sec{margin-top:56px}
+.apps-feature{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0;border-radius:20px;overflow:hidden;background:var(--card);text-decoration:none;color:var(--ink);transition:transform .16s ease-out}
+.apps-feature:hover{transform:translateY(-2px)}
+.af-th{background:var(--tone)}
+.af-th img{display:block;width:100%;height:100%;max-height:320px;aspect-ratio:16/10;object-fit:cover;object-position:top}
+.af-bd{padding:26px 28px;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.af-bd h3{font-size:26px;line-height:1.3;margin:0}
+.af-bd p{margin:0;color:var(--sub);font-size:16px}
+.af-bd .go{font-weight:800;color:var(--acc)}
+.af-bd .meta{margin-top:0}
+.apps-feature + .apps-line{margin-top:12px}
+@media (max-width:760px){.apps-feature{grid-template-columns:1fr}.af-th img{max-height:220px}.af-bd{padding:20px}}
+.af-bd .chip{align-self:flex-start}
