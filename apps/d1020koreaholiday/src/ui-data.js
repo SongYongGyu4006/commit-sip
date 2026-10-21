@@ -14,15 +14,50 @@ function formatFetchedAt(iso) {
   );
 }
 
+// 기준 시각(두 줄)과 이용 조건 문구를 만든다. (첫 화면 카드와 데이터 관리 화면이 공유)
+function dataInfoLines(holidaysMeta, weatherMeta) {
+  return {
+    time: [
+      '공휴일 데이터: ' + formatFetchedAt(holidaysMeta && holidaysMeta.fetched_at),
+      '날씨 데이터: ' + formatFetchedAt(weatherMeta && weatherMeta.fetched_at),
+    ],
+    terms:
+      (holidaysMeta && holidaysMeta.terms ? holidaysMeta.terms : '') + ' · ' +
+      (weatherMeta && weatherMeta.terms ? weatherMeta.terms : ''),
+  };
+}
+
+// 첫 화면의 카드: 전달받은 div 안에 기준 시각(두 줄)과 이용 조건을 쓴다. (id 없이 전달)
+export function renderDataInfoInline(el, holidaysMeta, weatherMeta) {
+  const lines = dataInfoLines(holidaysMeta, weatherMeta);
+  el.textContent = '';
+  const time = document.createElement('p');
+  time.className = 'data-time';
+  for (const t of lines.time) {
+    const span = document.createElement('span');
+    span.style.display = 'block';
+    span.textContent = t;
+    time.append(span);
+  }
+  const terms = document.createElement('p');
+  terms.className = 'data-terms';
+  terms.textContent = lines.terms;
+  el.append(time, terms);
+}
+
+// 데이터 관리(전용) 화면: 기존 id(#data-time, #data-terms)에 같은 문구를 쓴다.
 export function renderDataInfo(holidaysMeta, weatherMeta) {
+  const lines = dataInfoLines(holidaysMeta, weatherMeta);
   const time = document.getElementById('data-time');
-  time.textContent =
-    '공휴일 데이터: ' + formatFetchedAt(holidaysMeta && holidaysMeta.fetched_at) +
-    ', 날씨 데이터: ' + formatFetchedAt(weatherMeta && weatherMeta.fetched_at);
-  const terms = document.getElementById('data-terms');
-  terms.textContent =
-    (holidaysMeta && holidaysMeta.terms ? holidaysMeta.terms : '') + ' · ' +
-    (weatherMeta && weatherMeta.terms ? weatherMeta.terms : '');
+  time.textContent = '';
+  for (const t of lines.time) {
+    const span = document.createElement('span');
+    span.style.display = 'block';
+    span.textContent = t;
+    time.append(span);
+  }
+  document.getElementById('data-terms').textContent = lines.terms;
+  renderDataInfoInline(document.getElementById('data-inline'), holidaysMeta, weatherMeta);
 }
 
 export function initDataScreen({ state, holidaysMeta, weatherMeta, onImported, onReset, onStatus }) {

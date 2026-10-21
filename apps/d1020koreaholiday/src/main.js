@@ -4,9 +4,9 @@ import { loadAllData } from './data.js';
 import { loadState, saveState, clearState, defaultState, addSaved, removeSaved, STORAGE_KEY } from './storage.js';
 import { findVacationWindows } from './app.js';
 import { todayInSeoul, isValidDate } from './format.js';
-import { initPlanScreen, renderCards } from './ui-plan.js';
+import { initPlanScreen, renderCards, renderCompare } from './ui-plan.js';
 import { initSavedScreen, renderSaved } from './ui-saved.js';
-import { initDataScreen } from './ui-data.js';
+import { initDataScreen, renderDataInfo } from './ui-data.js';
 
 let state = loadState();
 let data = null; // { holidays, weather, holidaysMeta, weatherMeta }
@@ -21,7 +21,6 @@ function showScreen(name) {
     document.getElementById('screen-' + id).hidden = id !== name;
   }
   if (name === 'saved') {
-    if (state.saved.length === 0) setStatus('저장한 후보가 없습니다', false);
     renderSaved(state, removeOne);
   }
 }
@@ -33,16 +32,36 @@ function setStatus(text, isError) {
   el.classList.toggle('error', Boolean(isError));
 }
 
+// 연차 0~7 각각으로 계산해 "연차 N일 → 최장 M일" 비교 행을 만든다. (최대 8회 호출)
+function computeCompare() {
+  const rows = [];
+  for (let n = 0; n <= 7; n++) {
+    let totalDays = null;
+    try {
+      const r = findVacationWindows(data.holidays, data.weather, n, state.todayOverride);
+      if (r.windows.length) totalDays = r.windows[0].totalDays;
+    } catch {
+      // 날짜가 아직 없거나 유효하지 않으면 그 행은 "-" 로 표시된다.
+    }
+    rows.push({ leaveDays: n, totalDays });
+  }
+  return rows;
+}
+
+const compareCallbacks = { onLeaveChange: setLeaveDays, onRecalc: recalc, onSync: syncInputs };
+
 function recalc() {
   if (!data) return;
   if (!state.todayOverride) {
     setStatus('기준 날짜를 선택하면 후보를 계산합니다.', false);
     renderCards([], data.holidays, saveCard);
+    renderCompare(computeCompare(), state.leaveDays, compareCallbacks);
     return;
   }
   if (!isValidDate(state.todayOverride)) {
     setStatus('기준 날짜가 올바르지 않습니다. 올바른 날짜를 선택해 주세요.', true);
     renderCards([], data.holidays, saveCard);
+    renderCompare(computeCompare(), state.leaveDays, compareCallbacks);
     return;
   }
   let result;
@@ -51,10 +70,12 @@ function recalc() {
   } catch (err) {
     setStatus(err.message || '계산에 문제가 있습니다.', true);
     renderCards([], data.holidays, saveCard);
+    renderCompare(computeCompare(), state.leaveDays, compareCallbacks);
     return;
   }
   setStatus(result.windows.length ? '' : '후보가 없습니다', false);
   renderCards(result.windows, data.holidays, saveCard);
+  renderCompare(computeCompare(), state.leaveDays, compareCallbacks);
 }
 
 function persist() {
@@ -80,15 +101,20 @@ function removeOne(start, end) {
   showScreen('saved');
 }
 
-function setOverrideFromInputs(sliderValue, dateValue) {
-  state = { ...state, leaveDays: Number(sliderValue), todayOverride: dateValue || null };
+// 슬라이더·날짜 값으로 상태를 갱신하고 저장한다. (ui-plan.js 가 값을 넘겨 준다.)
+function setOverrideFromInputs(leaveDays, dateValue) {
+  state = { ...state, leaveDays: Number(leaveDays), todayOverride: dateValue || null };
   persist();
 }
 
-function applyExample(s) {
-  s.leaveDays = 3;
-  s.todayOverride = '2026-09-21';
-  state = { ...s };
+// 연차만 바꾼다. (기준 날짜는 그대로 둔다)
+function setLeaveDays(leaveDays) {
+  state = { ...state, leaveDays: Number(leaveDays) };
+  persist();
+}
+
+function applyExample(leaveDays, dateValue) {
+  state = { ...state, leaveDays: Number(leaveDays), todayOverride: dateValue || null };
   persist();
 }
 
@@ -148,7 +174,7 @@ async function boot() {
     onRecalc: recalc,
     onSave: saveCard,
     onSetOverride: setOverrideFromInputs,
-    onLeaveChange: (s) => { state = { ...state, leaveDays: s.leaveDays }; },
+    onLeaveChange: setLeaveDays,
     onExample: applyExample,
   });
   initSavedScreen();
@@ -163,6 +189,7 @@ async function boot() {
 
   syncInputs();
   renderSaved(state, removeOne);
+  renderDataInfo(data.holidaysMeta, data.weatherMeta); // 첫 화면 카드 + 데이터 관리 화면
   recalc();
   showScreen('plan');
 }

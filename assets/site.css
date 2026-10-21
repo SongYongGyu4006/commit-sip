@@ -257,3 +257,4 @@ article{padding:0 0 10px}
 .apps-feature + .apps-line{margin-top:12px}
 @media (max-width:760px){.apps-feature{grid-template-columns:1fr}.af-th img{max-height:220px}.af-bd{padding:20px}}
 .af-bd .chip{align-self:flex-start}
+.apps-hot{display:inline-block;align-self:flex-start;margin-bottom:8px}

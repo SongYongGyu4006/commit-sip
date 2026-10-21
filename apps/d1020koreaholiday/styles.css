@@ -95,9 +95,18 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+/* 기준 날짜 입력은 늘어나지 않게 해 라벨과 값을 왼쪽으로 모아 둔다. */
+.control-date {
+  flex: 0 1 auto;
 }
 
 .control-label {
+  display: flex;
+  align-items: baseline;
   font-size: 14px;
   color: #52606d;
 }
@@ -109,8 +118,7 @@ body {
 }
 
 #leave-slider {
-  width: 200px;
-  max-width: 100%;
+  width: 100%;
 }
 
 #today-input {
@@ -141,10 +149,62 @@ button.danger {
   cursor: pointer;
 }
 
+/* 첫 화면 인라인 카드(저장한 후보 · 데이터 정보): 컨트롤 아래 바로 보이게 한다. */
+.inline-block {
+  background: #fbfcfd;
+  border: 1px solid #e4e9ee;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.inline-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.saved-inline-list {
+  margin-bottom: 0;
+}
+
+.saved-empty {
+  margin: 0;
+  color: #52606d;
+  font-size: 14px;
+}
+
+.data-inline {
+  margin: 0;
+}
+
+/* 연차 비교·결과 카드는 접어서 첫 화면을 깔끔히 둔다. */
+.plan-detail {
+  background: #ffffff;
+  border: 1px solid #e4e9ee;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.plan-detail summary {
+  cursor: pointer;
+  padding: 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.plan-detail-body {
+  padding: 0 16px 16px;
+}
+
+.plan-detail .compare-title {
+  margin: 0 0 8px;
+}
+
 /* 결과 카드 */
 .card-list {
   list-style: none;
-  margin: 0;
+  margin: 16px 0 0;
   padding: 0;
   display: grid;
   gap: 16px;
@@ -210,6 +270,7 @@ button.danger {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  min-width: 0;
 }
 
 .chip {
@@ -219,6 +280,7 @@ button.danger {
   border: 1px solid #e4e9ee;
   border-radius: 6px;
   padding: 4px 8px;
+  white-space: nowrap;
 }
 
 .save-button {
@@ -294,6 +356,71 @@ button.danger {
   margin-left: 8px;
 }
 
+/* 연차별 연휴 길이 비교(첫 화면) */
+.compare-title {
+  margin: 16px 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.leave-compare {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.compare-row:hover {
+  background: #f4f7fd;
+}
+
+.compare-row:focus-visible {
+  outline: 2px solid #1d5fd6;
+  outline-offset: 1px;
+}
+
+.compare-row.current {
+  background: #eef4ff;
+}
+
+.compare-label {
+  font-size: 14px;
+  color: #52606d;
+  white-space: nowrap;
+}
+
+.compare-row.current .compare-label {
+  color: #1f2933;
+  font-weight: 700;
+}
+
+.compare-bar {
+  height: 12px;
+  background: #1d5fd6;
+  border-radius: 999px;
+  min-width: 2px;
+}
+
+.compare-row:not(.current) .compare-bar {
+  background: #b9c6e8;
+}
+
+/* hidden 속성을 .card 의 flex 가 덮어쓰지 않게 한다. (한 화면만 보이도록) */
+[hidden] {
+  display: none !important;
+}
+
 /* 휴대폰(390px)에서 가로 스크롤 없이 */
 @media (max-width: 480px) {
   .layout {
@@ -303,6 +430,29 @@ button.danger {
   .controls {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+  }
+
+  /* studio.css 의 공용 규칙(버튼 44px 터치 영역·글자 16px)이
+     이 페이지에 겹쳐 들어와 컨트롤 사이 빈 공간이 벌어지므로,
+     ds- 클래스를 쓰지 않는 이 화면에서는 우리 스타일을 우선시한다. */
+  body {
+    font-size: 15px;
+  }
+
+  .layout,
+  .app-status,
+  .screen,
+  .controls,
+  .control,
+  button,
+  label,
+  input,
+  output,
+  .card,
+  .badge,
+  .chip {
+    min-height: 0;
   }
 
   #leave-slider {
@@ -313,5 +463,21 @@ button.danger {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
+  }
+
+  .compare-title {
+    margin: 8px 0 4px;
+  }
+
+  .leave-compare {
+    gap: 4px;
+  }
+
+  .compare-row {
+    padding: 2px 4px;
+  }
+
+  .compare-bar {
+    height: 10px;
   }
 }
