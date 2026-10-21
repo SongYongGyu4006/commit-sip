@@ -2,7 +2,7 @@
 <p>장비는 Mac Studio(M5 Max, 메모리 48GB)다. 평소 돌던 AI 서버는 측정하는 동안 내려 두었다. 가중치 파일은 Qwen3.8-27B-4bit(27B 모델을 4비트로 압축한 것) 하나로 맞추고, Splash·oMLX·mlx-lm 세 프로그램으로 각각 실행했다.</p>
 <p>질문은 모두 OpenAI 호환 API로 보냈고 세 종류로 고정했다. 짧은 질문은 600토큰짜리 답을 받는 것, 긴 글은 약 17,924토큰 문서를 주고 질문하는 것, 이어진 질문은 같은 문서 대화에서 질문을 2개 더 하는 것이다. 온도는 0으로 두고 생각 기능은 껐다.</p>
 <h2>결과</h2>
-<table><tr><th>실행 프로그램</th><th>답 쓰는 속도(토큰/초)</th><th>긴 글 읽고 첫 글자(초)</th><th>이어진 질문 첫 글자(초)</th><th>측정 중 최저 여유 메모리(%)</th></tr><tr><td>Splash</td><td>76.3</td><td>17.75</td><td>0.22 / 0.25</td><td>54</td></tr><tr><td>oMLX</td><td>31.7</td><td>18.17</td><td>0.6 / 0.38</td><td>52</td></tr><tr><td>mlx-lm</td><td>31.4</td><td>22.43</td><td>0.26 / 0.25</td><td>10</td></tr></table>
+<table><tr><th>실행 프로그램</th><th>답 쓰는 속도(토큰/초)</th><th>긴 글 읽고 첫 글자(초)</th><th>이어진 질문 첫 글자(초)</th><th>측정 중 최저 여유 메모리(%)</th></tr><tr><td>Splash</td><td>76.3</td><td>17.75</td><td>0.22 / 0.25</td><td>54</td></tr><tr><td>oMLX</td><td>31.7</td><td>18.17</td><td>0.6 / 0.38</td><td>52</td></tr><tr><td>mlx-lm</td><td>31.8</td><td>19.74</td><td>0.26 / 0.26</td><td>37</td></tr></table>
 <p>Splash의 답 쓰는 속도는 mlx-lm과 oMLX의 2.4배다.</p>
 <p>&quot;토큰/초&quot;는 모델이 답을 얼마나 빠르게 뱉어 내는지, 즉 체감 출력 속도다. &quot;긴 글 읽고 첫 글자(초)&quot;는 약 17,924토큰짜리 문서와 질문을 받고 첫 글자를 내놓기까지 걸린 시간이다. 문서가 길수록 이 숫자가 더 크게 느껴진다.</p>
 <p>&quot;이어진 질문 첫 글자(초)&quot;는 같은 대화에서 두 번째, 세 번째 질문을 보냈을 때 답이 나오기 시작할 때까지의 시간이다. 앞 내용을 다시 읽는지가 체감으로 드러나는 부분이다. 마지막 열은 측정하는 동안 가장 낮았던 여유 메모리 비율이다.</p>
@@ -14,9 +14,9 @@
 <h2>이 맥에서 고른다면</h2>
 <p>대화용이라면 Splash다. 76.3토큰/초로 답이 가장 빨리 나와서 쓸 때 체감이 좋다.</p>
 <p>에이전트 작업이라면 oMLX다. 앞부분이 같은 요청이 반복될 때 대화 앞부분을 재사용하도록 만들어졌고, 최저 여유 메모리도 52%로 넉넉했다.</p>
-<p>긴 문서 작업이라면 Splash(17.75초)와 oMLX(18.17초)가 비슷하니 둘 중 아무거나 써도 된다. mlx-lm(22.43초)은 셋 중 첫 글자가 가장 늦게 나왔고, 여유 메모리도 10%로 가장 적었다.</p>
+<p>긴 문서 작업이라면 Splash(17.75초)와 oMLX(18.17초)가 비슷하니 둘 중 아무거나 써도 된다. mlx-lm(19.74초)은 셋 중 첫 글자가 가장 늦게 나왔고, 여유 메모리도 37%로 가장 적었다.</p>
 <h2>주의할 점</h2>
-<p>측정하는 동안에는 평소 돌던 AI 서버를 내리고 한 번에 한 프로그램만 띄웠다. mlx-lm은 측정 중 여유 메모리가 10%까지 내려갔는데, 한 번 잰 값이라 다시 재서 확인할 예정이다.</p>
+<p>측정하는 동안에는 평소 돌던 AI 서버를 내리고 한 번에 한 프로그램만 띄웠다. mlx-lm은 처음 잴 때 여유 메모리가 10%까지 내려갔는데, 다른 프로그램을 끈 직후였다. 따로 다시 재니 37%였고, 표에는 다시 잰 값을 넣었다.</p>
 <p>추측 디코딩의 효과는 출력 종류에 따라 다르다. 코드나 정해진 형식처럼 다음 말이 뻔한 출력일수록 더 빨라지고, 이번 같은 한국어 긴 설명에서는 76.3토큰/초였다.</p>
 <h2>출처</h2>
 <ul><li>oMLX 0.7.0: https://github.com/jundot/omlx</li><li>mlx-lm 0.32.0: https://github.com/ml-explore/mlx-lm</li><li>Splash 1.2.0: Homebrew 설치</li><li>측정 시각: 2026-10-21 23:56</li></ul></div><section class="related"><h2>같이 읽을 글</h2><ul><li><a href="2026-10-21-deepinfer.html"><b>DeepInfer, DeepSeek 추론 엔진: Mac에서는 못 돌리고 코드만 살펴본 기록</b><span>DeepSeek가 자체 서비스에서 쓰는 추론 엔진 DeepInfer를 오픈소스로 냈다는 소식에, 코드를 받아 Mac에서 실제로 돌려볼 수 있는 범위까지만 살펴봤다</span></a></li></ul></section><p class="meta">설치·실행 결과는 글쓴이 환경(맥, 인터넷 차단 시험 등) 기준이며 여러분 환경에서는 다를 수 있습니다.</p></article></main><footer class="foot"><div class="wrap"><b>커밋 한 모금</b><span>새 오픈소스와 AI 도구를 직접 받아 살펴보고, 1분 쇼츠와 글로 남깁니다.</span><div class="links"><a href="../about.html">소개</a><a href="https://www.youtube.com/@%EC%BB%A4%EB%B0%8B%ED%95%9C%EB%AA%A8%EA%B8%88">유튜브 커밋 한 모금</a><a href="https://www.youtube.com/@%EC%8B%A4%ED%97%98%ED%95%9C%EC%9E%85">유튜브 실험 한입</a><a href="../rss.xml">RSS</a><a href="../privacy.html">개인정보처리방침</a><a href="../terms.html">이용약관</a><a href="mailto:syg4006@gmail.com">문의</a></div></div></footer></body></html>
