@@ -7,7 +7,8 @@
   "date": "2026-10-21",
   "versions": 1,
   "updated": "2026-10-20",
-  "views": 3
+  "views": 3,
+  "views_from": "internal"
  },
  {
   "slug": "d1020llmpickl2",
@@ -17,7 +18,8 @@
   "date": "2026-10-21",
   "versions": 1,
   "updated": "2026-10-20",
-  "views": 4
+  "views": 4,
+  "views_from": "internal"
  },
  {
   "slug": "d1020krcoinfxl2",
@@ -27,7 +29,8 @@
   "date": "2026-10-21",
   "versions": 1,
   "updated": "2026-10-20",
-  "views": 2
+  "views": 2,
+  "views_from": "internal"
  },
  {
   "slug": "d1020koreaholiday",
@@ -37,7 +40,8 @@
   "date": "2026-10-21",
   "versions": 1,
   "updated": "2026-10-20",
-  "views": 2
+  "views": 2,
+  "views_from": "internal"
  },
  {
   "slug": "d1020aiwatchkr",
@@ -47,7 +51,8 @@
   "date": "2026-10-21",
   "versions": 1,
   "updated": "2026-10-20",
-  "views": 6
+  "views": 6,
+  "views_from": "internal"
  },
  {
   "slug": "d1019idea23",
@@ -57,7 +62,8 @@
   "date": "2026-10-21",
   "versions": 3,
   "updated": "2026-10-19",
-  "views": 10
+  "views": 10,
+  "views_from": "internal"
  },
  {
   "slug": "d1018hfkrwram",
@@ -67,7 +73,8 @@
   "date": "2026-10-21",
   "versions": 2,
   "updated": "2026-10-18",
-  "views": 7
+  "views": 7,
+  "views_from": "internal"
  },
  {
   "slug": "hardmarketboard2",
@@ -77,7 +84,8 @@
   "date": "2026-10-21",
   "versions": 2,
   "updated": "2026-10-19",
-  "views": 5
+  "views": 5,
+  "views_from": "internal"
  },
  {
   "slug": "reskillcost2",
@@ -87,7 +95,8 @@
   "date": "",
   "versions": 4,
   "updated": "2026-10-20",
-  "views": 12
+  "views": 12,
+  "views_from": "internal"
  },
  {
   "slug": "radarcmp",
@@ -97,7 +106,8 @@
   "date": "",
   "versions": 4,
   "updated": "2026-10-18",
-  "views": 17
+  "views": 17,
+  "views_from": "internal"
  },
  {
   "slug": "jdanalyze2",
@@ -107,7 +117,8 @@
   "date": "",
   "versions": 3,
   "updated": "2026-10-18",
-  "views": 9
+  "views": 9,
+  "views_from": "internal"
  },
  {
   "slug": "d1016idea",
@@ -117,6 +128,7 @@
   "date": "",
   "versions": 1,
   "updated": "2026-10-18",
-  "views": 2
+  "views": 2,
+  "views_from": "internal"
  }
 ]
