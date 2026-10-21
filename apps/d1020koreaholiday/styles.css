@@ -1,0 +1,317 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #1f2933;
+  background: #f4f6f8;
+}
+
+.layout {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+/* 앱 헤더 */
+.app-header {
+  text-align: left;
+}
+
+.app-title {
+  margin: 0 0 8px;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+}
+
+.app-subtitle {
+  margin: 0 0 16px;
+  color: #52606d;
+}
+
+/* 상단 이동 버튼 */
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.nav-button {
+  border: 1px solid #d3dae1;
+  background: #ffffff;
+  color: #334155;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.nav-button[aria-pressed="true"] {
+  background: #1d5fd6;
+  border-color: #1d5fd6;
+  color: #ffffff;
+}
+
+/* 상태 영역(항상 보임) */
+.app-status {
+  min-height: 1.5em;
+  margin: 0 0 16px;
+  color: #334155;
+}
+
+.app-status.error {
+  color: #b42318;
+}
+
+/* 카드형 구역 */
+.screen {
+  background: #ffffff;
+  border: 1px solid #e4e9ee;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.screen h2 {
+  margin: 0 0 16px;
+  font-size: 19px;
+}
+
+/* 계획 화면 컨트롤 */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-label {
+  font-size: 14px;
+  color: #52606d;
+}
+
+.control-label output {
+  color: #1d5fd6;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+#leave-slider {
+  width: 200px;
+  max-width: 100%;
+}
+
+#today-input {
+  font-size: 15px;
+  padding: 8px;
+  border: 1px solid #d3dae1;
+  border-radius: 8px;
+}
+
+/* 주 버튼 / 보조 버튼 */
+button.primary {
+  background: #1d5fd6;
+  border: 1px solid #1d5fd6;
+  color: #ffffff;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+button.danger {
+  background: #ffffff;
+  border: 1px solid #b42318;
+  color: #b42318;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* 결과 카드 */
+.card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  border: 1px solid #e4e9ee;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fbfcfd;
+}
+
+.card-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.card-period {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.card-total {
+  color: #1d5fd6;
+  font-weight: 600;
+}
+
+.card-holidays,
+.card-leave {
+  color: #52606d;
+  font-size: 14px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.badge-substitute {
+  background: #eeedfe;
+  color: #534ac7;
+}
+
+.badge-rain {
+  background: #e0f2fe;
+  color: #0e6ba8;
+  margin-left: 8px;
+}
+
+.card-weather {
+  color: #334155;
+  font-size: 14px;
+}
+
+.card-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  font-size: 13px;
+  color: #334155;
+  background: #f0f3f6;
+  border: 1px solid #e4e9ee;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.save-button {
+  align-self: flex-start;
+  background: #17a34a;
+  border: 1px solid #17a34a;
+  color: #ffffff;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* 저장한 후보 목록 */
+.saved-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.saved-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid #e4e9ee;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.saved-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.unsave-button {
+  background: #ffffff;
+  border: 1px solid #b42318;
+  color: #b42318;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* 데이터 관리 */
+.data-time {
+  margin: 0 0 8px;
+}
+
+.data-terms {
+  margin: 0 0 16px;
+  color: #52606d;
+  font-size: 14px;
+}
+
+.data-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.file-label {
+  font-size: 15px;
+  color: #334155;
+}
+
+#import-file {
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+/* 휴대폰(390px)에서 가로 스크롤 없이 */
+@media (max-width: 480px) {
+  .layout {
+    padding: 16px 12px 32px;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #leave-slider {
+    width: 100%;
+  }
+
+  .card-line {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}

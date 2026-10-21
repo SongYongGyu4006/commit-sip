@@ -149,6 +149,69 @@ article{padding:0 0 10px}
 .yt .b .go{color:#075985}
 }
 
+/* apps lab (apps/index.html) */
+.apps-page~.foot{margin-top:0}
+.apps-card{display:block;background:var(--card);color:var(--ink);border-radius:18px;overflow:hidden;text-decoration:none;transition:transform .18s ease-out,background-color .18s ease-out}
+.apps-card:hover{transform:translateY(-3px)}
+.apps-th{display:block;background:var(--navy)}
+.apps-th img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
+.apps-bd{display:block;min-width:0;padding:20px 22px 24px}
+.apps-bd h2,.apps-bd h3{font-size:20px;line-height:1.45;letter-spacing:-.01em;margin:0 0 8px}
+.apps-bd p{color:var(--sub);font-size:15px;line-height:1.65;margin:0}
+.apps-meta{color:var(--sub);font-size:14px;line-height:1.55;margin-top:10px}
+.apps-meta:empty{display:none}
+.apps-lead .apps-card{border-radius:22px}
+.apps-lead .apps-bd{padding:24px 28px 28px}
+.apps-lead .apps-bd h2{font-size:28px;line-height:1.35;letter-spacing:-.02em}
+.apps-lead .apps-bd p{font-size:16px}
+.apps-group{padding:64px 0}
+.apps-group .sec{margin-bottom:28px}
+.apps-tone{background:var(--tone)}
+.apps-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.apps-wide{margin-bottom:20px}
+.apps-wide,.apps-a .apps-grid>.apps-card:last-child:nth-child(odd){display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.apps-wide .apps-th img,.apps-a .apps-grid>.apps-card:last-child:nth-child(odd) .apps-th img{height:100%;min-height:240px;aspect-ratio:auto}
+.apps-wide .apps-bd,.apps-a .apps-grid>.apps-card:last-child:nth-child(odd) .apps-bd{align-self:center;padding:32px}
+.apps-wide .apps-bd h3{font-size:28px;line-height:1.35;letter-spacing:-.02em}
+.apps-a .apps-grid>.apps-card:last-child:nth-child(odd){grid-column:1/-1}
+.apps-b .apps-card{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:center}
+.apps-b .apps-th img{height:100%;min-height:150px;aspect-ratio:auto}
+.apps-b .apps-grid>.apps-card:last-child:nth-child(odd){grid-column:1/-1}
+.apps-c .apps-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+.apps-c .apps-card{display:grid;grid-template-columns:200px minmax(0,1fr);align-items:center;background:var(--tone);border-radius:16px}
+.apps-c .apps-card:hover{background:var(--chip);transform:none}
+.apps-c .apps-th img{height:100%;min-height:125px;aspect-ratio:auto}
+.apps-c .apps-bd{padding:18px 26px}
+.apps-cta{background:var(--amber);color:var(--on-amber);padding:72px 0}
+.apps-cta .in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px 56px;align-items:center}
+.apps-cta h2{font-size:44px;line-height:1.25;letter-spacing:-.025em;margin:0}
+.apps-cta p{font-size:18px;margin:0 0 24px;max-width:32em}
+.apps-cta .btn{background:var(--navy);color:var(--on-navy)}.apps-cta .btn:hover{background:#1b2558}
+.apps-cta .apps-note{font-size:14px;line-height:1.65;margin:24px 0 0}
+.apps-cta .apps-note a{color:inherit}
+@media (max-width:900px){
+.apps-cta .in{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:700px){
+.apps-grid{grid-template-columns:minmax(0,1fr)}
+.apps-group{padding:48px 0}
+.apps-wide,.apps-a .apps-grid>.apps-card:last-child:nth-child(odd){display:block}
+.apps-wide .apps-th img,.apps-a .apps-grid>.apps-card:last-child:nth-child(odd) .apps-th img{height:auto;min-height:0;aspect-ratio:16/10}
+.apps-wide .apps-bd,.apps-a .apps-grid>.apps-card:last-child:nth-child(odd) .apps-bd{padding:20px 22px 24px}
+.apps-wide .apps-bd h3{font-size:22px}
+.apps-cta{padding:52px 0}.apps-cta h2{font-size:32px}
+}
+@media (max-width:560px){
+.apps-b .apps-card,.apps-c .apps-card{display:block}
+.apps-b .apps-th img,.apps-c .apps-th img{height:auto;min-height:0;aspect-ratio:16/10}
+.apps-c .apps-bd{padding:18px 20px 22px}
+.apps-lead .apps-bd{padding:20px 20px 24px}.apps-lead .apps-bd h2{font-size:23px}
+}
+@media (not (prefers-color-scheme:dark)){
+.apps-lead .apps-card,.apps-tone .apps-card{background:#ffffff}
+.apps-cta{background:#38bdf8}
+.apps-cta .btn{background:#04203d;color:#ffffff}.apps-cta .btn:hover{background:#0b2f57}
+}
 /* 10/21 같이 읽을 글 (related posts, internal links) */
 .related { margin: 56px 0 24px; }
 .related h2 { font-size: 22px; margin: 0 0 14px; }

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>맥 로컬 LLM 고르기</title>
+<link rel="stylesheet" href="styles.css">
+<meta name="description" content="맥 로컬 LLM 고르기"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#eaf5ff;color:#0b2545;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #cfe6fb"><span><a href="../" style="color:#0369a1;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 맥 로컬 LLM 고르기 같은 앱" style="color:#fff;background:#0284c7;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+<div class="page">
+  <header class="card head">
+    <h1>맥 로컬 LLM 고르기</h1>
+    <p class="tagline">애플 실리콘 맥 실측 데이터로, 내 맥 메모리에 들어가는 로컬 LLM을 용도별 순위로 골라 비교하고 관심 모델을 저장합니다.</p>
+    <nav class="nav">
+      <button id="nav-rank-btn" class="nav-btn active" type="button">모델 순위</button>
+      <button id="nav-compare-btn" class="nav-btn" type="button">두 모델 비교</button>
+      <button id="nav-saved-btn" class="nav-btn" type="button">관심 모델</button>
+    </nav>
+    <p id="data-meta" class="data-meta">데이터를 불러오는 중…</p>
+    <div class="controls">
+      <label class="field">맥 메모리 <select id="memory-select">
+        <option>8</option><option selected>16</option><option>24</option><option>32</option><option>48</option><option>64</option><option>128</option>
+      </select> GB</label>
+      <label class="field">용도 <select id="category-select">
+        <option selected value="korean">한국어</option><option value="coding">코딩</option><option value="tools">도구</option><option value="speed">속도</option>
+      </select></label>
+      <button id="sample-button" class="primary" type="button">예시로 해 보기</button>
+      <button id="reset-button" type="button">초기화</button>
+    </div>
+    <p id="app-status" role="status"></p>
+  </header>
+
+  <section id="screen-rank" class="card screen">
+    <h2>모델 순위</h2>
+    <p class="purpose">내 맥 메모리에 들어가는 모델만 골라 용도별 순위를 보여 주고 관심 모델을 저장한다.</p>
+    <ul id="rank-list" class="rank-list"></ul>
+    <details class="json-box">
+      <summary>전체 결과 JSON</summary>
+      <pre id="result-json"></pre>
+    </details>
+  </section>
+
+  <section id="screen-compare" class="card screen hidden">
+    <h2>두 모델 비교</h2>
+    <p class="purpose">모델 두 개를 골라 실측 수치와 차이를 나란히 보여 준다.</p>
+    <div class="controls">
+      <label class="field">왼쪽 모델 <select id="compare-left-select"></select></label>
+      <label class="field">오른쪽 모델 <select id="compare-right-select"></select></label>
+      <button id="compare-button" class="primary" type="button">비교</button>
+      <button id="clear-compare-button" type="button">비교 해제</button>
+    </div>
+    <div id="compare-output"></div>
+  </section>
+
+  <section id="screen-saved" class="card screen hidden">
+    <h2>관심 모델</h2>
+    <p class="purpose">저장한 관심 모델을 확인·삭제하고 JSON 파일로 내보내거나 가져온다.</p>
+    <h3>관심 모델 목록</h3>
+    <ul id="saved-list" class="rank-list"></ul>
+    <div class="controls">
+      <button id="export-button" class="primary" type="button">내보내기</button>
+      <label class="field">가져오기 <input id="import-file" type="file" accept=".json"></label>
+    </div>
+  </section>
+
+  <footer class="foot" id="data-terms"></footer>
+</div>
+<script type="module" src="src/main.js"></script>
+
+</body>
+</html>

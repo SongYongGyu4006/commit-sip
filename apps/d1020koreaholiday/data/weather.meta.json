@@ -1,0 +1,11 @@
+{
+ "id": "weather",
+ "name": "날씨 예보(Open-Meteo)",
+ "url": "https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Asia%2FSeoul",
+ "fetched_at": "2026-10-21T04:03:17",
+ "terms": "비상업 무료(데이터 CC BY 4.0, 출처 표기), 상업용은 유료 플랜",
+ "cors": true,
+ "items": 0,
+ "bytes": 615,
+ "trimmed": false
+}

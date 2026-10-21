@@ -1,0 +1,470 @@
+:root {
+  --bg: #f3f5f8;
+  --card: #ffffff;
+  --ink: #16202c;
+  --muted: #4f5a69;
+  --line: #e4e8ee;
+  --accent: #1f5eff;
+  --accent-ink: #ffffff;
+  --bad: #c0392b;
+  --radius: 16px;
+  --field: #fafbfd;
+  --soft: #f7f9fc;
+  --btn-ghost: #eef1f6;
+  --btn-ghost-hover: #e6eaf1;
+  --track: #e4e8ee;
+  --accent-soft: #e8eeff;
+  --accent-ring: rgba(31, 94, 255, .15);
+  --accent-hover: #184fd6;
+  --cmp-base: #9aa5b5;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #10151c; --card: #18202a; --ink: #eef2f7; --muted: #a3afbf; --line: #2c3746;
+    --accent: #6c97ff; --accent-ink: #0b1220; --bad: #ff8a7a;
+    --field: #121922; --soft: #141b24; --btn-ghost: #222c39; --btn-ghost-hover: #2b3747;
+    --track: #2c3746; --accent-soft: #1b2a4d;
+    --accent-ring: rgba(108, 151, 255, .3);
+    --accent-hover: #8fb0ff;
+    --cmp-base: #6b7789;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+}
+
+/* 헤더 */
+.app-header { margin-bottom: 24px; }
+.app-title { font-size: 28px; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.02em; }
+.app-sub { margin: 0; color: var(--muted); font-size: 16px; }
+.app-privacy { margin: 8px 0 0; color: var(--ink); font-size: 14px; font-weight: 600; }
+
+/* 카드 */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.card-title { font-size: 14px; font-weight: 700; color: var(--ink); margin: 0 0 12px; letter-spacing: 0.02em; }
+
+/* 카드 제목 줄: 왼쪽 제목, 오른쪽 예시 버튼 */
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.card-head .card-title { margin: 0; }
+
+/* 입력 그리드: 기본(휴대폰)은 1열로 세로 정렬. 데스크톱에서 3열로 바꾸는 규칙은 아래 @media (min-width:900px) 에 둔다. */
+.form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label { font-size: 14px; font-weight: 600; color: var(--ink); }
+.field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 14px;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+  background: var(--card);
+}
+.field input::placeholder { color: var(--muted); opacity: .8; font-size: 14px; }
+
+/* 예시 값 안내 */
+.hint { color: var(--muted); font-size: 14px; margin: 12px 0 0; }
+
+/* 버튼 */
+.actions { display: block; margin-top: 20px; }
+button {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 13px 22px;
+  cursor: pointer;
+  transition: transform .06s ease, background .15s ease, box-shadow .15s;
+}
+button:active { transform: translateY(1px); }
+.btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: none; padding: 14px 24px; font-size: 16px; }
+.btn-primary:hover { background: var(--accent-hover); }
+.actions .btn-primary { width: 100%; }
+.btn-ghost { background: var(--btn-ghost); color: var(--ink); border: 1px solid var(--line); }
+.btn-ghost:hover { background: var(--btn-ghost-hover); }
+#example-button {
+  padding: 8px 14px;
+  font-size: 14px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--line);
+}
+#example-button:hover { background: var(--accent-soft); }
+button:focus-visible, summary:focus-visible { outline: 3px solid var(--accent-ring); outline-offset: 2px; }
+
+/* 상태 메시지 */
+#app-status {
+  margin-top: 16px;
+  min-height: 20px;
+  font-size: 14px;
+  color: var(--bad);
+}
+#app-status:empty { margin-top: 0; }
+
+/* 결과 요약 (큰 글씨) */
+/* 한 글자만 다음 줄로 떨어지지 않게 각 문구를 block으로 끊고(중국어식 절 단위 줄바꿈),
+   각 문구 안에서는 keep-all로 단어 중간 줄바꿈을 막는다. 금액은 nowrap으로 한 줄 고정. */
+#result-summary {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.35;
+  margin: 0 0 8px;
+}
+#result-summary:empty { margin: 0; }
+#result-summary.neg { color: var(--bad); }
+#result-summary .amount { font-size: 1.5em; color: var(--accent); letter-spacing: -0.02em; }
+#result-summary.neg .amount { color: var(--bad); }
+#result-summary span {
+  display: block;
+  word-break: keep-all;
+  white-space: normal;
+}
+#result-summary span .amount,
+#result-summary .amount { white-space: nowrap; }
+
+/* 계속 근무 vs 이직준비 비교 막대 */
+#compare-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0 16px;
+}
+#compare-bar:empty { display: none; }
+.cmp-row {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+.cmp-label { font-size: 14px; color: var(--ink); white-space: nowrap; }
+.cmp-track {
+  display: block;
+  height: 12px;
+  background: var(--track);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.cmp-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: inherit;
+  transition: width .2s ease;
+}
+#compare-bar .cmp-row:first-child .cmp-fill { background: var(--cmp-base); }
+.cmp-value { font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cmp-note {
+  grid-column: 1 / -1;
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: -2px;
+}
+.cmp-note:empty { display: none; }
+
+/* 시나리오 3줄 요약 */
+#scenario-lines {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  list-style: none;
+  counter-reset: sc;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 14px;
+}
+#scenario-lines:empty { display: none; }
+#scenario-lines li {
+  counter-increment: sc;
+  padding: 4px 0;
+  word-break: keep-all;
+}
+#scenario-lines li::before {
+  content: counter(sc) " ";
+  display: inline-block;
+  width: 18px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* 결과 목록 (상세 6줄) */
+#result-list { margin: 0; }
+#result-list .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+#result-list .row:last-child { border-bottom: none; }
+#result-list dt { margin: 0; color: var(--muted); font-size: 14px; }
+#result-list dd { margin: 0; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+#result-list dd:empty { color: var(--line); }
+
+/* 학습 기간별 시나리오 표 (3·6·12개월) */
+#scenario-table { margin-top: 24px; }
+#scenario-table:empty { display: none; }
+#scenario-table .card-title { margin-bottom: 8px; }
+#scenario-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+#scenario-table th {
+  text-align: left;
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+#scenario-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+#scenario-table tr:last-child td { border-bottom: none; }
+#scenario-table tr.is-active td {
+  background: var(--accent-soft);
+  font-weight: 700;
+}
+
+/* 접을 수 있는 상세 구역 (상세 6줄 / 시나리오 표) */
+.detail { margin-top: 20px; }
+.detail summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 8px 0 4px;
+  user-select: none;
+}
+.detail summary:hover { color: var(--ink); }
+.detail > dl, .detail > div { margin-top: 4px; }
+
+/* 새 기능 3개 버튼: 비교 막대 아래, 3줄 요약 위. */
+.new-tools {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+.new-tools button {
+  width: 100%;
+  padding: 10px 8px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* 협상 문장: 읽기 전용 textarea + 복사 버튼. */
+#nego-box {
+  margin: 8px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#nego-box:empty,
+#nego-box[hidden] {
+  display: none;
+}
+#nego-text {
+  width: 100%;
+  min-height: 88px;
+  resize: vertical;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: none;
+}
+#nego-text:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.new-tools-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 이직 타이밍 결과 한 줄. */
+.timing-result {
+  margin: 8px 0 16px;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-ring);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  word-break: keep-all;
+}
+.timing-result:empty {
+  display: none;
+}
+
+/* 이직 타이밍 선택 입력 (입력 카드 안의 접힌 details).
+   <details>의 내용(.timing-grid)은 브라우저가 closed 상태에선 display:none으로
+   숨겨주는데, 그 안에 display:grid 같은 직접 표시 규칙을 주면 이 UA 억제보다
+   우선해 closed 상태에서도 그 높이가 그려지고 카드가 부풀어 새 기능 버튼이
+   첫 화면 아래로 밀린다. 그래서 .timing-body 를 직접 display:grid으로 두고
+   .timing-grid 는 display:contents(자식만 노출)로 — UA가 .timing-body를
+   display:none으로 숨기게 된다. .field 은 flex로 세 칸을 세로로 쌓는다. */
+.timing-box {
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+.timing-box summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 8px 0 4px;
+  user-select: none;
+  list-style: none;
+}
+.timing-box summary:hover { color: var(--ink); }
+.timing-box summary::-webkit-details-marker { display: none; }
+.timing-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 8px 0 12px;
+}
+.timing-grid {
+  display: contents;
+}
+
+/* 데스크톱: 입력 카드와 결과 카드를 나란히 */
+@media (min-width: 900px) {
+  .wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 24px;
+  }
+  .app-header { grid-column: 1 / -1; }
+  .app-header + .card { grid-column: 1; }
+  .card:last-of-type { grid-column: 2; }
+
+  /* 데스크톱: 카드 폭(~470px)에서 3열이면 8자리 연봉(60000000)이 잘리므로
+     2열로 바꿔 연봉 2칸을 한 줄 전체 폭으로, 개월은 왼쪽으로 배치해 잘림을 제거한다. */
+  .form-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .field { grid-column: span 1; }
+  .field:nth-child(1) { grid-column: 1 / -1; } /* 현재 연봉: 전체 폭 */
+  .field:nth-child(2) { grid-column: 1; }      /* 개월: 왼쪽 */
+  .field:nth-child(3) { grid-column: 2; }      /* 목표 연봉: 오른쪽 */
+
+  /* 비교 막대: 데스크톱 폭에서 금액이 잘리지 않게 한 줄에 넣는다. */
+  .cmp-row { grid-template-columns: 118px minmax(0, 1fr) 130px; }
+
+  /* 타이밍 선택 입력: 3칸을 한 줄 3열로. */
+  .timing-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+/* 390px 화면: 첫 화면(스크롤 전)에 입력·계산 버튼·결과 요약·비교 막대·새 기능 버튼이 들어오게 압축 */
+@media (max-width: 560px) {
+  .wrap { padding: 20px 14px 44px; }
+  .app-header { margin-bottom: 12px; }
+  .app-title { font-size: 21px; margin-bottom: 3px; }
+  .app-sub { font-size: 14px; line-height: 1.5; }
+  .app-privacy { font-size: 14px; }
+  /* 개월·목표 연봉은 1줄 2열, 현재 연봉은 전체 폭으로. 안내문은 placeholder로 옮겨 높이를 줄였다. */
+  .form-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .field { grid-column: span 2; }
+  .field:nth-child(1) { grid-column: 1 / -1; }
+  .card { padding: 16px 14px; margin-bottom: 12px; }
+  .card-head { margin-bottom: 10px; }
+  .actions { margin-top: 10px; }
+  .hint { margin: 8px 0 0; }
+  /* 입력 카드는 세로로 압축해, 계산 버튼 바로 아래에서 결과 요약이 시작되게 한다. */
+  .card-input { padding: 12px 10px; }
+  /* base .field input 은 padding:12px 14px 이며 mobile 에서 이 규칙을 그대로
+     사용해 개수·목표가 2열로 줄었을 때 높이(67px)가 너무 컸다. 명시적으로 축소. */
+  .field input { padding: 8px 10px; font-size: 16px; }
+  .field label { font-size: 14px; }
+  .field { gap: 4px; }
+  .form-grid { gap: 8px; }
+  .card-input .actions { margin-top: 10px; }
+  .card-input #app-status { margin-top: 6px; margin-bottom: 8px; }
+  .timing-box { margin-top: 8px; padding-top: 4px; }
+  .timing-box summary { padding: 4px 0 2px; }
+  .actions .btn-primary { width: 100%; }
+  .timing-body { gap: 8px; padding: 4px 0 8px; }
+  #result-summary { font-size: 19px; margin-bottom: 3px; line-height: 1.35; }
+  #compare-bar { margin: 3px 0 8px; gap: 6px; }
+  /* 새 기능 버튼: 한 줄에 3개. 328px 폭에 맞춤 — flex로 균등 분할. */
+  .new-tools { gap: 6px; margin: 2px 0 4px; }
+  .new-tools button { padding: 10px 4px; font-size: 14px; white-space: normal; line-height: 1.25; }
+  #nego-text { min-height: 72px; padding: 10px 12px; }
+  .timing-result { margin: 6px 0 10px; padding: 8px 12px; font-size: 14px; }
+  #scenario-lines { margin-bottom: 10px; padding: 10px 12px; }
+  #result-list .row { flex-direction: column; gap: 4px; padding: 8px 0; }
+  .detail { margin-top: 12px; }
+  .detail summary { padding: 6px 0 2px; }
+  .detail > dl, .detail > div { margin-top: 2px; }
+  /* 비교 막대의 금액을 막대 아래로 내려 한 줄당 "라벨+막대"만 두어 326px 폭에 맞춤 */
+  .cmp-row { grid-template-columns: 1fr auto; gap: 4px 8px; }
+  .cmp-track { grid-column: 1 / -1; order: 3; }
+  .cmp-value { white-space: normal; overflow-wrap: anywhere; text-align: right; }
+  #scenario-table { margin-top: 14px; }
+  #scenario-table th, #scenario-table td { padding: 8px 6px; }
+}

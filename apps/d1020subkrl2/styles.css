@@ -1,0 +1,281 @@
+:root {
+  --bg: #f4f6fa;
+  --card: #ffffff;
+  --ink: #1c2434;
+  --ink-soft: #5a6577;
+  --line: #e3e8f0;
+  --accent: #2f5fe0;
+  --accent-ink: #ffffff;
+  --up: #d9342b;
+  --down: #2160c4;
+  --even: #8a93a5;
+  --error: #b3261e;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.app-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin: 0 0 16px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.app-desc {
+  margin: 0 0 16px;
+  color: var(--ink-soft);
+}
+
+.top-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.nav-btn {
+  font: inherit;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #eef1f6;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.nav-btn[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+#app-status {
+  min-height: 24px;
+  padding: 8px 0;
+  color: var(--ink-soft);
+}
+
+#app-status.error {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.fx-header {
+  margin: 0;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.meta-line {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+
+.primary-btn {
+  font: inherit;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-btn:hover { filter: brightness(1.08); }
+
+.secondary-btn {
+  font: inherit;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.banner {
+  margin: 0 0 16px;
+  padding: 16px 24px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.hint {
+  margin: 0 0 16px;
+  color: var(--ink-soft);
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.plan-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.plan-label input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.baseline-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.baseline-hint {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.baseline-row input {
+  font: inherit;
+  width: 120px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+#selected-plan-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.plan-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 8px 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.plan-item:last-child { border-bottom: none; }
+
+.plan-name { font-weight: 600; }
+
+.plan-empty {
+  padding: 12px 0;
+  color: var(--ink-soft);
+}
+
+.diff-up { color: var(--up); font-weight: 600; }
+.diff-down { color: var(--down); font-weight: 600; }
+.diff-even { color: var(--even); }
+
+.coin-line {
+  margin: 0 0 8px;
+}
+
+.manage-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#summary-json {
+  margin: 0;
+  padding: 16px;
+  background: #f7f9fc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+details summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+details[open] > summary {
+  margin-bottom: 8px;
+}
+
+.summary-text {
+  margin: 0 0 16px;
+  font-size: 15px;
+}
+
+.attribution-footer {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 15px;
+  padding: 16px 0 0;
+}
+
+@media (max-width: 560px) {
+  .plan-item {
+    grid-template-columns: 1fr auto;
+  }
+  .plan-item .plan-name {
+    grid-column: 1 / -1;
+  }
+}

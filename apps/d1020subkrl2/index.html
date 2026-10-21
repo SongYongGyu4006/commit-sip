@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KRW 구독·환율 계산기</title>
+  <link rel="stylesheet" href="styles.css">
+<meta name="description" content="구독 요금 계산기"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#eaf5ff;color:#0b2545;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #cfe6fb"><span><a href="../" style="color:#0369a1;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 구독 요금 계산기 같은 앱" style="color:#fff;background:#0284c7;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+  <div class="app-shell">
+    <header class="app-header card">
+      <h1>구독 요금 계산기</h1>
+      <p class="app-desc">오늘의 달러-원 환율과 비트코인·이더리움 시세를 기준으로, 넷플릭스나 챗지피티 플러스 같은 해외 구독 서비스의 원화 월액과 연액, 그리고 입력한 기준 환율과 비교한 증감액을 즉시 계산해 주는 앱입니다.</p>
+      <nav class="top-nav" aria-label="화면 이동">
+        <button type="button" id="nav-calc-button" class="nav-btn" aria-pressed="true">계산기 화면</button>
+        <button type="button" id="nav-manage-button" class="nav-btn" aria-pressed="false">저장·내보내기 화면</button>
+      </nav>
+      <div id="app-status" role="status"></div>
+      <div class="header-row">
+        <p id="fx-header" class="fx-header"></p>
+        <button type="button" id="try-example-button" class="primary-btn">예시로 해 보기</button>
+      </div>
+      <p id="fx-data-meta" class="meta-line"></p>
+    </header>
+
+    <main>
+      <section id="screen-calc">
+        <div class="card">
+          <h2>구독 요금제 선택</h2>
+          <p class="hint">체크박스로 원하는 요금제를 골라 주세요. 선택이 바뀔 때마다 오늘의 환율로 원화 월액과 연액, 입력한 기준 환율과 비교한 증감액이 자동으로 다시 계산됩니다.</p>
+          <div class="plan-grid">
+            <label class="plan-label"><input type="checkbox" class="plan-checkbox" id="plan-netflix_standard" value="netflix_standard">Netflix 표준</label>
+            <label class="plan-label"><input type="checkbox" class="plan-checkbox" id="plan-netflix_premium" value="netflix_premium">Netflix 프리미엄</label>
+            <label class="plan-label"><input type="checkbox" class="plan-checkbox" id="plan-spotify_premium" value="spotify_premium">Spotify Premium</label>
+            <label class="plan-label"><input type="checkbox" class="plan-checkbox" id="plan-chatgpt_plus" value="chatgpt_plus">ChatGPT Plus</label>
+            <label class="plan-label"><input type="checkbox" class="plan-checkbox" id="plan-notion_plus" value="notion_plus">Notion</label>
+            <label class="plan-label"><input type="checkbox" class="plan-checkbox" id="plan-youtube_premium" value="youtube_premium">YouTube Premium</label>
+          </div>
+          <div class="baseline-row">
+            <label for="baseline-rate-input">기준 환율(1달러당 원화)</label>
+            <input type="number" id="baseline-rate-input" value="1380" min="1" step="1">
+            <span class="hint baseline-hint">지난 7일 평균 환율 같은 기준을 입력하면, 오늘 환율과 비교해 요금이 올랐는지 내렸는지 볼 수 있습니다. 0보다 큰 숫자를 입력해 주세요.</span>
+          </div>
+        </div>
+        <p id="first-value-banner" class="card banner"></p>
+        <div class="card">
+          <ul id="selected-plan-list"></ul>
+        </div>
+        <details class="card">
+          <summary>보조 정보: 코인 시세 보기</summary>
+          <p class="hint">오늘의 비트코인·이더리움 원화 시세와 24시간 변동률을 보여주는 보조 정보입니다. 구독 계산과는 별개입니다.</p>
+          <div id="coin-section">
+            <p id="btc-summary" class="coin-line"></p>
+            <p id="eth-summary" class="coin-line"></p>
+          </div>
+        </details>
+      </section>
+
+      <section id="screen-manage" hidden>
+        <div class="card">
+          <h2>저장·내보내기</h2>
+          <p class="hint">선택한 요금제와 기준 환율은 브라우저에 저장되어 새로고침해도 그대로 유지됩니다. 계산 결과는 파일로 내려받아 두었다가, 이후에 다시 불러와 같은 구성으로 계산할 수 있습니다.</p>
+          <div class="manage-actions">
+            <button type="button" id="export-button" class="primary-btn">결과 파일 내려받기</button>
+            <label class="file-label">파일 불러오기<input type="file" id="import-file" accept=".json"></label>
+            <button type="button" id="reset-button" class="secondary-btn">기본값으로 초기화</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>계산 결과 미리보기</h2>
+          <p class="hint">지금 계산된 결과를 쉽게 읽을 수 있는 문장으로 정리해 드립니다. 개발용으로 사용하는 전체 JSON 파일도 아래에서 볼 수 있고, 내보내기 버튼으로 내려받은 파일과 같은 내용입니다.</p>
+          <p id="summary-text" class="summary-text"></p>
+          <details id="summary-json-details">
+            <summary>상세 JSON 보기</summary>
+            <pre id="summary-json"></pre>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer id="attribution-footer" class="attribution-footer">Rates By Exchange Rate API · CoinGecko · CC BY 4.0</footer>
+  </div>
+  <script type="module" src="src/main.js"></script>
+
+</body>
+</html>

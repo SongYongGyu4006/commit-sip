@@ -1,0 +1,131 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 24px 16px;
+  font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #1d2129;
+  background: #eef1f6;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #dde3ec;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+h1 { margin: 0 0 8px; font-size: 26px; }
+h2 { margin: 0 0 8px; font-size: 20px; }
+h3 { margin: 16px 0 8px; font-size: 17px; }
+
+.tagline { margin: 0 0 16px; color: #4a5468; }
+.purpose { margin: 0 0 16px; color: #4a5468; }
+
+.nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.nav-btn {
+  font: inherit;
+  padding: 8px 16px;
+  border: 1px solid #c9d2e0;
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+}
+.nav-btn.active { background: #1a56db; border-color: #1a56db; color: #fff; }
+
+.data-meta {
+  margin: 0 0 16px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #eef3ff;
+  color: #2a3550;
+  font-size: 14px;
+}
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 16px 0; }
+.field { display: inline-flex; align-items: center; gap: 8px; }
+.field select { font: inherit; padding: 8px; border: 1px solid #c9d2e0; border-radius: 8px; background: #fff; }
+
+button {
+  font: inherit;
+  padding: 8px 16px;
+  border: 1px solid #c9d2e0;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+button.primary { background: #1a56db; border-color: #1a56db; color: #fff; font-weight: 600; }
+
+#app-status { min-height: 24px; margin: 8px 0 0; font-size: 14px; color: #a3231d; }
+#app-status.ok { color: #1e6b3a; }
+
+.hidden { display: none; }
+
+.rank-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.rank-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f2;
+  border-radius: 8px;
+}
+.rank-list .rmodel { font-weight: 600; margin-right: 8px; }
+.rank-list .stat { font-size: 14px; color: #37415a; }
+.rank-list .stat b { font-weight: 600; color: #1d2129; }
+.rank-list li button { margin-left: auto; }
+
+.json-box { margin-top: 16px; }
+.json-box pre {
+  margin: 8px 0 0;
+  padding: 16px;
+  background: #f5f7fb;
+  border: 1px solid #e2e8f2;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13px;
+  white-space: pre;
+}
+
+#compare-output .crow { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 8px; }
+#compare-output .cell { flex: 1 1 200px; }
+#compare-output .val, #compare-output .diff-val { font-size: 14px; color: #37415a; white-space: pre-line; }
+.compare-table { display: flex; flex-wrap: wrap; gap: 16px; }
+.compare-table .side {
+  flex: 1 1 240px;
+  padding: 16px;
+  border: 1px solid #e2e8f2;
+  border-radius: 8px;
+}
+.compare-table .side h4 { margin: 0 0 8px; }
+.compare-table .side p, .compare-table .diff p { margin: 0 0 8px; font-size: 14px; }
+.compare-table .diff { flex: 1 1 100%; }
+#compare-output .empty { color: #6b7488; margin: 8px 0 0; }
+#compare-output .summary {
+  margin: 16px 0 0;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f2;
+  border-left: 4px solid #1a56db;
+  border-radius: 8px;
+  background: #f5f8ff;
+  font-size: 15px;
+}
+
+.foot { text-align: center; font-size: 12px; color: #6b7488; }
+
+@media (max-width: 480px) {
+  body { padding: 16px 8px; }
+  .card { padding: 16px; }
+  .rank-list li { padding: 8px; }
+}

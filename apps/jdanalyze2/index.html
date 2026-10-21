@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>채용 지원 자격 점검기</title>
+<style>
+/* 채용 지원 자격 점검기 — 시스템 폰트, 카드형 구역, 최대 960px 중앙 정렬 */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px 12px 32px;
+  font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1f2430;
+  background: #f2f4f8;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+
+.app-subtitle {
+  margin: 0;
+  color: #4a5265;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #dfe3ec;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(24, 30, 46, 0.06);
+}
+
+.card h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.hint {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #5a637a;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid #c8cfdd;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2430;
+  font: inherit;
+  font-size: 14px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.btn:hover { background: #f5f7fb; }
+
+.btn-primary {
+  background: #2456d6;
+  border-color: #2456d6;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.btn-primary:hover { background: #1e48b4; }
+
+.main-action {
+  margin: 0;
+}
+
+/* 주 버튼: 눈에 띄게 */
+#analyze-button {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+}
+
+.field-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+textarea {
+  width: 100%;
+  border: 1px solid #c8cfdd;
+  border-radius: 8px;
+  padding: 10px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f2430;
+  resize: vertical;
+}
+
+/* 첫 화면(390px)에 두 입력 카드 + 주 버튼이 스크롤 없이 보이도록 축소 */
+#text-area,
+#my-spec {
+  min-height: 80px;
+  padding: 10px;
+  line-height: 1.5;
+}
+
+#text-area:focus,
+#my-spec:focus {
+  outline: 2px solid #2456d6;
+  outline-offset: 1px;
+}
+
+/* 상태 영역: 오류(기본 빨강) / notice(중립 주의색) / ok(녹색) */
+#app-status {
+  min-height: 0;
+  margin: 0;
+  font-size: 14px;
+  color: #b3352b;
+  font-weight: 500;
+}
+
+#app-status:empty {
+  min-height: 18px;
+}
+
+#app-status.notice {
+  color: #8a6d1a;
+  background: #fdf6e3;
+  border: 1px solid #ead9a0;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+#app-status.ok {
+  color: #2c6e49;
+}
+
+.skill-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skill-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 8px 12px;
+  border: 1px solid #e3e7f0;
+  border-radius: 8px;
+  background: #fafbfd;
+}
+
+.skill-name { font-weight: 600; min-width: 0; }
+
+.skill-meta {
+  color: #5a637a;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+/* 격차 카드: 충족(녹) / 차이(빨) / 미상(중립) */
+.meta-ok { color: #2c6e49; }
+.meta-gap { color: #b3352b; }
+.meta-warn { color: #8a6d1a; }
+
+/* 격차 안내: 목록 안에 넣지 않고 카드(페이지) 폭 전체에 두고, 목록이 비면만 보임 */
+#gap-summary {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #5a637a;
+}
+
+#gap-empty-hint {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: #5a637a;
+}
+
+#analysis-json {
+  margin: 0;
+  padding: 16px;
+  border-radius: 8px;
+  background: #f5f7fb;
+  border: 1px solid #e3e7f0;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 320px;
+  overflow: auto;
+  color: #1f2430;
+}
+
+/* 390px 폭 휴대폰: 가로 스크롤 없이 동작, 첫 화면(844px)에 입력 흐름이 스크롤 없이 들어와야 함 */
+@media (max-width: 480px) {
+  .app-header h1 { font-size: 22px; }
+  .hint { margin-bottom: 6px; line-height: 1.45; }
+  .actions { margin-bottom: 6px; }
+  #analyze-button { padding: 11px 14px; }
+  #text-area,
+  #my-spec { min-height: 76px; }
+  #app-status:empty { min-height: 12px; }
+}
+</style>
+<meta name="description" content="채용 지원 자격 점검기"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#eaf5ff;color:#0b2545;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #cfe6fb"><span><a href="../" style="color:#0369a1;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 채용 지원 자격 점검기 같은 앱" style="color:#fff;background:#0284c7;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+  <main class="page">
+    <header class="app-header">
+      <h1>채용 지원 자격 점검기</h1>
+      <p class="app-subtitle">채용 공고를 붙여넣고 내 스펙을 대조해, 공고가 요구하는 수준 대비 격차를 로컬에서만 확인합니다. 계정도 네트워크도 없어요.</p>
+    </header>
+
+    <section class="card">
+      <h2>지원할 채용 공고</h2>
+      <p class="hint">채용 사이트에서 공고 문서를 전부 선택(Ctrl+A) → 복사 → 여기에 붙여넣으세요. 한 줄에 공고 하나씩, 첫 단어는 제목입니다. 파일로 불러오거나 예시로도 해 볼 수 있어요.</p>
+      <div class="actions">
+        <button type="button" id="add-job-button" class="btn">파일로 불러오기 (.txt)</button>
+        <input type="file" id="text-file" accept=".txt,.text" hidden>
+        <button type="button" id="example-button" class="btn">예시로 해 보기</button>
+        <button type="button" id="student-example-button" class="btn">학생·취준생 예시</button>
+        <button type="button" id="reset-button" class="btn">지우기</button>
+      </div>
+      <label class="field-label" for="text-area">채용 공고 본문</label>
+      <textarea id="text-area" rows="5" placeholder="채용 사이트에서 공고 문서를 Ctrl+A → 복사 → 여기에 붙여넣으세요. 예) 초등 교사 영어 회화 수업, 영어 회화 경험 우대, 영어 회화 면접"></textarea>
+    </section>
+
+    <section class="card">
+      <h2>내 스펙</h2>
+      <p class="hint">경력, 학력, 자격증, 프로젝트, 활동 — 뭐든 있는 대로 자유롭게 적어 주세요. 연차가 없어도, 학생·취준생이어도 상관없어요. (비워 두면 공고만 분석합니다)</p>
+      <label class="field-label" for="my-spec">내 스펙</label>
+      <textarea id="my-spec" rows="5" placeholder="예) 영어 회화 3년, 수학 교재 개발, 스펙트럼 학생 상담, TOEIC 900, 학점 4.2, 교육 봉사 200시간"></textarea>
+    </section>
+
+    <div class="main-action">
+      <button type="button" id="analyze-button" class="btn btn-primary">격차 분석하기</button>
+    </div>
+
+    <div id="app-status" role="status"></div>
+
+    <section class="card">
+      <h2>내 수준 vs 공고 요구 수준</h2>
+      <div id="gap-summary"></div>
+      <ul id="gap-list" class="skill-list"></ul>
+      <p id="gap-empty-hint" class="hint">아직 대조할 항목이 없어요. 채용 공고와 내 스펙을 채워 “격차 분석하기”를 누르면 여기에 충족·차이를 보여 줍니다.</p>
+    </section>
+
+    <section id="skill-card" class="card">
+      <h2>핵심 역량</h2>
+      <ul id="skill-list" class="skill-list"></ul>
+      <p id="skill-empty-hint" class="hint">빈 상태: 분석하면 여기에서 역량을 순서대로 보여 줍니다.</p>
+    </section>
+
+    <section class="card">
+      <h2>분석 결과 (JSON)</h2>
+      <pre id="analysis-json"></pre>
+    </section>
+  </main>
+  <script>
+/* app/src/app.js (inlined bundle) */
+// 교육 채용 공고 분석기 — 순수 분석 함수 (Node/브라우저 어디서든 import 가능, 부작용 없음)
+
+// 필수 키워드 (문구에 대소문자 구분 없이 부분 문자열로 감지)
+const MUST_MARKERS = ['요망', '필수', '만족', 'must'];
+// 선호 키워드
+const PREFERRED_MARKERS = ['선호', '우대'];
+const LOWERED_MARKERS = new Set([...MUST_MARKERS, ...PREFERRED_MARKERS].map((m) => m.toLowerCase()));
+
+// 한 토큰을 소문자로: ASCII 대문자(A-Z)만 a-z로, 그 외 문자(한글·한자·숫자 등)는 그대로
+function lowercaseAscii(token) {
+  let out = '';
+  for (const ch of token) {
+    const code = ch.codePointAt(0);
+    out += code >= 0x41 && code <= 0x5a ? String.fromCodePoint(code + 32) : ch;
+  }
+  return out;
+}
+
+// 공백/문자점이 아닌 최대 연속 문자를 하나씩 찾음 (한글·한자·숫자도 모두 한 토큰)
+const TOKEN_RE = /[^\s\p{P}]+/gu;
+
+// 모든 occurrences 개수를 세어 { name: { must, preferred } } 집계
+function countTokens(text, isMustJob) {
+  const buckets = new Map();
+  let total = 0;
+  const matches = text.match(TOKEN_RE);
+  if (matches) {
+    for (const token of matches) {
+      const name = lowercaseAscii(token);
+      if (name === '') continue;
+      if (LOWERED_MARKERS.has(name)) continue; // 마커 자체는 스킬로 집계하지 않음
+      let entry = buckets.get(name);
+      if (!entry) { entry = { must: 0, preferred: 0 }; buckets.set(name, entry); }
+      if (isMustJob) entry.must += 1; else entry.preferred += 1;
+      total += 1;
+    }
+  }
+  return { buckets, total };
+}
+
+/**
+ * 교육 분야 채용 공고 목록을 분석해 요구 역량의 빈도(필수/선호)를 집계한다.
+ *
+ * @param {Array<{title: string, text: string}>} jobs
+ * @returns {{count: number, totalSkillMentions: number, skills: Array<{name: string, count: number, must: number, preferred: number}>}}
+ * @throws {TypeError}  jobs가 배열이 아니면, 또는 어떤 공고의 title/text가 문자열이 아니면
+ * @throws {RangeError} 어떤 공고의 title이 공백(trim) 이후 비어 있으면
+ */
+function analyzeJobDescriptions(jobs) {
+  if (!Array.isArray(jobs)) throw new TypeError('jobs is not an array');
+
+  const buckets = new Map();
+  let totalSkillMentions = 0;
+
+  for (const job of jobs) {
+    if (job === null || typeof job !== 'object') throw new TypeError('each job must be an object with string title and text');
+    if (typeof job.title !== 'string') throw new TypeError('job.title must be a string');
+    if (typeof job.text !== 'string') throw new TypeError('job.text must be a string');
+    if (job.title.trim() === '') throw new RangeError('job.title must not be blank');
+
+    const lower = job.text.toLowerCase();
+    const isMustJob = MUST_MARKERS.some((marker) => lower.includes(marker));
+    const { buckets: jobBuckets, total } = countTokens(job.text, isMustJob);
+    totalSkillMentions += total;
+    for (const [name, entry] of jobBuckets) {
+      let agg = buckets.get(name);
+      if (!agg) { agg = { must: 0, preferred: 0 }; buckets.set(name, agg); }
+      agg.must += entry.must;
+      agg.preferred += entry.preferred;
+    }
+  }
+
+  const skills = [...buckets.entries()]
+    .map(([name, { must, preferred }]) => ({ name, count: must + preferred, must, preferred }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'en-US'));
+
+  return { count: jobs.length, totalSkillMentions, skills };
+}
+
+/* app/src/ui.js (inlined bundle) */
+// 화면 로직: 파일 선택, 공고·스펙 입력, 격차 분석, 결과 렌더링, 초기화, 예시 실행
+// (모듈 번들 빌드에서 import 구문은 제거됨; 이 파일은 index.html이 인라인 스크립트로 포함해 실행된다)
+
+// 예시 1: 현실적인 채용 공고(한 줄 = 한 공고) + 내 스펙 쌍
+const EXAMPLE_TEXT = [
+  '초등 교사 영어 회화 수업, 영어 회화 경험 우대, 영어 회화 면접',
+  '중등 교사 수학 교육 경력 5년 이상, 수학 교재 개발',
+  '중등교사 수학 교육 경력 3년 이상, 수학·과학 교재 개발 경험 필수, 스펙트럼 학생 상담면접 경험 선호',
+].join('\n');
+
+const EXAMPLE_SPEC =
+  '영어 회화 면접 준비, 수학 교육 경험, 스펙트럼 학생 상담, TOEIC 850, 교육 봉사 100시간';
+
+// 예시 2: 학생·취준생형 스펙 (연차 없음, 학점·자격증·동아리 중심) + 지원 공고
+const EXAMPLE_STUDENT_TEXT =
+  '중등교사 수학 교육 경력 3년 이상, 수학·과학 교재 개발 경험 필수, 스펙트럼 학생 상담면접 경험 선호';
+
+const EXAMPLE_STUDENT_SPEC =
+  '수학 학사 4학년, 평점 4.2, 수학 교재 개발 프로젝트 1회, 스펙트럼 학생 상담 동아리 2년, 교육 봉사 200시간, TOEIC 900';
+
+// 상태 영역에 메시지를 표시(자동 사라짐 없음: 명시적으로만 비움). kind: 'error' | 'notice' | 'ok'
+function setStatus(text, kind = 'error') {
+  const el = document.getElementById('app-status');
+  el.textContent = text;
+  el.className = kind;
+}
+
+// text-area의 내용을 행으로 나누어 각 비어 있지 않은 행을 하나의 공고로 만든다.
+// title: 행의 첫 띄어쓰기 구분 토큰, text: 행 전체
+function parseJobs(text) {
+  return text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '')
+    .map((line) => ({
+      title: line.split(/\s+/)[0],
+      text: line,
+    }));
+}
+
+// 한 토큰을 소문자로: ASCII 대문자(A-Z)만 a-z로, 그 외 문자(한글·한자·숫자 등)는 그대로
+function lowercaseAscii(token) {
+  let out = '';
+  for (const ch of token) {
+    const code = ch.codePointAt(0);
+    out += code >= 0x41 && code <= 0x5a ? String.fromCodePoint(code + 32) : ch;
+  }
+  return out;
+}
+
+// 공백/문자점이 아닌 최대 연속 문자(한글·한자·숫자도 모두 한 토큰)로 토큰화
+const UI_TOKEN_RE = /[^\s\p{P}]+/gu;
+const UI_MARKER_TOKENS = new Set(['요망', '필수', '만족', 'must', '선호', '우대']);
+
+function tokenize(text) {
+  const tokens = text.match(UI_TOKEN_RE) || [];
+  return tokens
+    .map((t) => lowercaseAscii(t))
+    .filter((t) => t !== '' && !UI_MARKER_TOKENS.has(t));
+}
+
+
+// skill-list를 skills 배열 순서 그대로(재구축) 채운다. textContent만 사용.
+// 빈 상태 안내(#skill-empty-hint)는 목록이 비어 있을 때만 표시한다.
+function renderSkillList(skills) {
+  const list = document.getElementById('skill-list');
+  list.innerHTML = '';
+  for (const skill of skills) {
+    const li = document.createElement('li');
+    li.className = 'skill-item';
+    const name = document.createElement('span');
+    name.className = 'skill-name';
+    name.textContent = skill.name;
+    const meta = document.createElement('span');
+    meta.className = 'skill-meta';
+    meta.textContent = '필수 ' + skill.must + ' · 선호 ' + skill.preferred;
+    li.appendChild(name);
+    li.appendChild(meta);
+    list.appendChild(li);
+  }
+  const hint = document.getElementById('skill-empty-hint');
+  if (hint) hint.style.display = skills.length ? 'none' : '';
+}
+
+// 내 스펙 토큰과 공고 토큰(필수/선호)을 대조해 격차(합친 목록)를 만든다.
+function computeGap(jobResult, specTokens) {
+  const gap = new Map(); // name -> { has: bool, jobMust: n, jobPreferred: n }
+  for (const token of specTokens) {
+    let entry = gap.get(token);
+    if (!entry) { entry = { has: true, jobMust: 0, jobPreferred: 0 }; gap.set(token, entry); }
+    entry.has = true;
+  }
+  for (const skill of jobResult.skills) {
+    let entry = gap.get(skill.name);
+    if (!entry) { entry = { has: false, jobMust: 0, jobPreferred: 0 }; gap.set(skill.name, entry); }
+    entry.jobMust += skill.must;
+    entry.jobPreferred += skill.preferred;
+  }
+  return [...gap.values()];
+}
+
+// 격차 카드를 렌더링한다. 내 스펙이 있으면 교집합/격차 목록, 없으면 안내 문구만.
+function renderGap(gap, hasSpec) {
+  const summary = document.getElementById('gap-summary');
+  const list = document.getElementById('gap-list');
+  const emptyHint = document.getElementById('gap-empty-hint');
+  summary.textContent = '';
+  list.innerHTML = '';
+  if (!hasSpec) {
+    summary.textContent = '내 스펙을 채우면, 공고가 요구하는 수준과 내 스펙을 대조해 충족·차이를 여기에 보여 줍니다.';
+    if (emptyHint) emptyHint.style.display = '';
+    return;
+  }
+  if (emptyHint) emptyHint.style.display = 'none';
+  if (!gap.length) {
+    summary.textContent = '대조할 항목이 없습니다.';
+    if (emptyHint) emptyHint.style.display = '';
+    return;
+  }
+  if (emptyHint) emptyHint.style.display = 'none';
+  for (const entry of gap) {
+    const label = entry.name !== undefined && entry.name !== null && entry.name !== ''
+      ? (entry.has ? entry.name : '누락 ' + entry.name)
+      : '';
+    const matched = entry.has && (entry.jobMust > 0 || entry.jobPreferred > 0);
+    const li = document.createElement('li');
+    li.className = 'skill-item';
+    const name = document.createElement('span');
+    name.className = 'skill-name';
+    name.textContent = label;
+    const meta = document.createElement('span');
+    meta.className = 'skill-meta' + (matched ? ' meta-ok' : entry.has ? ' meta-warn' : ' meta-gap');
+    meta.textContent = matched
+      ? '충족 (공고 필수 ' + entry.jobMust + ' · 선호 ' + entry.jobPreferred + ')'
+      : entry.has
+        ? '미상 (공고 언급 없음)'
+        : '차이 (공고 필수 ' + entry.jobMust + ' · 선호 ' + entry.jobPreferred + ')';
+    li.appendChild(name);
+    li.appendChild(meta);
+    list.appendChild(li);
+  }
+  const matchedCount = gap.filter((e) => e.has && (e.jobMust > 0 || e.jobPreferred > 0)).length;
+  const gapCount = gap.filter((e) => !e.has).length;
+  const onlySpecCount = gap.filter((e) => e.has && !(e.jobMust > 0 || e.jobPreferred > 0)).length;
+  summary.textContent =
+    '충족 ' + matchedCount + ' · 차이(내 스펙 없음) ' + gapCount + ' · 공고에 없는 스펙 ' + onlySpecCount;
+}
+
+function runAnalysis() {
+  const area = document.getElementById('text-area');
+  const content = area.value;
+  if (content.trim() === '') {
+    setStatus('내용을 입력해 주세요. 채용 공고 본문이 비어 있으면 분석할 수 없습니다.');
+    return;
+  }
+  // URL로 시작하면 링크는 직접 열 수 없어 본문 복사를 안내(분석은 계속 진행)
+  if (/^https?:\/\//i.test(content.trim())) {
+    setStatus('링크는 직접 열 수 없어요. 사이트에서 본문 문서를 복사해 붙여넣어 주세요. (아래 분석은 붙여넣은 내용 그대로 진행됩니다)', 'notice');
+  }
+  const specText = document.getElementById('my-spec').value;
+  const hasSpec = specText.trim() !== '';
+  try {
+    const result = analyzeJobDescriptions(parseJobs(content));
+    document.getElementById('analysis-json').textContent = JSON.stringify(result);
+    renderSkillList(result.skills);
+    const specTokens = tokenize(specText);
+    renderGap(computeGap(result, specTokens), hasSpec);
+    if (!hasSpec) {
+      setStatus('내 스펙이 비어 있어서 공고만 분석했어요. “내 스펙”에 경력·학력·자격증·프로젝트·활동을 채우면, 공고가 요구하는 수준 대비 격차를 함께 보여 줍니다.', 'notice');
+    } else {
+      setStatus('');
+    }
+  } catch (err) {
+    setStatus('분석을 실패했습니다. ' + err.message + ' — 각 행은 “제목 공백 본문” 형식으로 한 행에 한 공고씩 적어야 합니다.');
+  }
+}
+
+function resetAll() {
+  document.getElementById('text-area').value = '';
+  document.getElementById('my-spec').value = '';
+  const list = document.getElementById('skill-list');
+  list.innerHTML = '';
+  const hint = document.getElementById('skill-empty-hint');
+  if (hint) hint.style.display = '';
+  document.getElementById('gap-summary').textContent = '';
+  document.getElementById('gap-list').innerHTML = '';
+  const gapEmpty = document.getElementById('gap-empty-hint');
+  if (gapEmpty) gapEmpty.style.display = '';
+  document.getElementById('analysis-json').textContent = '';
+  setStatus('');
+}
+
+function loadExample() {
+  document.getElementById('text-area').value = EXAMPLE_TEXT;
+  document.getElementById('my-spec').value = EXAMPLE_SPEC;
+  setStatus('');
+  runAnalysis();
+}
+
+function loadStudentExample() {
+  document.getElementById('text-area').value = EXAMPLE_STUDENT_TEXT;
+  document.getElementById('my-spec').value = EXAMPLE_STUDENT_SPEC;
+  setStatus('');
+  runAnalysis();
+}
+
+// initApp: 화면 리스너 연결. 인라인 스크립트로는 자동 실행, 모듈 import로는 initApp()을 직접 부른다.
+function initApp() {
+  const addJobButton = document.getElementById('add-job-button');
+  const textFile = document.getElementById('text-file');
+  const area = document.getElementById('text-area');
+
+  // 파일 선택 열기 → 파일 텍스트를 text-area로 읽음(기존 내용 교체)
+  addJobButton.addEventListener('click', () => textFile.click());
+  textFile.addEventListener('change', () => {
+    const file = textFile.files && textFile.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      area.value = String(reader.result);
+      setStatus('');
+    };
+    reader.onerror = () => {
+      setStatus('파일을 읽는 동안 오류가 발생했습니다. 파일을 다시 선택해 주세요.');
+    };
+    reader.readAsText(file);
+    textFile.value = ''; // 같은 파일을 다시 선택해도 change가 다시 일어나도록
+  });
+
+  document.getElementById('analyze-button').addEventListener('click', runAnalysis);
+  document.getElementById('reset-button').addEventListener('click', resetAll);
+  document.getElementById('example-button').addEventListener('click', loadExample);
+  document.getElementById('student-example-button').addEventListener('click', loadStudentExample);
+}
+
+if (typeof document !== 'undefined' && typeof window !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
+}
+
+
+  </script>
+
+</body>
+</html>

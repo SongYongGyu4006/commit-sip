@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-10-19T09:00:00+09:00",
+  "note": "교차 확인 = 독립 출처 2곳 이상 + 등급 2종 이상. 보도 범위이지 사실 판정이 아님.",
+  "sources": [
+    { "id": "openai", "name": "OpenAI", "tier": 1, "ok": true, "count": 3, "seconds": 0.4 },
+    { "id": "github-blog", "name": "GitHub Blog", "tier": 1, "ok": true, "count": 2, "seconds": 0.3 },
+    { "id": "techcrunch", "name": "TechCrunch", "tier": 2, "ok": true, "count": 4, "seconds": 1.1 },
+    { "id": "arxiv-ai", "name": "arXiv cs.AI", "tier": 3, "ok": true, "count": 5, "seconds": 0.8 },
+    { "id": "hn", "name": "Hacker News", "tier": 4, "ok": true, "count": 30, "seconds": 30 }
+  ],
+  "stories": [
+    {
+      "title": "OpenAI, API 요금 40% 내린 새 코딩 모델 발표",
+      "url": "https://openai.com/blog/coding-model",
+      "score": 82,
+      "sources": ["openai", "hn"],
+      "tiers": [1, 4],
+      "cross_confirmed": true,
+      "age_h": 2,
+      "interest": true,
+      "links": [
+        { "source": "openai", "title": "새 코딩 모델 공개 (공식 블로그)", "url": "https://openai.com/blog/coding-model", "metric": "공식 발표" },
+        { "source": "hn", "title": "OpenAI 새 코딩 모델, API 요금 40% 인하", "url": "https://openai.com/blog/coding-model", "metric": "HN 214점 · 187댓글" }
+      ]
+    },
+    {
+      "title": "GitHub, 에이전트 기반 코드 리뷰 공개 시범 서비스 개시",
+      "url": "https://github.blog/agent-code-review",
+      "score": 74,
+      "sources": ["github-blog", "techcrunch"],
+      "tiers": [1, 2],
+      "cross_confirmed": true,
+      "age_h": 5,
+      "interest": true,
+      "links": [
+        { "source": "github-blog", "title": "에이전트 코드 리뷰 공개 시범 (공고)", "url": "https://github.blog/agent-code-review", "metric": "공고" },
+        { "source": "techcrunch", "title": "GitHub, 에이전트 코드 리뷰 공개 시범 돌입", "url": "https://techcrunch.com/2026/10/19/github-agent-review", "metric": "보도" }
+      ]
+    },
+    {
+      "title": "잠재 공간 계획으로 에이전트 설계하는 새 접근법 (arXiv)",
+      "url": "https://arxiv.org/abs/2610.00482",
+      "score": 61,
+      "sources": ["arxiv-ai"],
+      "tiers": [3],
+      "cross_confirmed": false,
+      "age_h": 8,
+      "interest": false,
+      "links": [
+        { "source": "arxiv-ai", "title": "LLM 에이전트의 잠재 공간 계획", "url": "https://arxiv.org/abs/2610.00482", "metric": "arXiv 2610.00482" }
+      ]
+    },
+    {
+      "title": "오픈 소스 하드웨어 키트로 로컬 LLM 대중화 열풍",
+      "url": "https://techcrunch.com/2026/10/18/local-llm-hardware",
+      "score": 38,
+      "sources": ["techcrunch"],
+      "tiers": [2],
+      "cross_confirmed": false,
+      "age_h": 26,
+      "interest": false,
+      "links": [
+        { "source": "techcrunch", "title": "로컬 LLM, 오픈 하드웨어 키트로 대중화에", "url": "https://techcrunch.com/2026/10/18/local-llm-hardware", "metric": "보도" }
+      ]
+    },
+    {
+      "title": "Show HN: 하루 162개 기술 소식을 순위를 매기는 레이더 보드",
+      "url": "https://news.ycombinator.com/item?id=47310000",
+      "score": 12,
+      "sources": ["hn"],
+      "tiers": [4],
+      "cross_confirmed": false,
+      "age_h": 30,
+      "interest": false,
+      "links": [
+        { "source": "hn", "title": "하루 기술 소식 순위를 매기는 레이더 보드", "url": "https://news.ycombinator.com/item?id=47310000", "metric": "HN 88점" }
+      ]
+    }
+  ]
+}

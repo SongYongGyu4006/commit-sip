@@ -1,0 +1,11 @@
+{
+ "id": "coin_price",
+ "name": "코인 시세(CoinGecko)",
+ "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=krw,usd&include_24hr_change=true",
+ "fetched_at": "2026-10-21T04:03:18",
+ "terms": "무료 공개 API(호출 제한, 출처 표기 권장)",
+ "cors": true,
+ "items": 0,
+ "bytes": 241,
+ "trimmed": false
+}

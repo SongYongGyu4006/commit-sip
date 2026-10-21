@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>내 기기에 맞는 AI 모델 찾기</title>
+<link rel="stylesheet" href="styles.css">
+<meta name="description" content="내 기기에 맞는 AI 모델 찾기"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#eaf5ff;color:#0b2545;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #cfe6fb"><span><a href="../" style="color:#0369a1;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 내 기기에 맞는 AI 모델 찾기 같은 앱" style="color:#fff;background:#0284c7;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+<main class="page">
+
+  <header class="card header-card">
+    <h1>내 기기에 맞는 AI 모델 찾기</h1>
+    <p class="tagline">Hugging Face 인기 텍스트 모델을 4bit·8bit 양자화 기준으로 추산해, 내 컴퓨터에서 실행할 수 있는지 알려 줍니다.</p>
+    <button id="example-button" type="button">예시로 해 보기</button>
+  </header>
+
+  <div id="app-status" role="status"></div>
+
+  <section class="card controls-card">
+    <label class="ctl">
+      <span>내 RAM</span>
+      <select id="ram-select">
+        <option value="8">내 RAM: 8GB</option>
+        <option value="16" selected>내 RAM: 16GB</option>
+        <option value="32">내 RAM: 32GB</option>
+        <option value="64">내 RAM: 64GB</option>
+        <option value="128">내 RAM: 128GB</option>
+      </select>
+    </label>
+    <label class="ctl">
+      <span>작업</span>
+      <select id="task-select">
+        <option value="text" selected>텍스트</option>
+        <option value="image">이미지</option>
+      </select>
+    </label>
+    <label class="ctl">
+      <span>양자화</span>
+      <select id="quant-select">
+        <option value="8bit" selected>8bit</option>
+        <option value="4bit">4bit</option>
+      </select>
+    </label>
+    <label class="ctl">
+      <span>GPU</span>
+      <select id="gpu-select">
+        <option value="none" selected>GPU 없음 (CPU만)</option>
+        <option value="nvidia">NVIDIA</option>
+        <option value="amd">AMD</option>
+        <option value="apple">Apple</option>
+        <option value="mesa">Mesa</option>
+      </select>
+    </label>
+    <label class="ctl">
+      <span>VRAM</span>
+      <select id="vram-select">
+        <option value="0" selected>VRAM 없음</option>
+        <option value="4">VRAM 4GB</option>
+        <option value="8">VRAM 8GB</option>
+        <option value="12">VRAM 12GB</option>
+        <option value="16">VRAM 16GB</option>
+        <option value="24">VRAM 24GB</option>
+      </select>
+    </label>
+    <label class="ctl">
+      <span>CPU 아키텍처</span>
+      <select id="arch-select">
+        <option value="arm" selected>ARM</option>
+        <option value="intel">Intel</option>
+        <option value="amd64">AMD</option>
+      </select>
+    </label>
+    <label class="ctl">
+      <span>순서</span>
+      <select id="rank-select">
+        <option value="trending" selected>인기 (트렌드)</option>
+        <option value="downloads">많이 사용 (다운로드)</option>
+        <option value="optimized">내 RAM 대비 최적</option>
+      </select>
+    </label>
+    <button id="apply-button" type="button">적용</button>
+  </section>
+
+  <section class="card">
+    <div id="summary"></div>
+    <div id="top-card"></div>
+    <div class="meta-line">
+      <span id="data-time"></span>
+      <span id="data-terms"></span>
+    </div>
+  </section>
+
+  <p class="fit-note">추정 적합: 가중치 + 런타임 예약 + KV 캐시(컨텍스트 길이·배치)를 더한 총 필요 메모리로 계산된 추정치이며, 실제 실행 엔진의 측정치와 다를 수 있습니다. 실제 실행에는 더 많은 RAM이 필요합니다.</p>
+
+  <ul id="model-list" class="model-list"></ul>
+
+</main>
+<script type="module" src="src/ui.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "krwRate": 1400,
+  "baselineRate": 1380,
+  "updatedAtUtc": "Tue, 20 Oct 2026 00:02:32 +0000",
+  "items": [],
+  "totalMonthlyKrw": 0,
+  "totalYearlyKrw": 0,
+  "totalDiffMonthlyKrw": 0,
+  "coins": {
+    "bitcoin": {
+      "usd": 81584,
+      "krw": 108256686,
+      "change24hPct": -1.84,
+      "changeText": "-1.84%"
+    },
+    "ethereum": {
+      "usd": 2391.97,
+      "krw": 3174002,
+      "change24hPct": -2.01,
+      "changeText": "-2.01%"
+    }
+  }
+}

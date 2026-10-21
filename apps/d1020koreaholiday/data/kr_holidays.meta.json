@@ -1,0 +1,11 @@
+{
+ "id": "kr_holidays",
+ "name": "한국 공휴일",
+ "url": "https://date.nager.at/api/v3/PublicHolidays/2026/KR",
+ "fetched_at": "2026-10-21T04:03:16",
+ "terms": "Nager.Date 무료 공개 API",
+ "cors": true,
+ "items": 18,
+ "bytes": 3385,
+ "trimmed": false
+}

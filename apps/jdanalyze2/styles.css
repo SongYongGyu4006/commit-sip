@@ -1,0 +1,221 @@
+/* 채용 지원 자격 점검기 — 시스템 폰트, 카드형 구역, 최대 960px 중앙 정렬 */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px 12px 32px;
+  font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1f2430;
+  background: #f2f4f8;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+
+.app-subtitle {
+  margin: 0;
+  color: #4a5265;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #dfe3ec;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(24, 30, 46, 0.06);
+}
+
+.card h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.hint {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #5a637a;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid #c8cfdd;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2430;
+  font: inherit;
+  font-size: 14px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.btn:hover { background: #f5f7fb; }
+
+.btn-primary {
+  background: #2456d6;
+  border-color: #2456d6;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.btn-primary:hover { background: #1e48b4; }
+
+.main-action {
+  margin: 0;
+}
+
+/* 주 버튼: 눈에 띄게 */
+#analyze-button {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+}
+
+.field-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+textarea {
+  width: 100%;
+  border: 1px solid #c8cfdd;
+  border-radius: 8px;
+  padding: 10px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f2430;
+  resize: vertical;
+}
+
+/* 첫 화면(390px)에 두 입력 카드 + 주 버튼이 스크롤 없이 보이도록 축소 */
+#text-area,
+#my-spec {
+  min-height: 80px;
+  padding: 10px;
+  line-height: 1.5;
+}
+
+#text-area:focus,
+#my-spec:focus {
+  outline: 2px solid #2456d6;
+  outline-offset: 1px;
+}
+
+/* 상태 영역: 오류(기본 빨강) / notice(중립 주의색) / ok(녹색) */
+#app-status {
+  min-height: 0;
+  margin: 0;
+  font-size: 14px;
+  color: #b3352b;
+  font-weight: 500;
+}
+
+#app-status:empty {
+  min-height: 18px;
+}
+
+#app-status.notice {
+  color: #8a6d1a;
+  background: #fdf6e3;
+  border: 1px solid #ead9a0;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+#app-status.ok {
+  color: #2c6e49;
+}
+
+.skill-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skill-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 8px 12px;
+  border: 1px solid #e3e7f0;
+  border-radius: 8px;
+  background: #fafbfd;
+}
+
+.skill-name { font-weight: 600; }
+
+.skill-meta {
+  color: #5a637a;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+/* 격차 카드: 충족(녹) / 차이(빨) / 미상(중립) */
+.meta-ok { color: #2c6e49; }
+.meta-gap { color: #b3352b; }
+.meta-warn { color: #8a6d1a; }
+
+/* 격차 안내: 목록 안에 넣지 않고 카드(페이지) 폭 전체에 두고, 목록이 비면만 보임 */
+#gap-summary {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #5a637a;
+}
+
+#gap-empty-hint {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: #5a637a;
+}
+
+#analysis-json {
+  margin: 0;
+  padding: 16px;
+  border-radius: 8px;
+  background: #f5f7fb;
+  border: 1px solid #e3e7f0;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 320px;
+  overflow: auto;
+  color: #1f2430;
+}
+
+/* 390px 폭 휴대폰: 가로 스크롤 없이 동작, 첫 화면(844px)에 입력 흐름이 스크롤 없이 들어와야 함 */
+@media (max-width: 480px) {
+  .app-header h1 { font-size: 22px; }
+  .hint { margin-bottom: 6px; line-height: 1.45; }
+  .actions { margin-bottom: 6px; }
+  #analyze-button { padding: 11px 14px; }
+  #text-area,
+  #my-spec { min-height: 76px; }
+  #app-status:empty { min-height: 12px; }
+}
