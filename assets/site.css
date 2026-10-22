@@ -270,3 +270,7 @@ article{padding:0 0 10px}
 .lg-t td:last-child{text-align:right;font-weight:800}.lg-t tr.lead1 td{background:var(--chip)}
 .lg-traps li{margin:6px 0}
 @media (max-width:420px){.top nav a{padding:8px 7px;font-size:14px}.top .brand{font-size:16px}}
+
+/* 10/22 mascot A on the home hero / about page */
+.mascot{display:block;width:120px;height:120px;margin:0 0 6px -8px}
+@media (max-width:640px){.mascot{width:92px;height:92px}}
