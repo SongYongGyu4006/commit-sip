@@ -280,3 +280,5 @@ article{padding:0 0 10px}
 .tagbar button{border:1px solid var(--tone);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .tagbar button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
 .post-head a.chip{text-decoration:none;margin-right:6px}
+/* 10/23: 6 nav items ('소식' added) overflowed at 390px -> on phones hide the brand text, keep the logo, tighten the pills */
+@media (max-width:480px){.top .brand{font-size:0;gap:0}.top nav a{padding:7px 9px;font-size:14px}}
