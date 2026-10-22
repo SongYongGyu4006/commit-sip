@@ -258,3 +258,15 @@ article{padding:0 0 10px}
 @media (max-width:760px){.apps-feature{grid-template-columns:1fr}.af-th img{max-height:220px}.af-bd{padding:20px}}
 .af-bd .chip{align-self:flex-start}
 .apps-hot{display:inline-block;align-self:flex-start;margin-bottom:8px}
+
+/* 10/22 AI 3사 정답 리그 (kh/site/league.py) */
+.lg-h{font-size:24px;margin:40px 0 14px;letter-spacing:-.02em}.lg-h small{font-size:15px;color:var(--sub);font-weight:600}
+.lg-ans{background:var(--card);border-radius:16px;padding:18px 22px;margin:0 0 14px;border-left:6px solid var(--tone)}
+.lg-ans.ok{border-left-color:#22a06b}.lg-ans.no{border-left-color:#e5484d}
+.lg-who b{font-size:18px}.lg-who small{display:block;color:var(--sub);font-size:13px}
+.lg-ans blockquote{margin:10px 0;padding:0;font-size:16px;line-height:1.7;white-space:pre-wrap}
+.lg-v{font-weight:700;font-size:15px}
+.lg-t{border-collapse:collapse;min-width:260px;background:var(--card);border-radius:14px;overflow:hidden}.lg-t td{padding:12px 20px;font-size:18px;border-bottom:1px solid var(--tone)}
+.lg-t td:last-child{text-align:right;font-weight:800}.lg-t tr.lead1 td{background:var(--chip)}
+.lg-traps li{margin:6px 0}
+@media (max-width:420px){.top nav a{padding:8px 7px;font-size:14px}.top .brand{font-size:16px}}
