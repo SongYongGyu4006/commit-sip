@@ -1,0 +1,54 @@
+/* GovBenefit Finder — app-local styles on top of vendor/studio.css */
+#app-status{margin:0 0 var(--ds-s4);min-height:0}
+#app-status:empty{display:none}
+#total-line:empty{display:none}
+#data-time:empty{display:none}
+#source-line:empty{display:none}
+#footer-line:empty{display:none}
+.answer-num-zero{color:var(--ds-ink-3)}
+.benefit-card.closing{color:var(--ds-ink);background:var(--ds-warn-soft);border-radius:var(--ds-radius);margin:0 calc(-1*var(--ds-s3));padding-left:var(--ds-s3);padding-right:var(--ds-s3)}
+.benefit-card.closing:hover{background:var(--ds-warn-soft)!important}
+/* 조건 카드: 라벨을 자기 입력칸에 붙이고 그룹 사이를 벌림 */
+.ds-stack > .ds-label{margin:var(--ds-s4) 0 var(--ds-s1);font-size:13px;font-weight:600;color:var(--ds-ink-2)}
+.ds-stack > .ds-label:first-child{margin-top:0}
+.ds-stack > .ds-select{margin-top:0;margin-bottom:0;min-height:48px}
+@media (min-width:860px){
+  .ds-card.ds-stack{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:var(--ds-s4);align-items:end}
+  .ds-card.ds-stack > .ds-label{margin-top:0;grid-row:1}
+  .ds-card.ds-stack > .ds-select{grid-row:2}
+  .ds-card.ds-stack > :nth-child(1),.ds-card.ds-stack > :nth-child(2){grid-column:1}
+  .ds-card.ds-stack > :nth-child(3),.ds-card.ds-stack > :nth-child(4){grid-column:2}
+  .ds-card.ds-stack > :nth-child(5),.ds-card.ds-stack > :nth-child(6){grid-column:3}
+  .ds-card.ds-stack > .ds-row{grid-column:1/-1;grid-row:3}
+}
+/* 띠 메타 */
+.ds-band-meta{display:flex;flex-wrap:wrap;gap:var(--ds-s1) var(--ds-s3);font-size:13px;line-height:1.5}
+#total-line{display:none}
+#source-line{flex-basis:100%;opacity:.85;font-size:13px;max-width:60ch;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+/* 띠와 답 카드 겹침 */
+.ds-band,.ds-band:has(+.ds-page>.ds-answer:first-child){padding-bottom:calc(var(--ds-s6) + 24px)}
+.ds-band+.ds-page>.ds-answer:first-child,.ds-answer{margin-top:-40px;position:relative;background:var(--ds-surface);border:1px solid var(--ds-line);box-shadow:none}
+.ds-answer-text{font-size:16px}
+.ds-answer-meta dt{font-size:13px}
+.ds-answer-meta dd{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+/* 버튼 행·요약 */
+.ds-row{display:flex;gap:var(--ds-s2);margin-top:var(--ds-s4)}
+.ds-row .ds-btn{min-height:44px;flex:1 1 0;transition:transform .15s ease-out}
+.ds-row .ds-btn:active{transform:scale(.97)}
+#summary-line{font-size:16px;font-weight:600;color:var(--ds-ink)}
+.ds-hint{font-size:14px;color:var(--ds-ink-2)}
+/* VISUAL(390px): inline-flex 로 바꾸면 studio.css 의 .ds-list-title {display:block} 이 무효화되어 긴 제목이 카드 밖으로 넘치고 문서 폭 679px > 화면 390px 이 됨 — 블록 레벨로 유지해 ellipsis 로 줄어듦 */
+.benefit-card .detail-link{display:block;font-weight:600;text-decoration:none}
+.benefit-card .detail-link::after{content:"›"}
+.summary-strong{font-size:16px;font-weight:700;color:var(--ds-ink)}
+.hint-muted{color:var(--ds-ink-3);font-size:14px}
+/* D-day(오늘 마감)을 마감 임박과 구분해 가장 밝은 색으로 */
+.benefit-card .ds-badge[data-day="0"]{background:var(--ds-accent-soft);color:var(--ds-accent-text)}
+/* VISUAL(390px) 고침: studio.css 의 .ds-list-end{flex:none} 가 길어질 때(main 과 1:1) 신청방법·마감일이 카드 폭을 다 차지해
+   왼쪽 .ds-list-main(요약) 이 45~102px 로 줄어 요약이 1~2자씩 세로 줄바꿈됨 → 휴대폰에선 두 열을 1:1 로 나눠 폭을 확보하고,
+   끝 열 안의 마감·방법이 길면 1줄에 줄바꿈되도록 (desktop≥860px 은 studio.css 가 그대로 유지) */
+@media (max-width: 859px) {
+  .benefit-card .ds-list-main{flex:1 1 50%}
+  .benefit-card .ds-list-end{flex:1 1 50%;min-width:0}
+  .benefit-card .ds-list-end .ds-list-sub{white-space:normal}
+}
