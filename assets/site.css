@@ -274,3 +274,9 @@ article{padding:0 0 10px}
 /* 10/22 mascot A on the home hero / about page */
 .mascot{display:block;width:120px;height:120px;margin:0 0 6px -8px}
 @media (max-width:640px){.mascot{width:92px;height:92px}}
+
+/* 10/23 topic tags on the blog list */
+.tagbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.tagbar button{border:1px solid var(--tone);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.tagbar button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+.post-head a.chip{text-decoration:none;margin-right:6px}
