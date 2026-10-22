@@ -20,10 +20,11 @@ export const DEFAULT_STATE = {
   baselineKrwRate: DEFAULT_BASELINE_KRW_RATE,
 };
 
-// '예시로 해 보기' 버튼: SPEC 기본 구성(Netflix 프리미엄 + ChatGPT Plus, 기준 1380).
+// '예시로 해 보기' 버튼: 기본값(인기 5개 + 1380)과 눈에 띄게 다른 구성(Netflix 표준 + Spotify + YouTube + 1350).
+// 기본값과 같으면 버튼이 아무것도 바꿔 보이지 않아서, 기본 5개에서 넷플릭스는 표준으로 바꾸고 기준 환율도 낮춘다.
 export const EXAMPLE_STATE = {
-  selectedPlanIds: ["netflix_premium", "chatgpt_plus"],
-  baselineKrwRate: DEFAULT_BASELINE_KRW_RATE,
+  selectedPlanIds: ["netflix_standard", "spotify_premium", "youtube_premium"],
+  baselineKrwRate: 1350,
 };
 
 function isPlainObject(v) {
