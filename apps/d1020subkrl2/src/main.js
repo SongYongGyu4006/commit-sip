@@ -1,146 +1,161 @@
-// 시작 시 데이터와 저장 상태를 불러 화면을 초기화하고, 화면 전환·예시 버튼·오류 안내·
-// 상태 변경 시 저장과 재렌더링을 조율한다.
-import { calculateSubKrw, DEFAULT_STATE } from "./calc.js";
-import { loadState, saveState, clearState, STORAGE_KEY } from "./storage.js";
+// 진입점: 데이터·저장 상태 로드 → 화면 초기화 → 전환·예시·오류 안내 조율.
+import { calculateSubKrw, PLAN_CATALOG, DEFAULT_STATE, EXAMPLE_STATE, DEFAULT_BASELINE_KRW_RATE, formatKstUpdate } from "./calc.js";
+import { loadState, saveState, clearState } from "./storage.js";
 import { loadAllData } from "./data.js";
 import { renderCalcScreen, bindCalcEvents } from "./calcScreen.js";
-import { renderManageScreen, exportResult, bindManageEvents } from "./manageScreen.js";
+import { renderManageScreen, exportResult, parseImportedFile, bindManageEvents } from "./manageScreen.js";
 
-let data = null;
+const screens = {
+  calc: document.querySelector("#screen-calc"),
+  manage: document.querySelector("#screen-manage"),
+};
+const statusEl = document.querySelector("#app-status");
+
 let state = loadState();
-let result = null;
-let currentScreen = "calc";
+let data = null;
+let lastResult = null;
 
-function setStatus(message, isError) {
-  const status = document.querySelector("#app-status");
-  status.textContent = message;
-  status.classList.toggle("error", Boolean(isError));
-}
-
-function clearOutputs() {
-  for (const selector of ["#first-value-banner", "#fx-header", "#summary-json"]) {
-    const el = document.querySelector(selector);
-    if (el) el.textContent = "";
-  }
-  const list = document.querySelector("#selected-plan-list");
-  if (list) list.replaceChildren();
-  for (const box of document.querySelectorAll("input.plan-checkbox")) box.checked = false;
-  const btc = document.querySelector("#btc-summary");
-  const eth = document.querySelector("#eth-summary");
-  if (btc) btc.textContent = "";
-  if (eth) eth.textContent = "";
-}
-
-const pad = (n) => String(n).padStart(2, "0");
-
-function formatMeta(meta, key) {
-  if (!meta || typeof meta.fetched_at !== "string" || !meta.fetched_at) return "";
-  const date = new Date(meta.fetched_at);
-  if (Number.isNaN(date.getTime())) return "";
-  return `데이터 기준: ${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())} · 출처: ${meta.name || key}`;
-}
-
-// meta 의 이용 조건 원문(개발자용 지시문)을 사용자가 읽는 문장으로 다듬는다.
-function formatTerms(terms) {
-  if (!terms || typeof terms !== "string") return "";
-  let out = terms
-    .split(/[;,，]/)
-    .map((s) => s.trim())
-    .filter((s) => s && !s.includes("화면에") && !s.includes("표기"))
-    .join(" · ");
-  if (!out) return "무료 제공";
-  if (!/Rates By Exchange Rate API/.test(out)) out += " · Rates By Exchange Rate API";
-  return out;
-}
-
-function refresh(announce) {
-  if (!data) return;
-  let next;
-  try {
-    next = calculateSubKrw(data.fx, data.coin, state.selectedPlanIds, state.baselineKrwRate);
-  } catch (err) {
-    result = null;
-    clearOutputs();
-    if (/기준 환율은/.test(err.message)) {
-      setStatus("기준 환율은 1보다 큰 숫자를 입력해 주세요. 0이거나 음수는 사용할 수 없습니다.", true);
-    } else {
-      setStatus(`계산할 수 없습니다: ${err.message} 입력값을 확인해 주세요.`, true);
-    }
-    return;
-  }
-  result = next;
-  if (announce) setStatus("변경 내용이 저장되고 다시 계산되었습니다.", false);
-  if (currentScreen === "calc") renderCalcScreen(next, state);
-  renderManageScreen(next);
-}
-
-export function applyState(next, announce = true) {
-  state = { selectedPlanIds: [...next.selectedPlanIds], baselineKrwRate: next.baselineKrwRate };
-  saveState(state);
-  refresh(announce);
+// SPEC: 기본값은 ["netflix_premium","chatgpt_plus"] + 1380. CHANGES #3: 첫 화면 인기 5개.
+function freshState() {
+  return { selectedPlanIds: [...DEFAULT_STATE.selectedPlanIds], baselineKrwRate: DEFAULT_BASELINE_KRW_RATE, __example: true };
 }
 
 export function showScreen(name) {
-  currentScreen = name;
-  document.querySelector("#screen-calc").hidden = name !== "calc";
-  document.querySelector("#screen-manage").hidden = name !== "manage";
-  document.querySelector("#nav-calc-button").setAttribute("aria-pressed", String(name === "calc"));
-  document.querySelector("#nav-manage-button").setAttribute("aria-pressed", String(name === "manage"));
-  if (result) {
-    if (name === "calc") renderCalcScreen(result, state);
-    renderManageScreen(result);
+  for (const [key, el] of Object.entries(screens)) el.hidden = key !== name;
+}
+
+export function setStatus(text, kind = "") {
+  statusEl.textContent = text;
+  statusEl.className = "ds-status" + (kind ? " ds-status-" + kind : "");
+}
+
+export function applyState(next) {
+  Object.assign(state, next);
+  saveState(state);
+  recalc();
+}
+
+function clearOutputs() {
+  document.querySelector("#first-value-banner").innerHTML = "";
+  document.querySelector("#selected-plan-list").innerHTML = "";
+  document.querySelector("#coin-section").innerHTML = "";
+  document.querySelector("#fx-header").textContent = "";
+  document.querySelector("#summary-json").textContent = "";
+}
+
+function recalc() {
+  if (!data) return;
+  try {
+    lastResult = calculateSubKrw(data.fx, data.coin, state.selectedPlanIds, state.baselineKrwRate);
+    renderCalcScreen(screens.calc, { fx: data.fx, coin: data.coin, state, meta: data.meta });
+    renderManageScreen(lastResult, state);
+  } catch (err) {
+    setStatus(`계산할 수 없어요: ${err.message}. 데이터를 확인해 주세요.`, "bad");
+    clearOutputs();
   }
 }
 
-export function init() {
-  bindCalcEvents((next) => applyState(next));
-  bindManageEvents({
-    onExport: () => {
-      if (!result) {
-        setStatus("내보낼 계산 결과가 없습니다. 먼저 계산 화면에서 요금제를 골라 주세요.", true);
-        return;
-      }
-      exportResult(result);
-      setStatus("계산 결과를 JSON 파일로 내보냈습니다.", false);
-    },
-    onImport: (next) => {
-      applyState(next);
-      showScreen("calc");
-      setStatus("파일을 불러와 결과를 다시 계산했습니다.", false);
-    },
-    onReset: () => {
-      clearState();
-      applyState({ selectedPlanIds: [...DEFAULT_STATE.selectedPlanIds], baselineKrwRate: DEFAULT_STATE.baselineKrwRate });
-      setStatus("기본값으로 되돌렸습니다. 선택 요금제와 기준 환율이 초기화되었습니다.", false);
-    },
-    onResult: ({ error }) => setStatus(error, true),
-  });
-  document.querySelector("#try-example-button").addEventListener("click", () => {
-    applyState({ selectedPlanIds: [...DEFAULT_STATE.selectedPlanIds], baselineKrwRate: DEFAULT_STATE.baselineKrwRate });
-    setStatus("예시로 기본 구성(Netflix 프리미엄, ChatGPT Plus)을 채웠습니다.", false);
-  });
-  document.querySelector("#nav-calc-button").addEventListener("click", () => showScreen("calc"));
-  document.querySelector("#nav-manage-button").addEventListener("click", () => showScreen("manage"));
+// 저장된 상태가 기본/예시면 예시 배지, 아니면 일반.
+function markExample() {
+  const def = new Set(DEFAULT_STATE.selectedPlanIds);
+  const ex = new Set(EXAMPLE_STATE.selectedPlanIds);
+  state.__example =
+    state.selectedPlanIds.every((id) => def.has(id)) && state.baselineKrwRate === DEFAULT_BASELINE_KRW_RATE;
+}
 
+async function init() {
   showScreen("calc");
-  setStatus("환율과 코인 데이터를 불러오는 중입니다…", false);
-  loadAllData()
-    .then((loaded) => {
-      data = loaded;
-      document.querySelector("#fx-data-meta").textContent =
-        formatMeta(loaded.fxMeta, "fx_rates") + " · " + formatTerms(loaded.fxMeta.terms) + " | " +
-        formatMeta(loaded.coinMeta, "coin_price") + " · " + formatTerms(loaded.coinMeta.terms);
-      state = loadState();
+  setStatus("환율·코인 데이터를 불러오는 중이에요…");
+  markExample();
+  try {
+    const loaded = await loadAllData();
+    data = loaded;
+    // #attribution-footer: "Rates By Exchange Rate API · CoinGecko · CC BY 4.0" (SPEC 고정 문구)
+    document.querySelector("#attribution-footer .attr-text").textContent = "Rates By Exchange Rate API · CoinGecko · CC BY 4.0";
+    const { fxMeta, coinMeta } = loaded;
+    // #fx-data-meta: 같은 문구를 한 번만. fetched_at → "데이터 기준: YYYY-MM-DD HH:MM"
+    const fmt = (iso) => {
+      const d = new Date(iso);
+      const p = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+    };
+    document.querySelector("#fx-data-meta").textContent =
+      `데이터 기준: ${fmt(fxMeta.fetched_at)} · 출처: Exchange Rate API, CoinGecko`;
+
+    // 저장된 선택이 없으면 인기 5개 기본 + 예시 배지.
+    if (state.selectedPlanIds.length === 0) {
+      state = freshState();
       saveState(state);
-      refresh(false);
-      setStatus("데이터를 불러왔습니다. 환율은 하루에 한 번만 갱신되며, 기준 환율은 직접 입력할 수 있습니다.", false);
-    })
-    .catch((err) => {
-      data = null;
-      result = null;
-      clearOutputs();
-      setStatus(`데이터를 불러오지 못했습니다: ${err.message} 인터넷 연결을 확인한 뒤 새로고침해 주세요.`, true);
+    }
+    markExample();
+
+    screens.calc.__state = state;
+    state.__onToggle = (id, checked) => {
+      const i = state.selectedPlanIds.indexOf(id);
+      if (checked && i < 0) state.selectedPlanIds.push(id);
+      if (!checked && i >= 0) state.selectedPlanIds.splice(i, 1);
+      state.__example = false;
+      saveState(state);
+      recalc();
+    };
+
+    bindCalcEvents(screens.calc, {
+      onStateChange: (s) => saveState(s),
+      onTryExample: () => {
+        state.selectedPlanIds = [...EXAMPLE_STATE.selectedPlanIds];
+        state.baselineKrwRate = EXAMPLE_STATE.baselineKrwRate;
+        state.__example = true;
+        saveState(state);
+        document.querySelector("#baseline-rate-input").value = String(state.baselineKrwRate);
+        recalc();
+        setStatus("예시를 불러왔어요. 체크 박스나 기준 환율을 바꾸면 내 구독으로 계산돼요.", "good");
+      },
+      getMeta: () => data,
     });
+    screens.calc.addEventListener("calc-error", (e) => {
+      setStatus(`계산할 수 없어요: ${e.detail.message}. 데이터를 확인해 주세요.`, "bad");
+      clearOutputs();
+    });
+
+    bindManageEvents({
+      onExport: () => exportResult(lastResult, state),
+      onImport: (file) => parseImportedFile(file),
+      onReset: () => {
+        clearState();
+        state = freshState();
+        saveState(state);
+        document.querySelector("#baseline-rate-input").value = String(state.baselineKrwRate);
+        recalc();
+        showScreen("calc");
+        setStatus("기본으로 돌려놨어요.", "good");
+      },
+      onResult: (payload) => {
+        if (payload.error) {
+          setStatus(payload.error, "bad");
+          return;
+        }
+        Object.assign(state, payload);
+        state.__example = false;
+        saveState(state);
+        document.querySelector("#baseline-rate-input").value = String(state.baselineKrwRate);
+        recalc();
+        showScreen("calc");
+        setStatus("파일을 불러왔어요.", "good");
+      },
+    });
+
+    // 화면 전환 버튼
+    document.querySelector("#nav-calc-button").addEventListener("click", () => showScreen("calc"));
+    document.querySelector("#nav-manage-button").addEventListener("click", () => showScreen("manage"));
+
+    document.querySelector("#baseline-rate-input").value = String(state.baselineKrwRate);
+    recalc();
+    setStatus("");
+  } catch (err) {
+    data = null;
+    setStatus(`데이터를 불러오지 못했어요: ${err.message}. 인터넷 연결을 확인해 주세요.`, "bad");
+    clearOutputs();
+  }
 }
 
 document.addEventListener("DOMContentLoaded", init);

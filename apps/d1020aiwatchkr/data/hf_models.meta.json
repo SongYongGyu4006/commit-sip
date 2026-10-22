@@ -2,10 +2,10 @@
  "id": "hf_models",
  "name": "Hugging Face 모델 목록",
  "url": "https://huggingface.co/api/models?sort=trendingScore&limit=100&pipeline_tag=text-generation&expand[]=safetensors&expand[]=downloads&expand[]=likes&expand[]=pipeline_tag&expand[]=tags&expand[]=createdAt",
- "fetched_at": "2026-10-21T04:03:13",
+ "fetched_at": "2026-10-22T04:03:02",
  "terms": "공개 API(키 없음), Hugging Face 이용약관",
  "cors": true,
  "items": 100,
- "bytes": 57180,
+ "bytes": 54913,
  "trimmed": false
 }

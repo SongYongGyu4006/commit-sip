@@ -1,281 +1,352 @@
-:root {
-  --bg: #f4f6fa;
-  --card: #ffffff;
-  --ink: #1c2434;
-  --ink-soft: #5a6577;
-  --line: #e3e8f0;
-  --accent: #2f5fe0;
-  --accent-ink: #ffffff;
-  --up: #d9342b;
-  --down: #2160c4;
-  --even: #8a93a5;
-  --error: #b3261e;
-  --radius: 12px;
-}
+/* subkr — vendor/studio.css(v2) 위에 덧붙이는 앱 전용 스타일. 색·간격·모서리는 ds- 토큰만 쓴다. */
 
-* { box-sizing: border-box; }
-
-html, body {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--ink);
-  background: var(--bg);
-}
-
-.app-shell {
-  max-width: 960px;
+.ds-page {
+  /* 띠 안쪽 글자와 같은 왼쪽 선: 같은 폭·같은 padding */
+  max-width: var(--ds-max);
   margin: 0 auto;
-  padding: 24px 16px 40px;
+  padding: var(--ds-s4) var(--ds-s4) var(--ds-s6);
 }
 
-.card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 24px;
-  margin: 0 0 16px;
+/* 띠는 답 카드와 겹치지 않으므로 아래 여백을 줄인다 */
+.ds-band,
+.ds-band:has(+ .ds-page > .ds-answer:first-child) {
+  padding-bottom: var(--ds-s5);
 }
 
-h1 {
-  margin: 0 0 8px;
-  font-size: 24px;
-  letter-spacing: -0.02em;
-}
-
-h2 {
-  margin: 0 0 8px;
-  font-size: 18px;
-}
-
-.app-desc {
-  margin: 0 0 16px;
-  color: var(--ink-soft);
-}
-
-.top-nav {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-
-.nav-btn {
-  font: inherit;
-  padding: 8px 16px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #eef1f6;
-  color: var(--ink);
-  cursor: pointer;
-}
-
-.nav-btn[aria-pressed="true"] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-  font-weight: 600;
-}
-
+/* 상태: 비어 있으면 숨기고, 내용이 있을 때만 한 줄 */
 #app-status {
-  min-height: 24px;
-  padding: 8px 0;
-  color: var(--ink-soft);
-}
-
-#app-status.error {
-  color: var(--error);
-  font-weight: 600;
-}
-
-.header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.fx-header {
   margin: 0;
-  font-weight: 600;
-  font-size: 16px;
+  min-height: 0;
+  padding: var(--ds-s2) var(--ds-s3);
+}
+#app-status:empty {
+  display: none;
+}
+#app-status:not(:empty) {
+  margin-bottom: var(--ds-s2);
 }
 
-.meta-line {
-  margin: 8px 0 0;
-  color: var(--ink-soft);
+/* 상단 행: 버튼들 */
+.top-row {
+  position: relative;
+  z-index: 2;
+  margin: var(--ds-s3) 0;
+}
+
+/* 답 카드: 겹침 없이 버튼 행 아래 */
+.ds-band + .ds-page > #app-status {
+  margin-top: 0;
+}
+#answer-card {
+  margin-top: var(--ds-s3);
+  position: relative;
+  z-index: 1;
+}
+#example-badge:not([hidden]) {
+  display: block;
+  width: fit-content;
+  margin-top: var(--ds-s2);
+}
+#example-badge {
+  white-space: normal;
+}
+
+/* 환율 정보: 띠 배지 → 답 카드 → 이 줄 순으로 비중을 낮춘다 */
+#fx-header {
+  margin: var(--ds-s2) 0 var(--ds-s3);
+  font-size: 13px;
+  color: var(--ds-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+#fx-header:empty {
+  display: none;
+}
+.ds-band-meta .ds-badge {
+  min-width: 56px;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 요약을 답 카드 아래 한 줄 */
+.first-banner {
+  margin: var(--ds-s3) 0 0;
   font-size: 15px;
+  color: var(--ds-ink-2);
+}
+.first-banner .ds-up,
+.first-banner .ds-down {
+  font-weight: 700;
 }
 
-.primary-btn {
-  font: inherit;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.primary-btn:hover { filter: brightness(1.08); }
-
-.secondary-btn {
-  font: inherit;
-  padding: 10px 16px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--ink);
-  cursor: pointer;
-}
-
-.banner {
-  margin: 0 0 16px;
-  padding: 16px 24px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.hint {
-  margin: 0 0 16px;
-  color: var(--ink-soft);
-}
-
-.plan-grid {
+/* 체크박스 6종: 3열 그리드(모바일 2열) */
+.plan-checkbox-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 8px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ds-s2);
+  margin: var(--ds-s3) 0 0;
 }
-
-.plan-label {
+#plan-chip-list:empty {
+  display: none;
+}
+.ds-search + .plan-checkbox-row {
+  margin-top: var(--ds-s3);
+}
+.plan-checkbox-row label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  gap: 6px;
+  font-size: 15px;
+  color: var(--ds-ink-2);
+  min-height: 44px;
+  padding: 0 var(--ds-s3);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
   cursor: pointer;
+  transition: background-color var(--ds-fast) var(--ds-ease), border-color var(--ds-fast) var(--ds-ease);
+}
+.plan-checkbox-row label:has(input:checked) {
+  background: var(--ds-accent-soft);
+  border-color: var(--ds-accent);
+  color: var(--ds-ink);
+  font-weight: 600;
+}
+.plan-checkbox-row input {
+  accent-color: var(--ds-accent);
+  width: 16px;
+  height: 16px;
 }
 
-.plan-label input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent);
+/* ---- CHANGES #1: 목록 줄 2단(폰 390px 넘침·글자 깨짐 방지) ---- */
+#selected-plan-list .ds-list-item {
+  display: block;
+  padding: var(--ds-s3) 0;
+  border-bottom: 1px solid var(--ds-line);
 }
-
-.baseline-row {
+#selected-plan-list .ds-list-item:last-child {
+  border-bottom: 0;
+}
+#selected-plan-list .ds-avatar {
+  display: inline-block;
+  vertical-align: middle;
+}
+#selected-plan-list .ds-list-main {
+  min-width: 0;
+}
+/* 윗줄: 아바타·이름·월액·배지·제외 */
+.plan-top {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ds-s2);
   flex-wrap: wrap;
 }
-
-.baseline-hint {
-  flex-basis: 100%;
-  margin: 0;
+.plan-top .ds-list-title {
+  flex: 1 1 auto;
+  min-width: 0;
 }
-
-.baseline-row input {
-  font: inherit;
-  width: 120px;
-  padding: 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+.plan-top .ds-list-amount {
+  margin-left: auto;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
-
-#selected-plan-list {
+.plan-top .ds-list-amount small {
+  font-size: .6em;
+  font-weight: 600;
+  color: var(--ds-ink-3);
+}
+.plan-remove {
+  border: 0;
+  background: var(--ds-surface-2);
+  color: var(--ds-ink-3);
+  font: 600 12px/1 var(--ds-font);
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.plan-remove:hover {
+  color: var(--ds-bad);
+  background: var(--ds-bad-soft);
+}
+/* 아랫줄: 표시 가격 → 명세서 + 증감 + 결제일(접힘) */
+.plan-bottom {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-s2);
+  flex-wrap: wrap;
+  margin: 6px 0 0 calc(40px + var(--ds-s2));
+  font-size: 13px;
+  color: var(--ds-ink-3);
+}
+.plan-est {
+  font-variant-numeric: tabular-nums;
+}
+.plan-diff {
+  font-variant-numeric: tabular-nums;
+}
+.plan-day {
+  margin-left: auto;
+}
+.plan-day summary {
+  font-size: 13px;
+  color: var(--ds-ink-3);
+  cursor: pointer;
   list-style: none;
-  margin: 0;
-  padding: 0;
 }
-
-.plan-item {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  gap: 8px 16px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
+.plan-day summary::-webkit-details-marker {
+  display: none;
 }
-
-.plan-item:last-child { border-bottom: none; }
-
-.plan-name { font-weight: 600; }
-
-.plan-empty {
-  padding: 12px 0;
-  color: var(--ink-soft);
-}
-
-.diff-up { color: var(--up); font-weight: 600; }
-.diff-down { color: var(--down); font-weight: 600; }
-.diff-even { color: var(--even); }
-
-.coin-line {
-  margin: 0 0 8px;
-}
-
-.manage-actions {
+.plan-day-body {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
   align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 13px;
+}
+.plan-day-input {
+  width: 56px;
+  min-height: 32px;
+  padding: 4px 8px;
+  font: inherit;
+  border: 1px solid var(--ds-line);
+  border-radius: 8px;
+  text-align: center;
+}
+/* .plan-day-note 의 white-space:nowrap 제거(폰에서 깨짐 방지) */
+.plan-day-note {
+  white-space: normal;
 }
 
-.file-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+/* 답 카드 보조 숫자: 휴대폰에서도 한 줄 3칸 */
+@media (max-width: 560px) {
+  .ds-answer-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .ds-answer-meta > div {
+    padding: 0 var(--ds-s2);
+  }
+  .ds-answer-meta dt {
+    font-size: 13px;
+  }
+  .ds-answer-meta dd {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .ds-answer-num {
+    font-size: 40px;
+    line-height: 1.1;
+  }
+  .ds-answer-num small {
+    font-size: 20px;
+  }
+  .plan-checkbox-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .plan-day {
+    margin-left: 0;
+  }
+}
+
+/* 명세서 계산식 펼치기 */
+#estimate-details summary {
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--ds-accent-text);
   font-weight: 600;
+}
+#estimate-details[open] summary {
+  margin-bottom: var(--ds-s2);
+}
+#estimate-formula {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 코인 접힘 */
+#coin-section-details summary.ds-section-title {
   cursor: pointer;
 }
-
-#summary-json {
-  margin: 0;
-  padding: 16px;
-  background: #f7f9fc;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+#coin-section-details .ds-list-item {
+  min-height: 48px;
+}
+#btc-summary,
+#eth-summary {
+  font-variant-numeric: tabular-nums;
   font-size: 15px;
-  line-height: 1.5;
-  overflow-x: auto;
+}
+
+/* 푸터: margin-top 으로 코인 줄과 겹침 방지 + 같은 문구 한 번 */
+#attribution-footer {
+  margin-top: var(--ds-s6);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+.fx-data-meta {
+  font-size: 13px;
+  color: var(--ds-ink-3);
+}
+
+/* 저장 화면 JSON */
+.ds-json {
+  margin: 0;
+  padding: var(--ds-s4);
+  background: var(--ds-surface-2);
+  border-radius: var(--ds-radius);
+  overflow: auto;
+  max-height: 360px;
+  font: 12px/1.6 var(--ds-mono);
   white-space: pre;
 }
 
-details summary {
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 15px;
-}
-
-details[open] > summary {
-  margin-bottom: 8px;
-}
-
-.summary-text {
-  margin: 0 0 16px;
-  font-size: 15px;
-}
-
-.attribution-footer {
-  text-align: center;
-  color: var(--ink-soft);
-  font-size: 15px;
-  padding: 16px 0 0;
-}
-
-@media (max-width: 560px) {
-  .plan-item {
-    grid-template-columns: 1fr auto;
+/* ---- CHANGES #5: 다크 모드 가시성 ---- */
+@media (prefers-color-scheme: dark) {
+  .ds-card {
+    border-color: var(--ds-line);
   }
-  .plan-item .plan-name {
-    grid-column: 1 / -1;
+  .plan-bottom,
+  .first-banner,
+  #fx-header,
+  .fx-data-meta,
+  .plan-day-note {
+    color: var(--ds-ink-2);
+  }
+  .ds-list-title {
+    color: var(--ds-ink);
+  }
+  .ds-band {
+    background: var(--ds-surface);
+    border-bottom: 1px solid var(--ds-line);
+  }
+  .ds-answer {
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-accent-line);
+  }
+  .ds-answer-meta {
+    background: var(--ds-surface-2);
+  }
+  .plan-checkbox-row label {
+    color: var(--ds-ink-2);
+    border-color: var(--ds-line);
+  }
+  .plan-checkbox-row label:has(input:checked) {
+    color: var(--ds-ink);
+    border-color: var(--ds-accent);
+  }
+  #example-badge {
+    background: transparent;
+    border: 1px solid var(--ds-warn);
+  }
+  #estimate-details summary {
+    color: var(--ds-accent);
+  }
+}
+
+/* CHANGES #1: 폰 가로 스크롤 방지 */
+@media (max-width: 390px) {
+  .ds-page {
+    padding: var(--ds-s3) var(--ds-s3) var(--ds-s5);
   }
 }
