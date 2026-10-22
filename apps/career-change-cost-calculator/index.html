@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>이직준비 비용 계산기 — 무료 웹 도구 · 커밋 한 모금</title>
+  <link rel="stylesheet" href="vendor/studio.css" />
+  <link rel="stylesheet" href="styles.css" />
+<script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="재교육을 고려 중인 소프트웨어 엔지니어가 현재 연봉, 학습 기간, 목표 직군 연봉을 입력하면 재교육으로 발생하는 순이익과 손익분기점을 바로 계산해 보여주는 앱입니다."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/career-change-cost-calculator/"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 이직준비 비용 계산기 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+  <main class="wrap">
+
+    <!-- 앱 이름 + 한 줄 설명 + 개인정보 안내(한 줄) -->
+    <header class="app-header">
+      <h1 class="app-title">이직준비 비용 계산기</h1>
+      <p class="app-sub">이직준비 비용을 계산하고, 협상 문장·이직 타이밍·결산 이미지까지 만들어 줍니다.</p>
+      <p class="app-privacy">가입·저장·전송 없이 브라우저에서만 계산합니다.</p>
+    </header>
+
+    <!-- 입력: "예시로 해 보기" 버튼이 카드 제목 줄 오른쪽에 있음.
+         개월·목표 연봉은 1줄 2열, 안내문은 placeholder로 옮겨 첫 화면 높이를 줄였다. -->
+    <section class="card card-input" aria-label="입력">
+      <div class="card-head">
+        <p class="card-title">내 정보 입력</p>
+        <button type="button" id="example-button" class="btn-ghost">예시로 해 보기</button>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="current-salary-input">현재 연봉 (원/년)</label>
+          <input id="current-salary-input" type="number" min="0" step="1" inputmode="numeric" placeholder="원 단위, 예: 6천만 원 → 60000000" />
+        </div>
+        <div class="field">
+          <label for="months-input">학습·취업 준비 (개월)</label>
+          <input id="months-input" type="number" min="0" step="1" inputmode="numeric" placeholder="공부+취업 준비, 예: 6" />
+        </div>
+        <div class="field">
+          <label for="target-salary-input">목표 연봉 (원/년)</label>
+          <input id="target-salary-input" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 80000000" />
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" id="calc-button" class="btn-primary">계산하기</button>
+      </div>
+      <p class="hint" id="example-hint">예시 값입니다. 숫자를 바꿔 '계산하기'를 누르세요.</p>
+      <p id="app-status" role="status"></p>
+      <details id="timing-box" class="timing-box">
+        <summary>이직 타이밍 보기(선택)</summary>
+        <div class="timing-body">
+          <div class="field">
+            <label for="raise-input">연봉 상승률 (%/년)</label>
+            <input id="raise-input" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 5" />
+          </div>
+          <div class="field">
+            <label for="bonus-input">받을 성과급 (원)</label>
+            <input id="bonus-input" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 3000000" />
+          </div>
+          <div class="field">
+            <label for="wait-input">남은 개월 (성과급·계약 만료까지)</label>
+            <input id="wait-input" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 12" />
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- 결과: 핵심 요약(문장 + 비교 막대 + 새 기능 버튼 3개 + 3줄) + 상세 6줄 + 시나리오 표 -->
+    <section class="card" aria-label="결과">
+      <p class="card-title">계산 결과</p>
+
+      <p id="result-summary"></p>
+
+      <!-- 계속 근무 vs 이직준비 3년 누적 비교 막대 -->
+      <div id="compare-bar" aria-label="계속 근무와 이직준비의 3년 누적 비교"></div>
+
+      <!-- 새 기능 3개: 협상 문장 만들기 · 이직 타이밍 · 결산 이미지 저장 -->
+      <div class="new-tools">
+        <button type="button" id="nego-button" class="btn-ghost">협상 문장 만들기</button>
+        <button type="button" id="timing-button" class="btn-ghost">이직 타이밍 보기</button>
+        <button type="button" id="report-button" class="btn-ghost">결산 이미지 저장</button>
+      </div>
+
+      <div id="nego-box" hidden>
+        <textarea id="nego-text" rows="4" readonly></textarea>
+        <div class="new-tools-row">
+          <button type="button" id="nego-copy" class="btn-ghost">복사</button>
+        </div>
+      </div>
+
+      <p id="timing-result" class="timing-result"></p>
+
+      <!-- 시나리오 3줄 요약 -->
+      <ol id="scenario-lines"></ol>
+
+      <!-- 상세 6줄: id와 순서 유지 -->
+      <details class="detail">
+        <summary>상세 지표 6개</summary>
+        <dl id="result-list">
+          <div class="row">
+            <dt>이직준비 기간 동안 잃는 급여</dt>
+            <dd id="result-lost"></dd>
+          </div>
+          <div class="row">
+            <dt>목표 연봉 대비 연간 증가분</dt>
+            <dd id="result-gain"></dd>
+          </div>
+          <div class="row">
+            <dt>손익분기 소요 기간(년)</dt>
+            <dd id="result-breakeven"></dd>
+          </div>
+          <div class="row">
+            <dt>손익분기점(개월)</dt>
+            <dd id="result-breakeven-months"></dd>
+          </div>
+          <div class="row">
+            <dt>3년 후 순이익</dt>
+            <dd id="result-net36"></dd>
+          </div>
+          <div class="row">
+            <dt>3년 후 ROI</dt>
+            <dd id="result-roi"></dd>
+          </div>
+        </dl>
+      </details>
+
+      <!-- 학습 기간별 시나리오: 3·6·12개월 -->
+      <details class="detail">
+        <summary>학습 기간별 시나리오 (3·6·12개월)</summary>
+        <div id="scenario-table"></div>
+      </details>
+    </section>
+
+  </main>
+
+  <!-- 순수 함수(app.js)를 불러와 UI를 연결한다 (src/ui.js) -->
+  <script type="module" src="./src/ui.js"></script>
+
+</body>
+</html>

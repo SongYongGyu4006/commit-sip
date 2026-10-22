@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 기능 비교 매트릭스 — 무료 웹 도구 · 커밋 한 모금</title>
+  <link rel="stylesheet" href="vendor/studio.css">
+  <link rel="stylesheet" href="styles.css">
+<script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="AI 도구의 기능별 점수를 입력해 레이더 차트로 도구 간 기능 차이를 직관적으로 비교할 수 있는 앱."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/ai-feature-comparison/"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 인공지능 기능 비교 매트릭스 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+  <main class="ds-page">
+    <header class="ds-hero">
+      <h1>인공지능 기능 비교 매트릭스</h1>
+      <p>점수를 입력하면 레이더 차트와 비교 요약이 실시간으로 갱신되어, 도구 간 기능 차이를 바로 비교할 수 있습니다.</p>
+    </header>
+
+    <div class="ds-stack">
+      <section class="ds-card" id="quick-start" aria-label="바로 시작하기">
+        <h2>3단계로 시작하기</h2>
+        <ol id="step-guide" class="ds-stack step-guide">
+          <li id="step-1"><span class="ds-step">1</span><span class="ds-hint">인기 모델 프리셋을 고르거나, 로컬·자체 모델 이름을 직접 입력해 도구를 추가하세요</span></li>
+          <li id="step-2"><span class="ds-step">2</span><span class="ds-hint">각 기능에 0~100점씩 입력하면 레이더 차트와 비교 요약, 세부 데이터가 실시간으로 갱신됩니다</span></li>
+          <li id="step-3"><span class="ds-step">3</span><span class="ds-hint">'비교하기'로 결과를 확인하거나, '내보내기'로 comparison.json 파일을 내려받으세요</span></li>
+        </ol>
+        <p class="ds-label">인기 모델 프리셋 — 고르면 바로 비교할 준비가 됩니다</p>
+        <div class="preset-row">
+          <button id="preset-gemini" class="ds-chip preset" type="button" aria-pressed="false">제미나이 프로</button>
+          <button id="preset-gpt" class="ds-chip preset" type="button" aria-pressed="false">GPT-5</button>
+          <button id="preset-claude" class="ds-chip preset" type="button" aria-pressed="false">클로드 프로</button>
+          <button id="preset-gemini-flash" class="ds-chip preset" type="button" aria-pressed="false">제미나이 플래시</button>
+        </div>
+        <p class="ds-label">로컬·자체 모델 직접 입력</p>
+        <div class="ds-row custom-model-row">
+          <input id="custom-model-input" class="ds-input" type="text" placeholder="예: 내 로컬 모델, 라마 3" aria-label="로컬 모델 이름">
+          <button id="add-custom-model-button" class="ds-btn" type="button">추가</button>
+        </div>
+      </section>
+
+      <section class="ds-card results" id="results" aria-label="비교 결과">
+        <div class="ds-grid ds-grid-main results-grid">
+          <div class="ds-stack chart-panel">
+            <h2>레이더 차트</h2>
+            <div class="chart-stage">
+              <canvas id="radar-canvas" width="400" height="400" hidden></canvas>
+              <div id="chart-hint" class="ds-empty">
+                <svg class="chart-sketch" viewBox="0 0 240 240" aria-hidden="true">
+                  <polygon points="120,30 197.94,69 197.94,171 120,210 42.06,171 42.06,69"></polygon>
+                  <polygon points="120,60 177.94,80.5 177.94,159.5 120,180 62.06,159.5 62.06,80.5"></polygon>
+                  <polygon points="120,90 157.94,92 157.94,148 120,150 82.06,148 82.06,92"></polygon>
+                  <line x1="120" y1="120" x2="120" y2="30"></line>
+                  <line x1="120" y1="120" x2="197.94" y2="69"></line>
+                  <line x1="120" y1="120" x2="197.94" y2="171"></line>
+                  <line x1="120" y1="120" x2="120" y2="210"></line>
+                  <line x1="120" y1="120" x2="42.06" y2="171"></line>
+                  <line x1="120" y1="120" x2="42.06" y2="69"></line>
+                  <polygon points="120,78 164,86 176,142 128,158 90,136 88,100"></polygon>
+                </svg>
+                <span class="ds-hint">도구 2개 이상을 추가하면 여기에 레이더 차트가 그려집니다.</span>
+              </div>
+            </div>
+          </div>
+          <div class="ds-stack summary-panel">
+            <h2>비교 요약 (점수 표)</h2>
+            <div class="ds-table-wrap table-wrap">
+              <table id="matrix-table" class="ds-table" hidden>
+                <thead>
+                  <tr>
+                    <th scope="col">도구</th>
+                    <th scope="col">점수</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div class="table-skeleton" aria-hidden="true">
+              <div class="sk-row sk-head">
+                <span class="sk-cell sk-name">도구</span>
+                <span class="sk-cell">컨텍스트</span>
+                <span class="sk-cell">코딩</span>
+                <span class="sk-cell">비전</span>
+                <span class="sk-cell">처리 속도</span>
+                <span class="sk-cell">비용</span>
+              </div>
+              <div class="sk-row"><span class="sk-cell sk-name">도구 이름</span><span class="sk-cell">0~100</span><span class="sk-cell">0~100</span><span class="sk-cell">0~100</span><span class="sk-cell">0~100</span><span class="sk-cell">0~100</span></div>
+              <div class="sk-row"><span class="sk-cell sk-name">도구 이름</span><span class="sk-cell">0~100</span><span class="sk-cell">0~100</span><span class="sk-cell">0~100</span><span class="sk-cell">0~100</span><span class="sk-cell">0~100</span></div>
+            </div>
+            <p id="table-hint" class="ds-hint">비교할 도구 2개 이상이 있으면 점수 표가 여기에 보입니다.</p>
+            <div class="json-details-row json-details">
+              <details class="json-details" id="json-details">
+                <summary>세부 데이터 (JSON)</summary>
+                <p id="json-hint" class="ds-hint">비교 결과가 여기에 표시됩니다.</p>
+                <pre id="summary-json" hidden></pre>
+              </details>
+            </div>
+            <button id="compare-button" class="ds-btn ds-btn-primary compare-button" type="button" aria-label="비교하기" disabled>비교하기</button>
+            <p class="ds-hint live-hint">값을 바꾸면 결과도 실시간으로 갱신됩니다.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-card" id="tools-card" aria-label="점수 입력">
+        <details id="tools-details" open>
+          <summary>도구와 기능 점수</summary>
+          <div class="ds-stack tools-body">
+            <ul id="tool-list" class="ds-stack tool-list"></ul>
+            <div id="empty-state" class="ds-empty">
+              <p class="ds-hint">아직 추가된 도구가 없습니다. 위 인기 모델 프리셋을 고르거나, 아래에서 도구를 추가해 보세요.</p>
+              <div class="ds-row">
+                <button id="add-tool-button" class="ds-btn" type="button">도구 추가</button>
+                <button id="example-button" class="ds-btn ds-btn-primary" type="button">예시로 해 보기</button>
+              </div>
+            </div>
+            <div class="ds-row" hidden id="input-row" aria-hidden="true">
+              <button id="add-feature-button" class="ds-btn" type="button">기능 추가</button>
+              <button id="export-button" class="ds-btn" type="button">내보내기</button>
+              <button id="reset-button" class="ds-btn ds-btn-ghost" type="button">다시 시작하기</button>
+            </div>
+          </div>
+          <div id="app-status" class="ds-status" role="status"></div>
+        </details>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="src/app.js"></script>
+
+</body>
+</html>

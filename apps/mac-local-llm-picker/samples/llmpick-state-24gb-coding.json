@@ -1,0 +1,6 @@
+{
+  "memoryGb": 24,
+  "category": "coding",
+  "comparePair": ["Qwen3-Coder-30B-A3B-Instruct-4bit", "Qwen3-14B-4bit"],
+  "savedIds": ["Qwen3-14B-4bit"]
+}
