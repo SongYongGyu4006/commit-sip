@@ -58,7 +58,7 @@
 
 /* 환율 카드 */
 .fx-row { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
-.fx-row-top { align-items: flex-start; }
+.fx-ref-top { align-items: flex-start; }
 .fx-header {
   margin: 0;
   font-size: 20px;
@@ -129,6 +129,12 @@
 .baseline-row .ds-label { margin: 0; }
 .baseline-row .ds-input { width: 120px; }
 
+/* CHANGES #5: 기준 환율 입력 오류 스타일 */
+input[aria-invalid="true"] {
+  border-color: var(--ds-down);
+  background: var(--ds-down-soft);
+}
+
 /* 검색·칩. 칩이 카드 폭을 넘어가면 안 되므로(오른쪽 가장자리가 잘려 나감)
    카드 안쪽 폭을 재껴서(양쪽 패딩만큼) 가로 스크롤 박스로 감싼다. */
 .ds-card { overflow: hidden; }
@@ -148,6 +154,9 @@
   padding: 0 14px;
   white-space: nowrap;
   border-radius: var(--ds-radius);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .ds-chip:has(input:checked) {
   background: var(--ds-accent-soft);
@@ -172,6 +181,40 @@
   background-size: 11px;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+/* CHANGES #2: EXTRA_SERVICES chips ("+ 추가" 버튼 스타일) */
+.plan-add-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  white-space: nowrap;
+  border-radius: var(--ds-radius);
+  background: var(--ds-surface-2);
+  border: 1px dashed var(--ds-line);
+}
+.plan-add-btn {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid var(--ds-accent-line);
+  color: var(--ds-accent-text);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 500;
+}
+.plan-add-btn:hover {
+  background: var(--ds-accent-soft);
+}
+.plan-add-btn:active {
+  transform: scale(.97);
+}
+.plan-add-btn:focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
 }
 
 /* 접힌 구역: studio.css 의 [hidden]{display:none!important} 규칙이 닫힌 <details> 내부 콘텐츠에

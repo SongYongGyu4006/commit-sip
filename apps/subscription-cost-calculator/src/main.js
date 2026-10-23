@@ -1,5 +1,8 @@
 // 시작·조율: 데이터+상태를 읽어 화면을 그리고, 화면 전환·예시·오류를 잇는다.
+// CHANGES #4: renderAll() 에서 관리 화면도 항상 렌더, __state 를 화면에 바인딩, setBaselineInput 호출.
+// CHANGES #5: 기준 환율 검증 — 0 이하 입력 시 오류, 성공 문구 표시 안 함.
 import { calculateSubKrw, formatKstUpdate, DEFAULT_STATE, EXAMPLE_STATE } from "./calc.js";
+import { summarize } from "./services.js";
 import { loadState, saveState, clearState } from "./storage.js";
 import { loadAllData } from "./data.js";
 import { renderCalcScreen, bindCalcEvents } from "./calcScreen.js";
@@ -44,9 +47,15 @@ export function kstDayName(ds) {
   return `${Number(m[2])}월 ${Number(m[3])}일`;
 }
 
-// 저장(오류 안내는 호출처가 따로 한다)
+// 저장(오류 안내는 호출처가 따로 한다) — __onToggle, __example 는 제외
 function persist(s) {
-  saveState(s);
+  saveState({
+    selectedPlanIds: s.selectedPlanIds,
+    baselineKrwRate: s.baselineKrwRate,
+    extraIds: s.extraIds || [],
+    billingDays: s.billingDays || {},
+    fxRefDay: s.fxRefDay || null,
+  });
 }
 
 // 화면 전환. 예시 화면은 hidden, 계산기 화면은 보인다.
@@ -61,11 +70,15 @@ function showScreen(name) {
 
 function renderAll() {
   if (!data) return;
+  // CHANGES #4: 계산기 화면에도 관리 화면에도 __state 를 바인딩. 관리 화면도 항상 렌더.
   $("#screen-calc").__state = calcState;
-  renderCalcScreen($("#screen-calc"), { fx: data.fx, coin: data.coin, state: calcState, meta: data });
-  if (currentScreen === "manage") {
-    renderManageScreen($("#screen-manage"), { fx: data.fx, coin: data.coin, state: calcState, meta: data });
-  }
+  $("#screen-manage").__state = calcState;
+  renderCalcScreen($("#screen-calc"), {
+    fx: data.fx, coin: data.coin, state: calcState, meta: data,
+  });
+  renderManageScreen($("#screen-manage"), {
+    fx: data.fx, coin: data.coin, state: calcState, meta: data,
+  });
 }
 
 // #attribution-footer: 출처 표기만. 서비스별 갱신 주기·이용 조건은 계산기 화면의 접은 구역(#fx-data-meta)이 담당한다.
@@ -75,18 +88,29 @@ function renderFooter() {
   el.querySelector(".attr-text").textContent = "Rates By Exchange Rate API · CoinGecko · CC BY 4.0";
 }
 
-const PLAN_CATALOG_ORDER = ["netflix_standard", "netflix_premium", "spotify_premium", "chatgpt_plus", "notion_plus", "youtube_premium"];
+const PLAN_CATALOG_ORDER = [
+  "netflix_standard", "netflix_premium", "spotify_premium",
+  "chatgpt_plus", "notion_plus", "youtube_premium",
+  "apple_music", "toss_prime", "coupang_wow", "tving", "wavve",
+  "melon", "disney_plus", "youtube_music", "naver_plus_membership",
+  "wachta", "millions_library", "netflix_basic",
+];
 
 function onStateChange(s) {
   persist(s);
 }
 
-// "예시로 해 보기": 기본값(5개+1380)과 눈에 띄게 다른 구성(기본 5개 + 1,350).
+// "예시로 해 보기": 기본값(3개+1350)과 눈에 띄게 다른 구성.
 async function runExample() {
-  calcState = { ...calcState, selectedPlanIds: [...EXAMPLE_STATE.selectedPlanIds], baselineKrwRate: EXAMPLE_STATE.baselineKrwRate, __example: true };
+  calcState = {
+    ...calcState,
+    selectedPlanIds: [...EXAMPLE_STATE.selectedPlanIds],
+    baselineKrwRate: EXAMPLE_STATE.baselineKrwRate,
+    __example: true,
+  };
   persist(calcState);
   renderAll();
-  setStatus("예시로 채웠어요. 인기 구독 5개, 기준 환율 1,350원.", "good");
+  setStatus("예시로 채웠어요. 인기 구독 3개, 기준 환율 1,350원.", "good");
 }
 
 async function init() {
@@ -141,7 +165,7 @@ async function init() {
   if (loadError) {
     setStatus(`데이터를 불러오지 못했어요: ${loadError.message}`, "bad");
     clearState();
-    renderFooter(); // 출처·기준 날짜는 메타에 있으므로 표시
+    renderFooter();
     return;
   }
   renderAll();

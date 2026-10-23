@@ -1,101 +1,163 @@
-// 저장·내보내기 화면: 계산 결과 미리보기(한 줄 문구) + JSON 접기 + 버튼 행.
-// CHANGES #2: 계산기 화면의 시안(상단 카드·한 줄 요약·접기)을 그대로 따라 붙였다.
-import { calculateSubKrw, PLAN_CATALOG, DEFAULT_STATE, EXAMPLE_STATE, formatKstUpdate } from "./calc.js";
-import { SERVICE_MAP, estimateBill, displayKrw, ESTIMATE_TAX, ESTIMATE_FEE } from "./services.js";
-import { kstDateStr, kstDayName } from "./main.js";
+// 저장·내보내기 화면: 내 구독 목록 + 관리 버튼 + 파일 관리.
+// CHANGES #4: 내보내기 시 __state(예시 상태 등 내부 키)를 누락해 저장 — 화면에 바인딩하지 않음.
+import { calculateSubKrw, formatKstUpdate } from "./calc.js";
+import { SERVICE_MAP, displayKrw, SEARCH_MAP, summarize } from "./services.js";
 
 function krw(n) {
-  return `₩${Math.round(n).toLocaleString("ko-KR")}`;
+  return `${Math.round(n).toLocaleString("ko-KR")}`;
 }
 
-export function renderManageScreen(root, { fx, coin, state }) {
-  const result = calculateSubKrw(fx, coin, state.selectedPlanIds, state.baselineKrwRate);
-  const text = root.querySelector("#summary-text");
-  if (text) {
-    if (result.items.length === 0) {
-      text.textContent = "선택한 구독이 없어요. 계산기 화면에서 요금제를 고르면 결과에 들어와요.";
-    } else {
-      // 명세서 예상: 원화 청구는 정가 그대로(부가세 포함·수수료 없음), 달러 청구만 오늘 환율 × 부가세·수수료.
-      const totalEstimate = result.items.reduce((s, i) => {
-        const p = PLAN_CATALOG[i.id];
-        const s2 = SERVICE_MAP[i.id];
-        return s + estimateBill(displayKrw(p, result.krwRate), s2.billing);
-      }, 0);
-      const diff = result.totalDiffMonthlyKrw;
-      text.textContent = `${result.items.length}개 구독을 선택했어요. 월 합계 ${krw(result.totalMonthlyKrw)}원, 명세서 예상 ${krw(totalEstimate)}원이고 기준 환율(1$ = ${krw(result.baselineRate)}원) 대비 ${
-        diff > 0 ? `월 ${krw(diff)} 더` : diff < 0 ? `월 ${krw(-diff)} 덜` : "같은 금액"
-      } 나가요.`;
+function setStatusManage(text, kind = "") {
+  const el = document.querySelector("#app-status");
+  if (el) {
+    el.textContent = text;
+    el.className = "ds-status" + (kind ? " ds-status-" + kind : "");
+  }
+}
+
+// 내 구독: 화면에 바인딩 안 함. CHANGES #4 — __state(예시, onToggle 등) 누락.
+function exportJson(state) {
+  const { selectedPlanIds, baselineKrwRate, extraIds, billingDays, fxRefDay } = { ...state };
+  return JSON.stringify({ selectedPlanIds, baselineKrwRate, extraIds, billingDays, fxRefDay }, null, 2);
+}
+
+// CHANGES #1: 요약 — 답 카드·배너·관리 화면이 모두 summarize() 결과만 쓴다.
+function renderSummary(el, items, krwRate, baselineRate) {
+  const summary = summarize(items, krwRate, baselineRate);
+  const banner = el.querySelector("#first-value-banner");
+  const answer = el.querySelector("#answer-card");
+  const diff = summary.displayYearly > 0 ? 0 : 0; // 관리 화면은 합계만 표시
+
+  if (banner) {
+    banner.textContent = `월 ${krw(summary.displayMonthly)}원 · 1년 ${krw(summary.displayYearly)}원`;
+  }
+  if (answer) {
+    answer.querySelector("#answer-num").innerHTML = `${krw(summary.displayMonthly)}<small>원 /월</small>`;
+    answer.querySelector("#answer-text").textContent =
+      items.length === 0
+        ? "선택한 구독이 없어요. 계산기 화면으로 돌아가 추가해 보세요."
+        : `${items.length}개 구독`;
+    answer.querySelector("#answer-meta").innerHTML = `
+      <div><dt>1년 구독료</dt><dd>${krw(summary.displayYearly)}원</dd></div>
+      <div><dt>명세서 예상</dt><dd>${krw(summary.estimate)}원</dd></div>
+      <div><dt>기준 환율</dt><dd>1$ = ${krw(baselineRate)}원</dd></div>`;
+  }
+}
+
+// 관리 화면 전체 렌더.
+export function renderManageScreen(root, { fx, coin, state, meta }) {
+  root.__state = state;
+  const items = calculateSubKrw(fx, coin, state.selectedPlanIds, state.baselineKrwRate).items;
+
+  // 요약 (CHANGES #1)
+  renderSummary(root, items, state.baselineKrwRate, state.baselineKrwRate);
+
+  // 내 구독 카드 (관리 화면용 — 요약 아바타·이름·보조 정보)
+  const list = root.querySelector("#my-sub-list");
+  list.innerHTML = "";
+  if (items.length === 0) {
+    const li = document.createElement("li");
+    li.className = "ds-empty";
+    li.textContent = "선택한 구독이 없어요. 계산기 화면에서 추가해 보세요.";
+    list.append(li);
+  } else {
+    for (const item of items) {
+      const plan = SERVICE_MAP[item.id] || SEARCH_MAP[item.id];
+      const monthlyKrw = displayKrw(plan || { id: item.id, monthlyUsd: 0 }, state.baselineKrwRate);
+      const li = document.createElement("li");
+      li.className = "ds-list-item";
+      const billing = plan ? (plan.billing || "usd") : "usd";
+      const subParts = billing === "krw" ? ["원화 청구"] : ["달러 청구"];
+      if (item.diffMonthlyKrw !== 0) {
+        subParts.push(`기준 환율보다 ${krw(Math.abs(item.diffMonthlyKrw))}원 ${item.diffMonthlyKrw > 0 ? "비쌈" : "저렴"}`);
+      }
+      li.innerHTML = `
+        <span class="ds-avatar" aria-hidden="true">${item.name.slice(0, 1)}</span>
+        <div class="ds-list-main">
+          <span class="ds-list-title">${item.name}</span>
+          <span class="ds-list-sub">${subParts.join(" · ")}</span>
+        </div>
+        <div class="ds-list-end">
+          <span class="ds-list-amount">${krw(monthlyKrw)}원</span>
+          <span class="ds-list-sub plan-month-note">월</span>
+        </div>`;
+      list.append(li);
     }
   }
-  root.querySelector("#summary-json").textContent = JSON.stringify(result, null, 2);
-}
 
-export function exportResult(root, { fx, coin, state }) {
-  const result = calculateSubKrw(fx, coin, state.selectedPlanIds, state.baselineKrwRate);
-  const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "subkr-result.json";
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-}
+  // 차트 버튼
+  root.querySelector("#export-chart-btn")?.addEventListener("click", () => {
+    const data = JSON.stringify(items, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "subscription-data.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    setStatusManage("차트 데이터를 내보냈어요.", "good");
+  });
 
-export function parseImportedFile(file) {
-  return new Promise((resolve, reject) => {
+  // 내보내기
+  root.querySelector("#export-json-btn")?.addEventListener("click", () => {
+    const data = exportJson(state);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "subscription-state.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    setStatusManage("내보냈어요. 계산기 화면에서 불러와 보세요.", "good");
+  });
+
+  // 불러오기
+  root.querySelector("#import-file")?.addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     const reader = new FileReader();
-    reader.onerror = () => reject(new Error("파일을 읽을 수 없어요. 다시 골라 주세요."));
     reader.onload = () => {
       try {
         const parsed = JSON.parse(reader.result);
-        const ids = parsed.selectedPlanIds;
-        if (!Array.isArray(ids) || ids.some((x) => typeof x !== "string" || !PLAN_CATALOG[x])) {
-          throw new Error("이 파일은 이 앱의 구독 구성이 아니에요. 계산기 화면에서 내보낸 .json 파일을 골라 주세요.");
+        const onImport = e.target.__onImport;
+        if (onImport) {
+          onImport(parsed);
+          e.target.value = "";
         }
-        const baseline = Number(parsed.baselineKrwRate ?? DEFAULT_STATE.baselineKrwRate);
-        if (!Number.isFinite(baseline) || baseline <= 0) throw new Error("기준 환율 값이 잘못돼 있어요.");
-        resolve({ selectedPlanIds: ids, baselineKrwRate: baseline });
       } catch (err) {
-        reject(err);
+        setStatusManage("올바른 JSON 파일이 아니에요.", "bad");
+        e.target.value = "";
       }
     };
     reader.readAsText(file);
   });
+
+  // 내보내기 형식 설명
+  root.querySelector("#export-format-hint")?.addEventListener("click", () => {
+    root.querySelector("#export-format-detail").hidden = false;
+  });
+  root.querySelector("#export-format-close")?.addEventListener("click", () => {
+    root.querySelector("#export-format-detail").hidden = true;
+  });
+
+  // 초기화
+  root.querySelector("#clear-btn")?.addEventListener("click", () => {
+    const onReset = e.target.__onReset;
+    if (onReset) onReset();
+  });
 }
 
+// 관리 화면 이벤트.
 export function bindManageEvents(root, { onStateChange, getMeta, onImport, onReset, setManageStatus }) {
-  const recalc = () => {
-    const s = root.__state;
-    if (!s) return;
-    try {
-      const { fx, coin } = getMeta();
-      renderManageScreen(root, { fx, coin, state: s });
-      onStateChange(s);
-    } catch (err) {
-      setManageStatus(err instanceof Error ? err.message : String(err), "bad");
-    }
-  };
-  root.querySelector("#export-button")?.addEventListener("click", () => {
-    try {
-      exportResult(root, { ...getMeta(), state: root.__state });
-      setManageStatus("JSON 파일로 내보냈어요.", "good");
-    } catch (err) {
-      setManageStatus(err.message, "bad");
-    }
+  if (root.querySelector("#import-file")) {
+    root.querySelector("#import-file").__onImport = onImport;
+  }
+  if (root.querySelector("#clear-btn")) {
+    root.querySelector("#clear-btn").__onReset = onReset;
+  }
+  // 예시 버튼은 없으므로 예시 없음.
+  root.querySelector("#try-example-button")?.addEventListener("click", () => {
+    // 계산기 화면으로 이동
+    document.querySelector("#nav-calc-button")?.click();
   });
-  const fileInput = root.querySelector("#import-file");
-  root.querySelector("#import-button")?.addEventListener("click", () => fileInput?.click());
-  fileInput?.addEventListener("change", async () => {
-    if (!fileInput.files?.[0]) return;
-    try {
-      const next = await parseImportedFile(fileInput.files[0]);
-      onImport(next);
-    } catch (err) {
-      setManageStatus(err.message, "bad");
-    } finally {
-      fileInput.value = "";
-    }
-  });
-  root.querySelector("#reset-button")?.addEventListener("click", () => onReset());
 }

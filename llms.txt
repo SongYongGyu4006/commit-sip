@@ -20,6 +20,7 @@
 
 ## 최근 글
 
+- [NVIDIA 오픈쉘, 설치 없이 코드부터 읽어본 결과](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-24-openshell.html)
 - [freehire 실측 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-23-freehire.html)
 - [같은 27B 모델을 세 프로그램으로 돌려서 속도 2.4배 차이를 본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-22-mac-llm-engines-qwen3-8-27b-4bit.html)
 - [애플 맥에서 안드로이드 앱을 에뮬레이터 없이 돌리는 오픈소스 Mac.apk, 받아서 직접 살펴봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-22-mac-apk.html)
@@ -30,6 +31,7 @@
 
 ## 앱 실험실
 
+- [우리동네 기름값 30일](https://songyonggyu4006.github.io/commit-sip/apps/neighborhood-gas-price-30days/): 오늘 시도별 기름값 평균과 최저가 주유소 20곳, 그리고 30일 가격 추이를 한눈에 보여줍니다.
 - [정부 혜택 찾기](https://songyonggyu4006.github.io/commit-sip/apps/government-benefits-finder/): 최근 등록·수정된 정부 지원금·혜택을 분야와 대상(청년·출산육아·자영업·저소득·노인)으로 골라, 마감이 임박한 순서로 카드로 보여 주는 앱입니다.
 - [구독 요금 계산기](https://songyonggyu4006.github.io/commit-sip/apps/subscription-cost-calculator/): 오늘의 달러-원 환율과 비트코인·이더리움 시세로 Netflix·ChatGPT Plus 등 해외 구독 6종의 원화 월액·연액과 기준 환율(7일 평균) 대비 증감액을 즉시 계산합니다.
 - [맥 로컬 LLM 고르기](https://songyonggyu4006.github.io/commit-sip/apps/mac-local-llm-picker/): 이 앱은 Mac Studio M5 Max 48GB에서 직접 측정한 로컬 LLM 실측 데이터를 기반으로, 내 맥 메모리에 들어가는 모델만 골라 용도(한국어·코딩·도구·속도)별 순위를 보여 주고 두 모델을 나란히 비교하

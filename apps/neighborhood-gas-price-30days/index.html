@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko" data-accent="blue" data-theme="auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>우리동네 기름값 30일 — 무료 웹 도구 · 커밋 한 모금</title>
+  <link rel="stylesheet" href="vendor/studio.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="vendor/chart.umd.min.js"></script>
+<script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="오늘 시도별 기름값 평균과 최저가 주유소 20곳, 그리고 30일 가격 추이를 한눈에 보여줍니다. 연료 종류(휘발유, 경유, 고급휘발유, LPG, 실내등유)와 시도별로 필터링해 비교할 수 있습니다. 첫 화면에 &#x27;예시로 해 하기&#x27;를 눌러 실제 데이터로 결과를 바로 확인해 "><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/neighborhood-gas-price-30days/"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 우리동네 기름값 30일 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+  <header class="ds-band">
+    <div class="ds-page">
+      <h1>우리동네 기름값 30일</h1>
+      <p>오늘의 시도별 기름값 평균과 최저가 주유소 20곳, 30일 가격 추이를 한눈에 보여드립니다.</p>
+      <div id="data-meta" class="ds-band-meta"></div>
+    </div>
+  </header>
+
+  <main class="ds-page">
+    <!-- 예시로 해 하기 -->
+    <div class="ds-stack">
+      <button id="example-button" class="ds-btn ds-btn-primary ds-btn-lg">예시로 해 하기</button>
+
+      <!-- 컨트롤 -->
+      <div class="app-controls">
+      <div class="ds-grid ds-grid-2">
+        <div>
+          <label for="fuel-type" class="ds-label">연료 종류</label>
+          <select id="fuel-type" class="ds-select">
+            <option value="gasoline" selected>휘발유</option>
+            <option value="diesel">경유</option>
+            <option value="premium">고급휘발유</option>
+            <option value="lpg">자동차용 LPG</option>
+            <option value="kerosene">실내등유</option>
+          </select>
+        </div>
+        <div>
+          <label for="sido-select" class="ds-label">시도</label>
+          <select id="sido-select" class="ds-select">
+            <option value="">-- 모든 시도 --</option>
+          </select>
+        </div>
+      </div>
+      <button id="apply-button" class="ds-btn ds-btn-primary">적용하기</button>
+      </div>
+
+      <!-- 답변 카드: 전국 평균 -->
+      <div class="ds-answer">
+        <span class="ds-answer-label">오늘 전국 평균</span>
+        <span id="national-price" class="ds-answer-num">—원</span>
+        <p id="national-detail" class="ds-answer-text">연료 종류를 선택하면 전국 평균가가 표시됩니다.</p>
+      </div>
+
+      <!-- 최저가 주유소 -->
+      <section class="ds-card">
+        <div class="ds-section-title">
+          <h2 id="lowest-title">최저가 주유소 20곳</h2>
+        </div>
+        <div id="lowest-list" class="ds-list"></div>
+      </section>
+
+      <!-- 시도별 평균 -->
+      <section class="ds-card">
+        <div class="ds-section-title">
+          <h2 id="sido-title">시도별 평균</h2>
+        </div>
+        <div id="sido-list" class="ds-list"></div>
+      </section>
+
+      <!-- 30일 가격 추이 -->
+      <section class="ds-card">
+        <div class="ds-section-title">
+          <h2 id="history-title">30일 가격 추이</h2>
+        </div>
+        <p id="history-hint" class="ds-hint">전국 전체 연료 평균 가격의 이동 흐름입니다.</p>
+        <div class="history-chart-wrap">
+          <canvas id="history-chart"></canvas>
+        </div>
+      </section>
+    </div>
+
+    <!-- 상태 영역 -->
+    <div id="app-status" role="status" class="ds-status" hidden></div>
+
+    <!-- 푸터 -->
+    <footer id="data-footer" class="ds-footer"></footer>
+  </main>
+
+  <script type="module" src="src/app.js"></script>
+
+</body>
+</html>
