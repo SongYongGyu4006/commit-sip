@@ -2,10 +2,10 @@
  "id": "gov_benefits",
  "name": "정부 지원금·혜택 목록 (행정안전부 공공서비스(혜택) 정보, 매일 수집)",
  "url": "file:///Users/hermesagent/hermes_projects/studio-evals/claude-v27-work/kh/parts/kr/gov_benefits.json",
- "fetched_at": "2026-10-24T10:25:19",
+ "fetched_at": "2026-10-25T04:04:48",
  "terms": "공공데이터포털 공공누리 제1유형(출처 표시: 행정안전부·공공데이터포털). 키는 서버에만 있고 이 파일엔 없음",
  "cors": false,
  "items": 300,
- "bytes": 887067,
+ "bytes": 899263,
  "trimmed": false
 }
