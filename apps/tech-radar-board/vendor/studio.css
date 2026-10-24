@@ -1,71 +1,212 @@
-/* Hermes Studio design system v1.1 (2026-10-18; v1.1: no hairline-border+wide-shadow, ink-3 contrast >= 4.5:1 — checked with impeccable 4.1.0 detector). Tokens first; components are opt-in classes prefixed ds-.
-   Light and dark (prefers-color-scheme), mobile-first, system fonts only, no external assets. */
+/* Hermes Studio design system v2.0 (2026-10-21). Every v1 class still works; v2 adds accent themes, band, answer card, list, avatar, segment, icons.
+   v2: life apps for the general public — the main colour may fill the band, the answer card and selected states (about 15–25% of the screen).
+   Light by default, dark only with <html data-theme="auto">. Mobile-first, system fonts only, no external assets.
+   Every text colour is >= 4.5:1 on the surface it is meant for. */
 :root{
-  --ds-bg:#f5f6fa; --ds-surface:#ffffff; --ds-surface-2:#f0f2f7; --ds-ink:#151a24; --ds-ink-2:#4a5263; --ds-ink-3:#5f6777;
-  --ds-line:#e2e5ec; --ds-accent:#3563ff; --ds-accent-ink:#ffffff; --ds-accent-soft:#e8eeff;
+  --ds-bg:#f3f4f7; --ds-surface:#ffffff; --ds-surface-2:#eef0f4; --ds-ink:#151a24; --ds-ink-2:#454d5e; --ds-ink-3:#5f6777;
+  --ds-line:#e1e4ea;
+  /* accent (blue is the default theme; see [data-accent] below) */
+  --ds-accent:#2f5bea; --ds-accent-ink:#ffffff; --ds-accent-text:#1d47c8; --ds-accent-soft:#eaf0ff; --ds-accent-line:#c4d3ff;
+  --ds-band-ink:#ffffff; --ds-band-ink-2:#eef2ff;
   --ds-good:#11845b; --ds-good-soft:#e3f5ed; --ds-warn:#a86400; --ds-warn-soft:#fff3dd; --ds-bad:#c4352b; --ds-bad-soft:#fde8e6;
-  --ds-radius-s:8px; --ds-radius:12px; --ds-radius-l:18px;
+  /* price up/down follows the Korean convention: up red, down blue */
+  --ds-up:#c0272d; --ds-down:#1d5ad6;
+  /* chart series; c1 follows the accent, the theme swaps out whichever one clashes */
+  --ds-c2:#e8590c; --ds-c3:#0c8599; --ds-c4:#d6336c; --ds-c5:#7048e8; --ds-c6:#868e96;
+  --ds-radius-s:8px; --ds-radius:12px; --ds-radius-l:20px;
   --ds-shadow:0 1px 2px rgba(16,24,40,.06); --ds-shadow-l:0 8px 24px rgba(16,24,40,.12);
+  --ds-ease:cubic-bezier(.2,.8,.2,1); --ds-fast:160ms; --ds-mid:220ms;
   --ds-font:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;
   --ds-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
   --ds-s1:4px; --ds-s2:8px; --ds-s3:12px; --ds-s4:16px; --ds-s5:24px; --ds-s6:32px; --ds-s7:48px;
   --ds-max:1040px; color-scheme:light;
 }
+/* derived tokens are re-computed wherever a theme is set, so <section data-accent="teal"> also works */
+:root,[data-accent]{--ds-band:var(--ds-accent); --ds-focus:var(--ds-accent-text); --ds-c1:var(--ds-accent)}
+/* themes: <html data-accent="..."> — accent (fills, white text on it), accent-text (text on white/soft), soft (tinted surface), line (tinted border) */
+[data-accent="blue"]{--ds-accent:#2f5bea;--ds-accent-text:#1d47c8;--ds-accent-soft:#eaf0ff;--ds-accent-line:#c4d3ff;--ds-band-ink-2:#eef2ff}
+[data-accent="green"]{--ds-accent:#0f7a4f;--ds-accent-text:#0b6340;--ds-accent-soft:#e6f6ee;--ds-accent-line:#b5e2cb;--ds-band-ink-2:#eafaf1}
+[data-accent="orange"]{--ds-accent:#c2410c;--ds-accent-text:#a3360a;--ds-accent-soft:#fff1e8;--ds-accent-line:#fdcdb0;--ds-band-ink-2:#fff4ec;--ds-c2:#3b6fe0}
+[data-accent="pink"]{--ds-accent:#c0266d;--ds-accent-text:#9d1c58;--ds-accent-soft:#fdecf3;--ds-accent-line:#f6bfd6;--ds-band-ink-2:#fff0f6;--ds-c4:#3b6fe0}
+[data-accent="violet"]{--ds-accent:#6d3fd9;--ds-accent-text:#5a2fc0;--ds-accent-soft:#f1ecff;--ds-accent-line:#d4c6ff;--ds-band-ink-2:#f3efff;--ds-c5:#3b6fe0}
+[data-accent="teal"]{--ds-accent:#0b7285;--ds-accent-text:#095c6b;--ds-accent-soft:#e3f5f7;--ds-accent-line:#aedfe6;--ds-band-ink-2:#eafafb;--ds-c3:#3b6fe0}
+[data-accent="coral"]{--ds-accent:#c43d33;--ds-accent-text:#a3302a;--ds-accent-soft:#ffeeea;--ds-accent-line:#fbc6bc;--ds-band-ink-2:#fff3f0;--ds-c2:#3b6fe0}
+/* amber is bright, so it carries dark ink instead of white */
+[data-accent="amber"]{--ds-accent:#f2b200;--ds-accent-ink:#2a1d00;--ds-accent-text:#8a5a00;--ds-accent-soft:#fff6dc;--ds-accent-line:#f5d77a;--ds-band-ink:#2a1d00;--ds-band-ink-2:#4a3600;--ds-c1:#c98a00;--ds-c2:#3b6fe0}
 /* dark mode only when the app opts in with <html data-theme="auto"> (10/18: apps with light-only styles.css broke in dark mode) */
-@media (prefers-color-scheme:dark){:root[data-theme="auto"]{
-  --ds-bg:#0f1115; --ds-surface:#171a21; --ds-surface-2:#1f232c; --ds-ink:#eef0f4; --ds-ink-2:#b4bac6; --ds-ink-3:#8a91a0;
-  --ds-line:#2a2f3a; --ds-accent:#7c9bff; --ds-accent-ink:#0b0e14; --ds-accent-soft:#1e2742;
-  --ds-good:#45c290; --ds-good-soft:#13291f; --ds-warn:#f0b34a; --ds-warn-soft:#2c2414; --ds-bad:#ff7a6e; --ds-bad-soft:#331a18;
-  --ds-shadow:0 1px 2px rgba(0,0,0,.35); --ds-shadow-l:0 10px 30px rgba(0,0,0,.4); color-scheme:light dark;}}
+@media (prefers-color-scheme:dark){
+  :root[data-theme="auto"]{
+    --ds-bg:#111214; --ds-surface:#1a1b1e; --ds-surface-2:#232428; --ds-ink:#eeeff1; --ds-ink-2:#b4b4b4; --ds-ink-3:#949494; --ds-line:#2e3035;
+    --ds-accent:#7c9bff; --ds-accent-text:#7c9bff; --ds-accent-soft:#1c2540; --ds-accent-line:#34457a;
+    --ds-good:#45c290; --ds-good-soft:#13291f; --ds-warn:#f0b34a; --ds-warn-soft:#2c2414; --ds-bad:#ff7a6e; --ds-bad-soft:#331a18;
+    --ds-up:#ff7b72; --ds-down:#79a8ff;
+    --ds-shadow:0 1px 2px rgba(0,0,0,.35); --ds-shadow-l:0 10px 30px rgba(0,0,0,.4); color-scheme:light dark;}
+  /* in dark the band becomes a deep tinted surface with normal ink */
+  :root[data-theme="auto"],:root[data-theme="auto"] [data-accent]{--ds-accent-ink:#0b0e14;--ds-band:var(--ds-accent-soft);--ds-band-ink:var(--ds-ink);--ds-band-ink-2:var(--ds-ink-2)}
+  :root[data-theme="auto"][data-accent="blue"],:root[data-theme="auto"] [data-accent="blue"]{--ds-accent:#7c9bff;--ds-accent-text:#7c9bff;--ds-accent-soft:#1c2540;--ds-accent-line:#34457a}
+  :root[data-theme="auto"][data-accent="green"],:root[data-theme="auto"] [data-accent="green"]{--ds-accent:#4cc38a;--ds-accent-text:#4cc38a;--ds-accent-soft:#12291f;--ds-accent-line:#24553d}
+  :root[data-theme="auto"][data-accent="orange"],:root[data-theme="auto"] [data-accent="orange"]{--ds-accent:#ff9a5c;--ds-accent-text:#ff9a5c;--ds-accent-soft:#2e1c12;--ds-accent-line:#5c3520}
+  :root[data-theme="auto"][data-accent="pink"],:root[data-theme="auto"] [data-accent="pink"]{--ds-accent:#f47fb0;--ds-accent-text:#f47fb0;--ds-accent-soft:#2e1522;--ds-accent-line:#5c2a43}
+  :root[data-theme="auto"][data-accent="violet"],:root[data-theme="auto"] [data-accent="violet"]{--ds-accent:#a98bff;--ds-accent-text:#a98bff;--ds-accent-soft:#231a3d;--ds-accent-line:#43327a}
+  :root[data-theme="auto"][data-accent="teal"],:root[data-theme="auto"] [data-accent="teal"]{--ds-accent:#3fc1cf;--ds-accent-text:#3fc1cf;--ds-accent-soft:#0f2a2e;--ds-accent-line:#1e555c}
+  :root[data-theme="auto"][data-accent="coral"],:root[data-theme="auto"] [data-accent="coral"]{--ds-accent:#ff8a7a;--ds-accent-text:#ff8a7a;--ds-accent-soft:#2f1916;--ds-accent-line:#5e302a}
+  :root[data-theme="auto"][data-accent="amber"],:root[data-theme="auto"] [data-accent="amber"]{--ds-accent:#ffc53d;--ds-accent-text:#ffc53d;--ds-accent-soft:#2b2210;--ds-accent-line:#5a461c}
+}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--ds-bg);color:var(--ds-ink);font:16px/1.65 var(--ds-font);word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+a{color:var(--ds-accent-text);text-underline-offset:3px}
 /* layout */
 .ds-page{max-width:var(--ds-max);margin:0 auto;padding:var(--ds-s5) var(--ds-s4) var(--ds-s7)}
-.ds-hero{padding:var(--ds-s6) 0 var(--ds-s5)}
-.ds-hero h1{font-size:clamp(26px,4vw,36px);line-height:1.2;letter-spacing:-.02em;margin:0 0 var(--ds-s2)}
+/* v1 hero now sits on a soft accent surface, so old apps get colour without markup changes */
+.ds-hero{background:var(--ds-accent-soft);border-radius:var(--ds-radius-l);padding:var(--ds-s6) var(--ds-s5);margin-bottom:var(--ds-s4)}
+.ds-hero h1{font-size:clamp(26px,4vw,34px);line-height:1.2;letter-spacing:-.02em;margin:0 0 var(--ds-s2)}
 .ds-hero p{font-size:17px;color:var(--ds-ink-2);margin:0;max-width:62ch}
+.ds-card .ds-hero{background:none;padding:0 0 var(--ds-s3);margin:0}
 .ds-grid{display:grid;gap:var(--ds-s4)}
 @media(min-width:860px){.ds-grid-2{grid-template-columns:1fr 1fr}.ds-grid-main{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:start}}
 .ds-stack>*+*{margin-top:var(--ds-s3)}
 .ds-row{display:flex;flex-wrap:wrap;gap:var(--ds-s2);align-items:center}
+/* band: full-width accent area at the very top (put it before .ds-page). Inside .ds-page it becomes a rounded block. */
+.ds-band{background:var(--ds-band);color:var(--ds-band-ink);padding:var(--ds-s7) max(var(--ds-s4),calc((100% - var(--ds-max))/2 + var(--ds-s4))) 40px}
+.ds-band:has(+.ds-page>.ds-answer:first-child){padding-bottom:80px}
+.ds-page .ds-band{border-radius:var(--ds-radius-l);padding:var(--ds-s6) var(--ds-s5);margin-bottom:var(--ds-s4)}
+.ds-band h1{font-size:clamp(25px,5.5vw,34px);line-height:1.2;letter-spacing:-.02em;margin:0 0 var(--ds-s2);color:inherit}
+.ds-band p{margin:0;font-size:17px;color:var(--ds-band-ink-2);max-width:60ch}
+.ds-band a{color:inherit}
+.ds-band .ds-hint,.ds-band .ds-label{color:var(--ds-band-ink-2)}
+.ds-band-label{display:block;margin-top:var(--ds-s5);font-size:15px;font-weight:600;color:var(--ds-band-ink-2)}
+.ds-band-num{display:block;font-size:clamp(38px,9vw,54px);font-weight:800;line-height:1.08;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--ds-band-ink)}
+.ds-band-num small{font-size:.45em;font-weight:700;letter-spacing:0;margin-left:2px}
+.ds-band-meta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--ds-s2) var(--ds-s3);margin-top:var(--ds-s4);font-size:14px;color:var(--ds-band-ink-2)}
+.ds-band .ds-badge{background:rgba(0,0,0,.2);color:var(--ds-band-ink);font-size:13px;padding:3px 10px}
+.ds-band .ds-btn-primary{background:var(--ds-band-ink);border-color:var(--ds-band-ink);color:var(--ds-band)}
+/* the answer card tucks into the bottom of the band */
+.ds-band+.ds-page>.ds-answer:first-child{position:relative;margin-top:-64px}
+/* calm variant for technical tools (developers, AI models): white strip, accent only as a top line */
+.ds-band-thin{background:var(--ds-surface);color:var(--ds-ink);border-top:4px solid var(--ds-accent);border-bottom:1px solid var(--ds-line);padding-top:var(--ds-s5);padding-bottom:var(--ds-s5)}
+.ds-band.ds-band-thin:has(+.ds-page>.ds-answer:first-child){padding-bottom:var(--ds-s5)}
+.ds-page .ds-band-thin{border:1px solid var(--ds-line)}
+.ds-band-thin h1{font-size:clamp(22px,4vw,28px)}
+.ds-band-thin p,.ds-band-thin .ds-band-label,.ds-band-thin .ds-hint,.ds-band-thin .ds-label{color:var(--ds-ink-2)}
+.ds-band-thin .ds-band-meta{color:var(--ds-ink-3)}
+.ds-band-thin .ds-band-num{color:var(--ds-ink)}
+.ds-band-thin .ds-badge{background:var(--ds-surface-2);color:var(--ds-ink-2)}
+.ds-band-thin .ds-btn-primary{background:var(--ds-accent);border-color:var(--ds-accent);color:var(--ds-accent-ink)}
+.ds-band-thin+.ds-page>.ds-answer:first-child{margin-top:0}
 /* surfaces */
-.ds-card{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius-l);padding:var(--ds-s5);box-shadow:var(--ds-shadow)}
+.ds-card{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius-l);padding:var(--ds-s5)}
 .ds-card h2{font-size:18px;line-height:1.35;margin:0 0 var(--ds-s1)}
 .ds-card .ds-sub{color:var(--ds-ink-3);font-size:14px;margin:0 0 var(--ds-s4)}
-.ds-step{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--ds-accent-soft);color:var(--ds-accent);font-weight:700;font-size:14px;margin-right:var(--ds-s2)}
+.ds-card:has(.ds-big){border-color:var(--ds-accent-line)}
+.ds-card-tint{background:var(--ds-accent-soft);border-radius:var(--ds-radius-l);padding:var(--ds-s5)}
+.ds-card.ds-card-tint{border-color:transparent}
+.ds-card-tint h2{font-size:18px;line-height:1.35;margin:0 0 var(--ds-s1)}
+.ds-step{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--ds-accent-soft);color:var(--ds-accent-text);font-weight:700;font-size:14px;margin-right:var(--ds-s2)}
+/* answer: the one result this app exists for */
+.ds-answer{background:var(--ds-accent-soft);border:1px solid var(--ds-accent-line);border-radius:var(--ds-radius-l);padding:var(--ds-s5);margin-bottom:var(--ds-s4)}
+.ds-answer-label{display:block;margin:0;font-size:15px;font-weight:600;color:var(--ds-ink-2)}
+.ds-answer-num{display:block;margin:var(--ds-s1) 0 0;font-size:clamp(40px,10vw,56px);font-weight:800;line-height:1.08;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--ds-accent-text)}
+.ds-answer-num small{font-size:.45em;font-weight:700;letter-spacing:0;margin-left:2px}
+.ds-answer-text{margin:var(--ds-s2) 0 0;font-size:17px;line-height:1.55;color:var(--ds-ink);max-width:56ch}
+.ds-answer-meta{display:flex;margin:var(--ds-s4) 0 0;background:var(--ds-surface);border-radius:var(--ds-radius);padding:var(--ds-s3) 0}
+.ds-answer-meta>div{flex:1 1 0;min-width:0;padding:0 var(--ds-s4)}
+.ds-answer-meta>div+div{border-left:1px solid var(--ds-line)}
+.ds-answer-meta dt{font-size:13px;color:var(--ds-ink-3)}
+.ds-answer-meta dd{margin:2px 0 0;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ds-answer .ds-btn{margin-top:var(--ds-s4)}
+/* section title: h2, optional action link, then a one-line explanation */
+.ds-section-title{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px var(--ds-s3);margin:var(--ds-s6) 0 var(--ds-s3)}
+.ds-section-title:first-child{margin-top:0}
+.ds-section-title h2{margin:0;font-size:20px;line-height:1.3;letter-spacing:-.01em}
+.ds-section-title p{flex-basis:100%;margin:0;font-size:14px;color:var(--ds-ink-3)}
+.ds-section-title a{font-size:15px;font-weight:600;text-decoration:none}
 /* type */
 .ds-label{display:block;font-size:14px;font-weight:600;color:var(--ds-ink-2);margin:0 0 var(--ds-s1)}
 .ds-hint{font-size:13px;color:var(--ds-ink-3)}
 .ds-num{font-variant-numeric:tabular-nums}
-.ds-big{font-size:clamp(28px,5vw,40px);font-weight:750;letter-spacing:-.02em;line-height:1.1}
+.ds-big{font-size:clamp(28px,5vw,40px);font-weight:800;letter-spacing:-.02em;line-height:1.1;color:var(--ds-accent-text);font-variant-numeric:tabular-nums}
+.ds-up,.ds-down,.ds-flat{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.ds-up{color:var(--ds-up)}.ds-down{color:var(--ds-down)}.ds-flat{color:var(--ds-ink-3)}
+.ds-up::before,.ds-down::before{display:inline-block;margin-right:3px;font-size:.7em;vertical-align:.12em}
+.ds-up::before{content:"▲";content:"▲" / ""}.ds-down::before{content:"▼";content:"▼" / ""}
+/* icons: inline SVG line icons, 24×24 viewBox, colour from currentColor */
+.ds-icon{display:inline-block;flex:none;width:20px;height:20px;vertical-align:-4px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ds-icon-s{width:16px;height:16px;vertical-align:-3px}.ds-icon-l{width:24px;height:24px;vertical-align:-6px}
+.ds-icon-muted{color:var(--ds-ink-3)}.ds-icon-accent{color:var(--ds-accent-text)}
+/* avatar: first letter of a service/company; data-hue 0–7 picked from the name */
+.ds-avatar{--ds-av:var(--ds-accent-soft);--ds-av-ink:var(--ds-accent-text);display:inline-flex;align-items:center;justify-content:center;flex:none;width:40px;height:40px;border-radius:50%;background:var(--ds-av);color:var(--ds-av-ink);font-size:16px;font-weight:700;line-height:1;text-transform:uppercase;user-select:none}
+.ds-avatar-s{width:32px;height:32px;font-size:13px}.ds-avatar-l{width:48px;height:48px;font-size:19px}
+.ds-avatar[data-hue]{--ds-av-ink:#ffffff}
+.ds-avatar[data-hue="0"]{--ds-av:#2f5bea}.ds-avatar[data-hue="1"]{--ds-av:#0f7a4f}.ds-avatar[data-hue="2"]{--ds-av:#c2410c}.ds-avatar[data-hue="3"]{--ds-av:#c0266d}
+.ds-avatar[data-hue="4"]{--ds-av:#6d3fd9}.ds-avatar[data-hue="5"]{--ds-av:#0b7285}.ds-avatar[data-hue="6"]{--ds-av:#c8322b}.ds-avatar[data-hue="7"]{--ds-av:#475569}
+/* list (Toss style): avatar · name + sub · amount */
+.ds-list{list-style:none;margin:0;padding:0}
+.ds-list-item{display:flex;align-items:center;gap:var(--ds-s3);min-height:64px;padding:var(--ds-s3) 0;color:inherit;text-decoration:none}
+.ds-list-main{flex:1 1 auto;min-width:0}
+.ds-list-title{display:block;font-size:16px;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ds-list-sub{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin-top:2px;font-size:14px;line-height:1.4;color:var(--ds-ink-3)}
+.ds-list-end{flex:none;text-align:right;font-variant-numeric:tabular-nums}
+.ds-list-end .ds-list-sub{justify-content:flex-end}
+.ds-list-amount{display:block;font-size:17px;font-weight:700;line-height:1.4}
+a.ds-list-item,button.ds-list-item,label.ds-list-item{cursor:pointer;margin:0 calc(-1*var(--ds-s3));padding-left:var(--ds-s3);padding-right:var(--ds-s3);border-radius:var(--ds-radius);transition:background-color var(--ds-fast) var(--ds-ease),transform var(--ds-fast) var(--ds-ease)}
+button.ds-list-item{width:calc(100% + 2*var(--ds-s3));border:0;background:none;font:inherit;text-align:left}
+a.ds-list-item:hover,button.ds-list-item:hover,label.ds-list-item:hover{background:var(--ds-surface-2)}
+a.ds-list-item:active,button.ds-list-item:active,label.ds-list-item:active{transform:scale(.99)}
 /* controls (44px touch targets) */
-.ds-input,.ds-select,.ds-textarea{width:100%;min-height:44px;padding:10px 12px;font:inherit;color:var(--ds-ink);background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);transition:border-color .15s,box-shadow .15s}
+.ds-input,.ds-select,.ds-textarea{width:100%;min-height:48px;padding:10px 14px;font:inherit;color:var(--ds-ink);background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);transition:border-color var(--ds-fast) var(--ds-ease),box-shadow var(--ds-fast) var(--ds-ease)}
+.ds-input::placeholder,.ds-textarea::placeholder{color:var(--ds-ink-3)}
 .ds-textarea{min-height:120px;resize:vertical;line-height:1.5}
-.ds-input:focus,.ds-select:focus,.ds-textarea:focus{outline:none;border-color:var(--ds-accent);box-shadow:0 0 0 3px var(--ds-accent-soft)}
-.ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;font:600 15px/1 var(--ds-font);border-radius:var(--ds-radius);border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink);cursor:pointer;transition:transform .05s,background .15s,border-color .15s}
-.ds-btn:hover{border-color:var(--ds-ink-3)}.ds-btn:active{transform:translateY(1px)}
-.ds-btn:focus-visible{outline:3px solid var(--ds-accent-soft);outline-offset:2px}
-.ds-btn-primary{background:var(--ds-accent);border-color:var(--ds-accent);color:var(--ds-accent-ink)}.ds-btn-primary:hover{filter:brightness(1.06);border-color:var(--ds-accent)}
-.ds-btn-ghost{background:transparent;border-color:transparent;color:var(--ds-accent)}
+.ds-input:focus,.ds-select:focus,.ds-textarea:focus{outline:none;border-color:var(--ds-focus);box-shadow:0 0 0 3px var(--ds-accent-soft)}
+.ds-search{position:relative}
+.ds-search>.ds-icon{position:absolute;left:14px;top:50%;margin-top:-10px;color:var(--ds-ink-3);pointer-events:none}
+.ds-search>.ds-input{padding-left:44px}
+.ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;font:600 15px/1 var(--ds-font);border-radius:var(--ds-radius);border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink);text-decoration:none;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:transform var(--ds-fast) var(--ds-ease),background-color var(--ds-fast) var(--ds-ease),border-color var(--ds-fast) var(--ds-ease),filter var(--ds-fast) var(--ds-ease)}
+.ds-btn:hover{border-color:var(--ds-ink-3)}
+.ds-btn:active:not(:disabled){transform:scale(.97)}
+.ds-btn-lg{min-height:52px;padding:0 24px;font-size:16px;border-radius:14px}
+.ds-btn-primary{background:var(--ds-accent);border-color:var(--ds-accent);color:var(--ds-accent-ink)}.ds-btn-primary:hover{filter:brightness(.93);border-color:var(--ds-accent)}
+.ds-btn-ghost{background:transparent;border-color:transparent;color:var(--ds-accent-text)}.ds-btn-ghost:hover{background:var(--ds-accent-soft);border-color:transparent}
 .ds-btn:disabled{opacity:.5;cursor:not-allowed}
-.ds-chip{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--ds-line);background:var(--ds-surface);font-size:14px;cursor:pointer}
-.ds-chip[aria-pressed="true"]{background:var(--ds-accent-soft);border-color:var(--ds-accent);color:var(--ds-accent)}
+.ds-chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink);font:500 14px/1 var(--ds-font);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform var(--ds-fast) var(--ds-ease),background-color var(--ds-fast) var(--ds-ease),border-color var(--ds-fast) var(--ds-ease)}
+.ds-chip:hover{border-color:var(--ds-ink-3)}.ds-chip:active{transform:scale(.97)}
+.ds-chip[aria-pressed="true"]{background:var(--ds-accent-soft);border-color:var(--ds-accent-line);color:var(--ds-accent-text);font-weight:600}
+/* segment: <div class="ds-segment"> with buttons (aria-pressed) or radio inputs + labels */
+.ds-segment{position:relative;display:flex;gap:2px;margin:0;padding:4px;min-width:0;border:0;border-radius:var(--ds-radius);background:var(--ds-surface-2)}
+.ds-segment>button,.ds-segment>label{flex:1 1 0;display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 12px;border:0;border-radius:calc(var(--ds-radius) - 4px);background:transparent;color:var(--ds-ink-2);font:600 15px/1.2 var(--ds-font);text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background-color var(--ds-fast) var(--ds-ease),color var(--ds-fast) var(--ds-ease),transform var(--ds-fast) var(--ds-ease)}
+.ds-segment>input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.ds-segment>button:hover,.ds-segment>label:hover{color:var(--ds-ink)}
+.ds-segment>button:active,.ds-segment>label:active{transform:scale(.97)}
+.ds-segment>[aria-pressed="true"],.ds-segment>[aria-selected="true"],.ds-segment>input:checked+label{background:var(--ds-surface);color:var(--ds-accent-text);box-shadow:var(--ds-shadow)}
+/* focus: one visible ring everywhere */
+.ds-btn:focus-visible,.ds-chip:focus-visible,.ds-segment>button:focus-visible,.ds-segment>input:focus-visible+label,.ds-list-item:focus-visible,a:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 /* feedback */
-.ds-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;background:var(--ds-surface-2);color:var(--ds-ink-2)}
+.ds-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;line-height:1.5;white-space:nowrap;background:var(--ds-surface-2);color:var(--ds-ink-2)}
+.ds-badge-accent{background:var(--ds-accent-soft);color:var(--ds-accent-text)}
 .ds-badge-good{background:var(--ds-good-soft);color:var(--ds-good)}.ds-badge-warn{background:var(--ds-warn-soft);color:var(--ds-warn)}.ds-badge-bad{background:var(--ds-bad-soft);color:var(--ds-bad)}
 .ds-status{padding:var(--ds-s3) var(--ds-s4);border-radius:var(--ds-radius);background:var(--ds-surface-2);color:var(--ds-ink-2);font-size:14px}
 .ds-status-bad{background:var(--ds-bad-soft);color:var(--ds-bad)}.ds-status-good{background:var(--ds-good-soft);color:var(--ds-good)}
 .ds-empty{text-align:center;padding:var(--ds-s6) var(--ds-s4);color:var(--ds-ink-3);border:1px dashed var(--ds-line);border-radius:var(--ds-radius-l)}
 /* data */
-.ds-stat{background:var(--ds-surface-2);border-radius:var(--ds-radius);padding:var(--ds-s4)}
-.ds-stat .ds-hint{display:block;margin-bottom:2px}
-.ds-table-wrap{overflow-x:auto;border:1px solid var(--ds-line);border-radius:var(--ds-radius)}
+.ds-stat{background:var(--ds-accent-soft);border-radius:var(--ds-radius);padding:var(--ds-s4)}
+.ds-stat .ds-hint{display:block;margin-bottom:2px;color:var(--ds-ink-2)}
+.ds-table-wrap{overflow-x:auto;border:1px solid var(--ds-line);border-radius:var(--ds-radius);background:var(--ds-surface)}
 .ds-table{width:100%;border-collapse:collapse;font-size:14px}
-.ds-table th{position:sticky;top:0;background:var(--ds-surface-2);text-align:left;font-weight:600;color:var(--ds-ink-2);padding:10px 12px;white-space:nowrap}
-.ds-table td{padding:10px 12px;border-top:1px solid var(--ds-line);vertical-align:top}
+.ds-table th{position:sticky;top:0;background:var(--ds-surface);text-align:left;font-size:13px;font-weight:600;color:var(--ds-ink-3);padding:10px 14px;white-space:nowrap;border-bottom:1px solid var(--ds-line)}
+.ds-table td{padding:12px 14px;border-top:1px solid var(--ds-line);vertical-align:top}
+.ds-table .ds-num{text-align:right}
 .ds-table tr:hover td{background:var(--ds-surface-2)}
-.ds-bar{height:8px;border-radius:999px;background:var(--ds-surface-2);overflow:hidden}.ds-bar>span{display:block;height:100%;background:var(--ds-accent);border-radius:inherit}
+.ds-table tr.ds-pick td{background:var(--ds-accent-soft)}
+.ds-bar{height:8px;border-radius:999px;background:var(--ds-surface-2);overflow:hidden}.ds-bar>span{display:block;height:100%;background:var(--ds-accent);border-radius:inherit;transition:width var(--ds-mid) var(--ds-ease)}
 .ds-footer{margin-top:var(--ds-s7);color:var(--ds-ink-3);font-size:13px;text-align:center}
-@media(max-width:520px){.ds-card{padding:var(--ds-s4);border-radius:var(--ds-radius)}.ds-hero{padding-top:var(--ds-s5)}.ds-btn{width:100%}.ds-row .ds-btn{width:auto;flex:1 1 auto}}
-@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media(max-width:520px){
+  .ds-card,.ds-card-tint,.ds-answer{padding:var(--ds-s4) 20px}.ds-card{border-radius:var(--ds-radius-l)}
+  .ds-hero{padding:var(--ds-s5) 20px}.ds-band{padding-top:var(--ds-s6)}
+  .ds-band p{font-size:16px}.ds-answer-text{font-size:16px}
+  .ds-answer-meta>div{padding:0 var(--ds-s3)}.ds-answer-meta dd{font-size:16px}
+  .ds-btn{width:100%}.ds-row .ds-btn{width:auto;flex:1 1 auto}.ds-section-title .ds-btn{width:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+  .ds-btn:active:not(:disabled),.ds-chip:active,.ds-segment>button:active,.ds-segment>label:active,.ds-list-item:active{transform:none}
+}

@@ -2,10 +2,10 @@
  "id": "openrouter_models",
  "name": "OpenRouter 모델·가격 목록",
  "url": "https://openrouter.ai/api/v1/models",
- "fetched_at": "2026-10-24T04:02:28",
+ "fetched_at": "2026-10-24T10:25:13",
  "terms": "공개 목록(키 없음)",
  "cors": true,
  "items": 469,
- "bytes": 850045,
+ "bytes": 850686,
  "trimmed": false
 }

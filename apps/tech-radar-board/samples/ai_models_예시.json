@@ -1,0 +1,8 @@
+[
+  { "title": "GPT-5.1-Codex", "params": "파라미터 공개 안 함", "price": "입력 $1.25 / 출력 $10 (1M 토큰)", "url": "https://openai.com/index/gpt-5-1-codex" },
+  { "title": "Claude Opus 4.5", "params": "파라미터 공개 안 함", "price": "입력 $5 / 출력 $25 (1M 토큰)", "url": "https://www.anthropic.com/claude" },
+  { "title": "Kimi K3.1", "params": "2.5T (MoE · 활성 180B)", "price": "입력 $0.75 / 출력 $3 (1M 토큰)", "url": "https://www.huggingface.co/moonshotai/Kimi-K3.1" },
+  { "title": "Qwen3.5 30B-A3B", "params": "30B (MoE · 활성 3B)", "price": "무료 (오픈 웨이트)", "url": "https://huggingface.co/Qwen/Qwen3.5-30B-A3B" },
+  { "title": "Gemma 3.1 27B", "params": "27B", "price": "무료 (오픈 웨이트)", "url": "https://huggingface.co/google/gemma-3.1-27b" },
+  { "title": "Llama 4.2 Maverick", "params": null, "price": null, "url": "https://github.com/meta-llama/llama-models" }
+]
