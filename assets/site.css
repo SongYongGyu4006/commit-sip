@@ -28,7 +28,7 @@ a{color:var(--acc)}img{max-width:100%}
 .hero p{color:var(--on-navy-sub);font-size:18px;margin:0 0 28px}
 .lead{display:block;background:var(--card);color:var(--ink);border-radius:22px;overflow:hidden;text-decoration:none;transition:transform .18s ease-out}
 .lead:hover{transform:translateY(-3px)}
-.lead .th{aspect-ratio:2/1;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--amber);font-weight:800;font-size:24px;padding:16px;text-align:center}
+.lead .th{aspect-ratio:2/1;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--acc);font-weight:800;font-size:24px;padding:16px;text-align:center}
 .lead .th img{width:100%;height:100%;object-fit:cover;display:block}
 .lead .bd{padding:24px 28px 28px}
 .lead h2{font-size:28px;line-height:1.35;letter-spacing:-.02em;margin:0 0 10px}
@@ -47,7 +47,7 @@ a{color:var(--acc)}img{max-width:100%}
 .row .meta{grid-column:2;grid-row:1;margin:0;white-space:nowrap}
 .card{display:block;background:var(--card);border-radius:18px;overflow:hidden;color:inherit;text-decoration:none;transition:transform .18s ease-out}
 .card:hover{transform:translateY(-3px)}
-.card .th{aspect-ratio:2/1;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--amber);font-weight:800;font-size:20px;padding:12px;text-align:center}
+.card .th{aspect-ratio:2/1;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--acc);font-weight:800;font-size:20px;padding:12px;text-align:center}
 .card .th img{width:100%;height:100%;object-fit:cover;display:block}
 .card .bd{padding:20px 22px 24px}.card h3{font-size:20px;line-height:1.45;letter-spacing:-.01em;margin:0 0 8px}
 .card p{color:var(--sub);font-size:15px;line-height:1.65;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -136,7 +136,7 @@ article{padding:0 0 10px}
 }
 /* light mode: 10/22 L1 latte (cream + espresso + caramel); dark mode above = deep brown + cream */
 @media (not (prefers-color-scheme:dark)){
-:root{--bg:#f6efe6;--card:#fffaf3;--ink:#3b2418;--sub:#5e4433;--tone:#efe3d3;--acc:#8a5524;--amber:#c8873f;--on-amber:#fffaf3;--navy:#efe3d3;--on-navy:#3b2418;--on-navy-sub:#5a3d2a;--chip:#e8d6bf;--tldr:#efe3d3;--blue:#8a5524;--on-blue:#ffffff;--on-blue-sub:#efe3d3}
+:root{--bg:#f6efe6;--card:#fffaf3;--ink:#3b2418;--sub:#5e4433;--tone:#efe3d3;--acc:#8a5524;--amber:#c8873f;--on-amber:#2a170c;--navy:#efe3d3;--on-navy:#3b2418;--on-navy-sub:#5a3d2a;--chip:#e8d6bf;--tldr:#efe3d3;--blue:#8a5524;--on-blue:#ffffff;--on-blue-sub:#efe3d3}
 .btn{background:rgba(168,105,44,.12)}.btn:hover{background:rgba(168,105,44,.22)}
 .btn.main:hover{background:#b07633}
 .btn.dark:hover{background:#e8d6bf}
