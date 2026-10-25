@@ -2,10 +2,10 @@
  "id": "tech_radar",
  "name": "기술 레이더(우리 수집기: 17개 출처 묶음)",
  "url": "file:///Users/hermesagent/hermes_projects/studio-evals/claude-v27-work/kh/radar/radar.json",
- "fetched_at": "2026-10-25T04:04:43",
+ "fetched_at": "2026-10-26T04:03:55",
  "terms": "이 맥의 수집기가 공개 피드(공식 블로그·기술 언론·HN·GeekNews·r/LocalLLaMA·GitHub/HF 트렌딩·arXiv)에서 모은 제목·링크·지표만. 본문 없음. 1시간마다 갱신(앱 데이터는 하루 1회 이상)",
  "cors": true,
  "items": 300,
- "bytes": 190056,
+ "bytes": 192237,
  "trimmed": false
 }

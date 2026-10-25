@@ -20,6 +20,8 @@
 
 ## 최근 글
 
+- [8KB 파일 하나로 에이전트에 역공학 스킬을 심었다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-26-leanrea.html)
+- [promptfoo, 설치 없이 받아서 직접 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-25-promptfoo.html)
 - [NVIDIA 오픈쉘, 설치 없이 코드부터 읽어본 결과](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-24-openshell.html)
 - [freehire 실측 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-23-freehire.html)
 - [같은 27B 모델을 세 프로그램으로 돌려서 속도 2.4배 차이를 본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-22-mac-llm-engines-qwen3-8-27b-4bit.html)
@@ -31,6 +33,7 @@
 
 ## 앱 실험실
 
+- [한국 제출 사진 규격 검사기](https://songyonggyu4006.github.io/commit-sip/apps/korean-photo-spec-checker/): 토익·정부24·여권 등 한국 주요
 - [우리동네 기름값 30일](https://songyonggyu4006.github.io/commit-sip/apps/neighborhood-gas-price-30days/): 오늘 시도별 기름값 평균과 최저가 주유소 20곳, 그리고 30일 가격 추이를 한눈에 보여줍니다.
 - [정부 혜택 찾기](https://songyonggyu4006.github.io/commit-sip/apps/government-benefits-finder/): 최근 등록·수정된 정부 지원금·혜택을 분야와 대상(청년·출산육아·자영업·저소득·노인)으로 골라, 마감이 임박한 순서로 카드로 보여 주는 앱입니다.
 - [구독 요금 계산기](https://songyonggyu4006.github.io/commit-sip/apps/subscription-cost-calculator/): 오늘의 달러-원 환율과 비트코인·이더리움 시세로 Netflix·ChatGPT Plus 등 해외 구독 6종의 원화 월액·연액과 기준 환율(7일 평균) 대비 증감액을 즉시 계산합니다.
@@ -40,7 +43,6 @@
 - [기술 레이더 보드](https://songyonggyu4006.github.io/commit-sip/apps/tech-radar-board/): 17개 기술 출처가 매일 수집한 기술 소식 데이터를 받아, 지금 가장 큰 소식 3개와 점수·최신순 소식 목록을 대시보드에서 보여주는 앱입니다.
 - [내 기기에 맞는 AI 모델 찾기](https://songyonggyu4006.github.io/commit-sip/apps/ai-model-for-my-device/): Hugging Face 인기 텍스트 모델 100개의 파라미터를 4bit·8bit 양자화로 환산해, 내 PC RAM 을 한 번만 선택하면 그 기기에 실행할 수 있는 모델(추정 적합 기준)을 한국어 대시보드로 보여 주는
 - [AI 모델 시장 판](https://songyonggyu4006.github.io/commit-sip/apps/ai-model-market-board/): 매일 갱신되는 Hugging Face 인기 모델과 OpenRouter API 가격을 모델 계열로 짝지어 한 표로 보여 주며, 내 RAM(GB)과 양자(4/8/16비트)를 고르면 로컬 실행에 필요한 메모리와 가능 여부
-- [이직준비 비용 계산기](https://songyonggyu4006.github.io/commit-sip/apps/career-change-cost-calculator/): 재교육을 고려 중인 소프트웨어 엔지니어가 현재 연봉, 학습 기간, 목표 직군 연봉을 입력하면 재교육으로 발생하는 순이익과 손익분기점을 바로 계산해 보여주는 앱입니다.
 - [인공지능 기능 비교 매트릭스](https://songyonggyu4006.github.io/commit-sip/apps/ai-feature-comparison/): AI 도구의 기능별 점수를 입력해 레이더 차트로 도구 간 기능 차이를 직관적으로 비교할 수 있는 앱.
 - [채용 지원 자격 점검기](https://songyonggyu4006.github.io/commit-sip/apps/job-requirement-checker/): 교육 분야 채용 공고 텍스트를 업로드하면 로컬에서 각 공고의 요구 역량과 필수/선호 구분, 빈도 및 차이점을 시각화해 지원 전 교육 기관이 중시하는 핵심 역량을 빠르게 파악할 수 있는 앱.
 - [시니어 역할 점검](https://songyonggyu4006.github.io/commit-sip/apps/senior-role-check/): 내 이력 텍스트를 입력하면 AI가 내 역량 강점과 공백을 요약해서 보여주고, AI 결과를 JSON 파일로 내려받아 나중에 다시 불러와서 확인할 수 있는 앱.

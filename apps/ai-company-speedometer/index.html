@@ -1,83 +1,90 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-accent="blue">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AI 기업 속도계 (aiwatchkr) — 무료 웹 도구 · 커밋 한 모금</title>
+  <link rel="stylesheet" href="vendor/studio.css" />
   <link rel="stylesheet" href="styles.css" />
 <script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="OpenAI·Anthropic·Google·Mistral·xAI·Meta 6개 기업의 7일 관찰창(모델 3배, 레포 2배, 뉴스 1배 가중) 속도를 신호등 매트릭스로, 모델·레포·소식 3중 뷰로 보여 주는 앱입니다."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/ai-company-speedometer/"></head>
-<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: AI 기업 속도계 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
-  <header class="page-head">
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: AI 기업 속도계 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+  <header class="ds-band ds-band-thin" id="summary-bar">
     <h1>AI 기업 속도계</h1>
-    <p class="tagline">OpenAI·Anthropic·Google·Mistral·xAI·Meta 6개 기업의 최근 7일간 급상승 모델·신규 코드 저장소·기술 뉴스 활동을 신호등으로 한눈에 비교해 주는 AI 기업 기술 속도계입니다.</p>
+    <p>ChatGPT, Claude, Gemini 같은 AI를 만드는 6개 회사가 최근 7일간 얼마나 새 소식을 냈는지 한눈에 비교해요. 🟢 활발 · 🟡 보통 · 🔴 조용</p>
+    <p class="howto">사용법: ① 표를 보기 ② 회사 이름 눌러 켜고 끄기 ③ 파란 버튼으로 두 회사 비교하기</p>
+    <div class="ds-band-meta">
+      <span class="ds-badge" id="fetched-at-kst">불러오는 중…</span>
+      <span>최근 24시간 신규 소식 <b id="summary-24h-count">…</b>건</span>
+    </div>
   </header>
 
-  <main id="app">
-    <section id="summary-bar" class="card summary-card">
-      <div class="summary-items">
-        <div class="summary-item">
-          <span class="summary-label">데이터 기준 시각</span>
-          <span id="fetched-at-kst" class="summary-value">불러오는 중…</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">최근 24시간 신규 소식</span>
-          <span id="summary-24h-count" class="summary-value big">…</span>
-          <span class="summary-unit">건</span>
-        </div>
-      </div>
-      <div id="source-terms" class="source-terms"></div>
-    </section>
-
+  <main id="app" class="ds-page">
     <section id="app-status" role="status" aria-live="polite"></section>
 
-    <section class="card controls-card">
-      <h2>기업 선택</h2>
-      <div class="toggle-row" id="company-toggles" role="group" aria-label="기업 선택">
-        <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-OpenAI" value="OpenAI"><span>OpenAI</span></label>
-        <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-Anthropic" value="Anthropic"><span>Anthropic</span></label>
-        <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-Google" value="Google"><span>Google</span></label>
-        <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-Mistral" value="Mistral"><span>Mistral</span></label>
-        <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-xAI" value="xAI"><span>xAI</span></label>
-        <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-Meta" value="Meta"><span>Meta</span></label>
+    <section id="velocity-board" aria-labelledby="board-title">
+      <div class="ds-section-title">
+        <h2 id="board-title">회사별 활동 비교</h2>
       </div>
-      <p class="hint">상자를 모두 비워 두면 6개 기업 전체가, 일부만 체크하면 체크한 기업만 결과에 포함됩니다. 기업 이름은 데이터 원문(영어) 그대로 표시합니다.</p>
-      <div class="btn-row">
-        <button id="demo-mistral-button" class="btn primary">예시로 해 보기: Mistral &amp; Anthropic 비교</button>
-        <button id="reset-button" class="btn">전체 초기화</button>
+      <div class="ds-card controls-card">
+        <span class="ds-label" id="company-toggles-label">기업 선택</span>
+        <div class="toggle-row" id="company-toggles" role="group" aria-labelledby="company-toggles-label">
+          <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-OpenAI" value="OpenAI" checked><span>OpenAI</span></label>
+          <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-Anthropic" value="Anthropic" checked><span>Anthropic</span></label>
+          <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-Google" value="Google" checked><span>Google</span></label>
+          <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-Mistral" value="Mistral" checked><span>Mistral</span></label>
+          <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-xAI" value="xAI" checked><span>xAI</span></label>
+          <label class="toggle"><input class="company-toggle" type="checkbox" id="toggle-Meta" value="Meta" checked><span>Meta</span></label>
+        </div>
+        <p class="ds-hint">회사 이름을 눌러 켜고 끄면 표가 바뀌어요. 처음이면 위 파란 버튼을 눌러 보세요.</p>
+        <div class="btn-row">
+          <button id="demo-mistral-button" class="ds-btn ds-btn-primary">두 회사 비교해 보기 (예: Mistral vs Anthropic)</button>
+          <button id="reset-button" class="ds-btn">전체 초기화</button>
+        </div>
       </div>
+
+      <div class="ds-card">
+        <p id="result-summary" class="ds-hint">6개 기업 모두를 보고 있어요. 예시로 해 보기를 누르면 Mistral과 Anthropic만 비교해요.</p>
+        <p class="ds-hint legend">(괄호 숫자 = 최근 7일간 건수) 🟢 활발 · 🟡 보통 · 🔴 조용 — 점수는 높을수록 최근 활동이 많습니다(100점 만점)</p>
+        <div class="table-wrap">
+          <table id="velocity-matrix">
+            <thead>
+              <tr>
+                <th scope="col">기업</th>
+                <th scope="col" class="score-col">활동 점수</th>
+                <th scope="col">종합</th>
+                <th scope="col">새 AI 모델</th>
+                <th scope="col">새 개발 자료</th>
+                <th scope="col">뉴스 기사</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+        <p class="ds-empty" id="matrix-empty" hidden>선택된 기업이 없습니다. 위 토글에서 기업을 골라 보세요.</p>
+        <details class="hint-details">
+          <summary>점수는 어떻게 계산하나요?</summary>
+          <p class="ds-hint">활동 점수는 <b>최근 7일 관찰창 안에서만</b> 매칭된 활동에 모델×3 + 코드×2 + 뉴스×1 가중으로 계산됩니다. 그래서 “새 AI 모델 (0)”은 최근 7일에 급상승한 모델이 없다는 뜻이며, 아래 목록(전체 수집 범위)에는 7일 전에 등록한 모델이 함께 보일 수 있어요. 신호는 각 출처의 7일 건수 기준(2건 이상 초록, 1건 주황, 0건 빨강)입니다.</p>
+        </details>
+      </div>
+
+      <section id="company-sections" class="company-sections" aria-label="기업별 상세"></section>
     </section>
 
-    <section class="card">
-      <h2>신호등 요약 매트릭스</h2>
-      <p class="hint">각 기업의 최근 7일 관찰창 활동을 신호등(초록·주황·빨강)으로 요약합니다. 괄호 안 숫자는 <b>최근 7일 안에서만</b> 매칭된 건수이며, 기업 카드의 상세 목록(전체 수집 범위)과 달라질 수 있습니다. 예: “모델 (0)”은 최근 7일에 급상승한 모델이 없다는 뜻이지, 아래 목록에 오래전 등록한 모델이 보인다고 해서 모순이 아닙니다. 종합 신호는 모델×3 + 코드×2 + 뉴스×1 가중 점수로 계산됩니다.</p>
-      <div class="table-wrap">
-        <table id="velocity-matrix">
-          <thead>
-            <tr>
-              <th scope="col">기업</th>
-              <th scope="col">속도 점수</th>
-              <th scope="col">종합 신호</th>
-              <th scope="col">모델 신호</th>
-              <th scope="col">코드 신호</th>
-              <th scope="col">뉴스 신호</th>
-            </tr>
-          </thead>
-          <tbody id="matrix-body"></tbody>
-        </table>
-      </div>
-      <p class="empty" id="matrix-empty" hidden>선택된 기업이 없습니다. 위 토글에서 기업을 골라 보세요.</p>
+    <section class="ds-card-tint">
+      <h2>색이 의미하는 것</h2>
+      <p class="ds-hint" style="font-size:14px">🟢 활발 = 최근 7일간 새 소식 6건 이상, 🟡 보통 = 2~5건, 🔴 조용 = 1건 이하. 출처별로는 새 AI 모델·새 개발 자료(코드)·뉴스 기사 각각 2건 이상이면 초록, 1건이면 주황, 0건이면 빨강이에요.</p>
     </section>
 
-    <section id="company-sections" class="company-sections"></section>
-
-    <section class="card">
-      <h2>자동 검사용 결과 데이터</h2>
-      <p class="hint">최근 1회 <code>buildCompanyVelocityMatrix</code> 호출 결과(기업 속도 매트릭스)를 그대로 보여주는 영역입니다. 검사 도구에서 이 값을 읽어 검증합니다.</p>
+    <section>
+      <div class="ds-section-title"><h2>자동 검사용 결과 데이터</h2></div>
+      <p class="ds-hint">최근 1회 <code>buildCompanyVelocityMatrix</code> 호출 결과(기업 속도 매트릭스)를 그대로 보여주는 영역입니다. 검사 도구에서 이 값을 읽어 검증합니다.</p>
       <details class="json-details">
         <summary class="json-summary">결과 JSON 전체 보기</summary>
         <pre id="matrix-json" class="matrix-json"></pre>
       </details>
     </section>
+
+    <p class="ds-footer"><span id="source-terms"></span></p>
   </main>
 
   <script type="module" src="src/app.js"></script>

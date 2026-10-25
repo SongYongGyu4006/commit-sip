@@ -293,10 +293,13 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
   const matrixEmpty = $('matrix-empty');
   const sectionsEl = $('company-sections');
   const jsonEl = $('matrix-json');
+  const resultSummaryEl = $('result-summary');
   const toggles = [...document.querySelectorAll('input.company-toggle')];
   const fetchedAtEl = $('fetched-at-kst');
   const summary24El = $('summary-24h-count');
   const sourceTermsEl = $('source-terms');
+
+  const DEFAULT_SUMMARY = '6개 회사 모두를 보고 있어요. 위 파란 버튼을 누르면 Mistral과 Anthropic만 비교해요.';
 
   const SOURCE_DEFS = [
     { id: 'tech_radar', key: 'techRadar', label: '기술 레이더' },
@@ -320,30 +323,50 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
       hour: '2-digit', minute: '2-digit', hour12: false,
     }).formatToParts(new Date(t));
     const get = (type) => { const p = parts.find((x) => x.type === type); return p ? p.value : ''; };
-    return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')} KST`;
+    return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')} 한국 시간`;
   }
 
-  function showStatus(msg) { statusEl.innerHTML = ''; if (msg) statusEl.appendChild(Object.assign(document.createElement('div'), { className: 'status-msg', textContent: msg })); }
+  function showStatus(msg) { statusEl.innerHTML = ''; if (msg) statusEl.appendChild(Object.assign(document.createElement('div'), { className: 'ds-status ds-status-bad', textContent: msg })); }
 
   function clearResults() {
     matrixBody.innerHTML = '';
     sectionsEl.innerHTML = '';
     jsonEl.textContent = '';
     matrixEmpty.hidden = true;
+    resultSummaryEl.textContent = DEFAULT_SUMMARY;
   }
 
   function selectedCompanies() {
-    const checked = toggles.filter((t) => t.checked).map((t) => t.value);
-    return checked.length ? checked : []; // 전부 안 고르면 = 6개 전체
+    // UX-REVIEW 4.1: 모두 꺼 놓으면 "전체"가 아니라 "아무도 선택되지 않음" → 빈 결과 상태.
+    const set = new Set(toggles.filter((t) => t.checked).map((t) => t.value));
+    return [...set];
   }
 
   const SIGNAL_COLOR = { GREEN: '초록', AMBER: '주황', RED: '빨강' };
+  function renderResultSummary(result) {
+    if (!result.matrix.length) return '선택된 기업이 없어요. 위 토글에서 기업을 골라 주세요.';
+    if (result.matrix.length === 1) {
+      const r = result.matrix[0];
+      return `${r.company}: ${r.velocityScore}점, 종합 ${SIGNAL_COLOR[r.overallSignal] || ''}`;
+    }
+    let fastest = result.matrix[0];
+    let slowest = result.matrix[0];
+    for (const r of result.matrix) {
+      if (r.velocityScore > fastest.velocityScore) fastest = r; // 동점이면 표 순서상 앞
+      if (r.velocityScore < slowest.velocityScore) slowest = r;
+    }
+    if (fastest.velocityScore === slowest.velocityScore) {
+      return `${fastest.company} 등 ${result.matrix.length}개 기업이 모두 ${fastest.velocityScore}점으로 ${SIGNAL_COLOR[fastest.overallSignal] || ''} 신호예요.`;
+    }
+    return `결론: 최근 7일 가장 활발한 곳은 ${fastest.company}(${fastest.velocityScore}점), 가장 조용한 곳은 ${slowest.company}(${slowest.velocityScore}점)`;
+  }
   function makeSignal(kind, label, count) {
     const span = document.createElement('span');
     span.className = 'signal ' + kind;
     const dot = document.createElement('span');
     dot.className = 'dot';
     const text = document.createElement('span');
+    text.className = 'label-text';
     text.textContent = label;
     span.append(dot, text);
     if (count !== null) {
@@ -377,9 +400,9 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
       const tdOverall = document.createElement('td');
       tdOverall.appendChild(makeSignal(row.overallSignal, '종합', null));
       const tdModel = document.createElement('td');
-      tdModel.appendChild(makeSignal(row.signals.modelSignal, '모델', row.counts.modelCount));
+      tdModel.appendChild(makeSignal(row.signals.modelSignal, '새 AI 모델', row.counts.modelCount));
       const tdRepo = document.createElement('td');
-      tdRepo.appendChild(makeSignal(row.signals.repoSignal, '코드', row.counts.repoCount));
+      tdRepo.appendChild(makeSignal(row.signals.repoSignal, '새 개발 자료', row.counts.repoCount));
       const tdNews = document.createElement('td');
       tdNews.appendChild(makeSignal(row.signals.hnSignal, '뉴스', row.counts.newsCount));
       tr.append(tdCo, tdScore, tdOverall, tdModel, tdRepo, tdNews);
@@ -433,10 +456,10 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     const view = document.createElement('div');
     view.className = 'three-view';
 
-    // 모델
+    // 모델: 소제목에 "7일 건수"와 "목록 개수"를 같은 줄에 나란히(혼합 방지)
     const modelBlock = document.createElement('div');
     const mh = document.createElement('h4');
-    mh.textContent = '급상승 모델 (Hugging Face)';
+    mh.textContent = `급상승 모델 — 최근 7일 ${row.counts.modelCount}건 · 아래는 전체 수집 상위 ${row.topModels.length}개`;
     modelBlock.appendChild(mh);
     modelBlock.appendChild(makeList(
       row.topModels,
@@ -456,7 +479,7 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     // 레포
     const repoBlock = document.createElement('div');
     const rh = document.createElement('h4');
-    rh.textContent = '신규 저장소 (GitHub)';
+    rh.textContent = `신규 저장소 — 최근 7일 ${row.counts.repoCount}건 · 아래는 전체 수집 상위 ${row.topRepos.length}개`;
     repoBlock.appendChild(rh);
     repoBlock.appendChild(makeList(
       row.topRepos,
@@ -468,10 +491,10 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
       'repo-list',
     ));
 
-    // 소식
+    // 소식(목록은 전체 수집 범위이므로 "전체 수집" 표기)
     const storyBlock = document.createElement('div');
     const sh = document.createElement('h4');
-    sh.textContent = '기술 소식 (레이더 · HN, 최근 7일)';
+    sh.textContent = `기술 소식 — 최근 7일 ${row.counts.newsCount}건 · 아래는 전체 수집 상위 ${row.topStories.length}개`;
     storyBlock.appendChild(sh);
     storyBlock.appendChild(makeList(
       row.topStories,
@@ -506,6 +529,8 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     }
     state.result = result;
     summary24El.textContent = String(result.summary24hCount);
+    // 표 바로 위의 "한 줄 결론": 7일 속도 점수가 가장 큰(동점이면 표 순서상 앞) 기업을 씀. 순수 함수는 건드리지 않는다.
+    resultSummaryEl.textContent = selectedCompanies().length ? renderResultSummary(result) : DEFAULT_SUMMARY;
     renderMatrix(result);
     sectionsEl.innerHTML = '';
     for (const row of result.matrix) sectionsEl.appendChild(renderCompanyCard(row));
@@ -549,26 +574,24 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     summary24El.textContent = '…';
     sourceTermsEl.innerHTML = '';
     for (const m of state.metas) {
-      const line = document.createElement('div');
       const t1 = document.createElement('span');
       t1.textContent = `${m.label} — `;
       const t2 = document.createElement('span');
-      t2.textContent = `데이터 기준 ${formatKst(m.fetchedAt) || '알 수 없음'}`;
-      const t3 = document.createElement('span');
-      t3.textContent = m.terms ? ` · ${m.terms}` : '';
-      line.append(t1, t2, t3);
-      sourceTermsEl.appendChild(line);
+      t2.textContent = m.terms ? m.terms : '';
+      sourceTermsEl.append(t1, t2);
     }
     render();
   }
 
   for (const t of toggles) t.addEventListener('change', render);
+  // "예시로 해 보기"는 데모 편의: Mistral + Anthropic만, 그 외 모두 해제
   $('demo-mistral-button').addEventListener('click', () => {
     for (const t of toggles) t.checked = (t.value === 'Mistral' || t.value === 'Anthropic');
     render();
   });
+  // UX-REVIEW 4.1/7.2: 초기 상태는 6개 기업 전체가 켜진 상태
   $('reset-button').addEventListener('click', () => {
-    for (const t of toggles) t.checked = false;
+    for (const t of toggles) t.checked = true;
     showStatus(null);
     render();
   });

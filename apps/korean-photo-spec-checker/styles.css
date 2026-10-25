@@ -1,0 +1,213 @@
+/* 한국 제출 사진 규격 검사기 — studio.css(v2) 위에 추가하는 레이아웃 스타일 */
+
+/* 상단 nav: 화면 전환 버튼들 */
+.app-nav {
+  display: flex;
+  gap: var(--ds-s2);
+  max-width: var(--ds-max);
+  margin: 0 auto;
+  padding: var(--ds-s3) var(--ds-s4) 0;
+  flex-wrap: wrap;
+}
+.app-nav {
+  gap: var(--ds-s3);
+  border-bottom: 1px solid var(--ds-line);
+}
+.app-nav-btn {
+  flex: none;
+  min-height: 44px;
+  padding: 0 var(--ds-s2);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ds-ink-2);
+}
+.app-nav-btn:hover { border-bottom-color: var(--ds-line); }
+.app-nav-btn[aria-pressed="true"] {
+  background: transparent;
+  border-bottom: 2px solid var(--ds-accent);
+  color: var(--ds-accent-text);
+  font-weight: 600;
+}
+
+/* 첫 화면 순서: 답 카드 → 사진 올리기 → 제출처 → 상세 */
+.app-view { display: flex; flex-direction: column; }
+.app-view[hidden] { display: none; }
+.app-view > .ds-answer { order: -2; }
+.app-view > .app-upload { order: -1; }
+.app-view > .ds-card,
+.app-view > .ds-grid,
+.app-view > .ds-answer { margin-bottom: var(--ds-s4); }
+.app-view .ds-card { box-shadow: none; border: 1px solid var(--ds-line); }
+.app-view .ds-section-title p { font-size: 14px; color: var(--ds-ink-2); }
+.app-upload { padding: var(--ds-s5); }
+.app-upload .ds-row { gap: var(--ds-s3); }
+@media (max-width: 520px) {
+  #choose-file-button, #sample-button { width: 100%; min-height: 48px; flex: 1 1 100%; }
+}
+
+/* 답 카드: 검사 전에는 회색, 결과가 나온 뒤에만 주 색 */
+.ds-answer-num { color: var(--ds-ink-3); }
+.ds-answer:has(.ds-check.is-pass, .ds-check.is-fail) .ds-answer-num { color: var(--ds-accent-text); }
+.ds-answer-meta dt { font-size: 13px; color: var(--ds-ink-2); }
+.ds-answer-meta dd { font-size: 18px; font-variant-numeric: tabular-nums; }
+
+/* 띠 메타 */
+.ds-band-thin .ds-band-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-s2) var(--ds-s3);
+}
+#spec-summary {
+  font-family: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: normal;
+  max-width: 100%;
+}
+#spec-source-link {
+  font-size: 14px;
+  color: var(--ds-accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+#spec-verified-date { font-size: 13px; color: var(--ds-ink-3); }
+
+/* 답 카드: 배지(판정) */
+.ds-check {
+  font-size: 18px;
+  font-weight: 700;
+}
+.ds-check.is-pass { color: var(--ds-good); }
+.ds-check.is-fail { color: var(--ds-bad); }
+.ds-check.is-neutral { color: var(--ds-ink-3); }
+
+/* 프리셋 칩 행 */
+.app-chips { margin-bottom: 0; }
+#custom-panel { margin-top: var(--ds-s3); }
+.preset-chip { min-height: 44px; }
+.preset-chip[aria-pressed="true"] {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: var(--ds-accent-ink);
+}
+
+/* 직접 입력 그리드 (2열, 좁은 화면 1열) */
+.app-custom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-s2) var(--ds-s3);
+}
+.app-custom-grid .ds-label { margin-bottom: 2px; }
+.app-custom-grid .ds-input,
+.app-custom-grid .ds-select { min-height: 44px; }
+@media (max-width: 520px) {
+  .app-custom-grid { grid-template-columns: 1fr; }
+}
+
+/* 파일 입력 숨김 + 끌어 놓기 안내 */
+.app-file { display: none; }
+.app-file-hint { margin-top: var(--ds-s2); }
+
+/* 미리보기: 원본 / 변환 결과 2열 (좁은 화면은 1열) */
+.app-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-s3);
+}
+@media (max-width: 640px) {
+  .app-compare { grid-template-columns: 1fr; }
+}
+.app-stagebox {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  max-height: 320px;
+  background: var(--ds-surface-2);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.app-stagebox canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+#face-guide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: none;
+}
+#face-guide.is-on { display: block; }
+.fg-line {
+  stroke: var(--ds-accent-text);
+  stroke-width: 0.8;
+  stroke-dasharray: 3 2;
+  opacity: 0.7;
+  fill: none;
+}
+.fg-oval {
+  stroke: var(--ds-accent-text);
+  stroke-width: 0.8;
+  fill: none;
+  opacity: 0.55;
+}
+
+/* 확대 보기 슬라이더 */
+.ds-range {
+  width: 100%;
+  accent-color: var(--ds-accent);
+  min-height: 32px;
+  cursor: pointer;
+}
+
+/* 판정 결과 JSON */
+.app-json {
+  margin: var(--ds-s3) 0 0;
+  padding: var(--ds-s3);
+  background: var(--ds-surface-2);
+  border-radius: var(--ds-radius);
+  font-family: var(--ds-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.app-details summary { cursor: pointer; margin-top: var(--ds-s3); }
+
+/* 상태: ds-status 기본 위에 오류/성공 색상 (studio.css 클래스 재사용) */
+#app-status { display: none; }
+#app-status.is-on { display: block; }
+#app-status.is-error { background: var(--ds-bad-soft); color: var(--ds-bad); }
+#app-status.is-ok { background: var(--ds-good-soft); color: var(--ds-good); }
+
+/* 내려받기 링크 비활성 */
+#download-link:disabled { opacity: .5; cursor: not-allowed; }
+
+/* 기록 목록 */
+#history-list .ds-list-sub .ds-badge { margin-right: 4px; }
+#history-list .ds-list-item[data-empty] { opacity: 0; }
+
+/* 위험 버튼(기록 비우기) */
+.app-btn-danger {
+  color: var(--ds-bad);
+  border-color: var(--ds-bad);
+}
+.app-btn-danger:hover { background: var(--ds-bad-soft); border-color: var(--ds-bad); }
+
+.app-history-actions { margin-bottom: var(--ds-s3); }
+
+/* 기록 비우기 확인: '지울까요?' 문구 */
+.confirm-line { display: flex; flex-wrap: wrap; gap: var(--ds-s2); align-items: center; }
+.confirm-line .ds-btn { min-height: 40px; }
