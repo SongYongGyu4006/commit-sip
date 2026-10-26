@@ -2,10 +2,10 @@
  "id": "coin_price",
  "name": "코인 시세(CoinGecko)",
  "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=krw,usd&include_24hr_change=true",
- "fetched_at": "2026-10-26T04:03:59",
+ "fetched_at": "2026-10-27T04:03:02",
  "terms": "무료 공개 API(호출 제한, 출처 표기 권장)",
  "cors": true,
  "items": 0,
- "bytes": 361,
+ "bytes": 366,
  "trimmed": false
 }

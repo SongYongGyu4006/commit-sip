@@ -1,64 +1,143 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-accent="blue">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>원화 코인 대시보드 krcoinfx — 무료 웹 도구 · 커밋 한 모금</title>
+<link rel="stylesheet" href="vendor/studio.css">
 <link rel="stylesheet" href="styles.css">
+<script src="vendor/chart.umd.min.js"></script>
 <script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="비트코인·이더리움(필요 시 솔라나)의 원화 가격과 24시간 변동을 달러 변동과 환율 효과로 나눠 보여 주는 원화 기준 코인 대시보드입니다."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/krw-crypto-dashboard/"></head>
 <body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 원화 코인 대시보드 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
-<div class="wrap">
-  <header class="app-head">
-    <h1>원화 코인 대시보드</h1>
-    <p class="tagline">비트코인·이더리움의 원화 가격과 24시간 변동을 달러 변동·환율 효과와 함께 보여 줍니다</p>
-  </header>
 
-  <nav class="topnav">
-    <button id="nav-dashboard" class="nav-btn active" type="button">대시보드</button>
-    <button id="nav-coins" class="nav-btn" type="button">코인 선택</button>
-    <button id="nav-backup" class="nav-btn" type="button">백업</button>
-  </nav>
-
-  <p id="app-status" role="status"></p>
-
-  <main>
-    <section id="screen-dashboard">
-      <h2>원화 코인 대시보드</h2>
-      <div class="card">
-        <p id="fx-line"></p>
-        <p id="data-time"></p>
+<header class="ds-band">
+  <div class="ds-band-head">
+    <div>
+      <h1>원화 코인 대시보드</h1>
+      <p>원화·비트코인·환율 시세와 24시간 변동을 달러 변동·환율 효과와 함께 보여 줍니다</p>
+      <div class="ds-band-meta" id="band-meta">
+        <span id="fx-line">오늘 1$ 환율을 불러오는 중입니다</span>
+        <span id="data-time"></span>
       </div>
-      <ul id="coin-list"></ul>
-      <p id="source-line" class="source-line"></p>
-      <button id="example-button" class="primary" type="button">예시로 해 보기</button>
-    </section>
+    </div>
+    <nav class="topnav" aria-label="화면 이동">
+      <button id="nav-dashboard" class="ds-btn ds-btn-primary nav-btn active" type="button">대시보드</button>
+      <button id="nav-coins" class="ds-btn ds-btn-ghost nav-btn" type="button">코인 선택</button>
+      <button id="nav-backup" class="ds-btn ds-btn-ghost nav-btn" type="button">백업</button>
+    </nav>
+    <button id="example-button" class="ds-btn ds-btn-ghost example-btn" type="button">예시로 해 보기</button>
+  </div>
+</header>
 
-    <section id="screen-coins" hidden>
-      <h2>코인 선택</h2>
-      <div class="card">
-        <p>비트코인과 이더리움은 항상 표시됩니다. 추가할 코인을 고르면 대시보드가 다시 그려집니다.</p>
-        <label for="extra-coin">추가 코인</label>
-        <select id="extra-coin">
-          <option value="">추가 코인 없음</option>
-          <option value="solana">솔라나</option>
-        </select>
+<p id="app-status" role="status" class="ds-status app-status"></p>
+
+<main class="ds-page">
+
+  <section id="screen-dashboard">
+    <div class="ds-section-title" id="krw-chart-title">
+      <h2>원화 시세</h2>
+      <p>코인별 원화 가격과 24시간 원화 실질 변동을 보여 줍니다. 24시간 전부터 지금까지의 흐름은 아래 접힌 구역에서 볼 수 있어요.</p>
+    </div>
+    <div class="ds-card" id="krw-chart-card">
+      <div class="chart-canvas-wrap"><canvas id="krw-price-chart" aria-label="코인별 원화 가격과 24시간 변동 차트"></canvas></div>
+    </div>
+
+    <div class="ds-section-title" id="btc-title">
+      <h2>비트코인 시세</h2>
+      <p>코인별 달러 가격과 24시간 달러 변동, 환율 효과까지 합친 원화 실질 변동을 보여 줍니다.</p>
+    </div>
+    <div class="ds-card" id="btc-chart-card">
+      <div class="chart-canvas-wrap"><canvas id="btc-chart" aria-label="비트코인 달러 가격과 24시간 변동 차트"></canvas></div>
+    </div>
+
+    <div class="ds-section-title" id="fx-title">
+      <h2>환율</h2>
+      <p>오늘 1$ 환율과 각 코인의 24시간 환율 효과를 보여 줍니다. 환율이 원화 수익에 얼마나 작용했는지 비교해 보세요.</p>
+    </div>
+    <div class="ds-card" id="fx-chart-card">
+      <div class="chart-canvas-wrap"><canvas id="fx-chart" aria-label="오늘 1달러 환율과 환율 효과 차트"></canvas></div>
+    </div>
+
+    <div class="ds-section-title" id="unified-title">
+      <h2>통합 시세(원화·비트코인·환율)</h2>
+      <p>코인별 원화 가격과 달러 가격, 그리고 오늘 환율을 함께 비교해 줍니다. 24시간 흐름은 아래 접힌 구역에서 볼 수 있어요.</p>
+    </div>
+    <div class="ds-card" id="unified-chart-card">
+      <div class="chart-canvas-wrap"><canvas id="unified-chart" aria-label="원화·달러·환율 통합 시세 차트"></canvas></div>
+    </div>
+
+    <div class="ds-section-title" id="coin-list-title">
+      <h2>코인 시세</h2>
+      <p>원화 가격과 24시간 변동을 코인별로 보여 줍니다.</p>
+    </div>
+    <ul id="coin-list" class="coin-list ds-answer ds-list"></ul>
+
+    <details class="fold">
+      <summary>24시간 흐름·그때 샀더라면 보기</summary>
+      <div class="ds-section-title" id="flow-title">
+        <h2>24시간 흐름(원화·달러·환율)</h2>
+        <p>24시간 전과 지금의 원화 가격·환율을 비교합니다. 환율 데이터는 오늘 하루치만 있어, 24시간 전 환율은 없어요.</p>
       </div>
-    </section>
+      <div class="ds-card" id="flow-chart-card">
+        <div class="chart-canvas-wrap"><canvas id="flow-chart" aria-label="24시간 전과 지금 가격·환율 비교 차트"></canvas></div>
+      </div>
 
-    <section id="screen-backup" hidden>
-      <h2>백업과 복원</h2>
-      <div class="card">
-        <p>현재 코인 선택을 krcoinfx.json 파일로 내보내고, 같은 형식 파일을 가져와 복원할 수 있습니다.</p>
-        <div class="btn-row">
-          <button id="export-button" class="primary" type="button">내보내기 (krcoinfx.json)</button>
-          <label class="import-label" for="import-file">내보내신 krcoinfx.json을 선택하세요</label>
-          <input id="import-file" class="import-input" type="file" accept=".json" title="krcoinfx.json 가져오기">
-          <button id="reset-button" type="button">선택 초기화</button>
+      <div class="ds-section-title" id="sim-title">
+        <h2>그때 샀더라면</h2>
+        <p>24시간 전 가격·환율에 돈을 넣었더라면 지금 얼마가 될까요? 값을 고치면 바로 다시 계산해요.</p>
+      </div>
+      <div class="ds-card" id="sim-card">
+        <div class="ds-grid sim-grid">
+          <div class="ds-stack">
+            <label class="ds-label" for="sim-coin">코인</label>
+            <select class="ds-select" id="sim-coin">
+              <option value="bitcoin">비트코인</option>
+              <option value="ethereum">이더리움</option>
+              <option value="solana" hidden>솔라나</option>
+            </select>
+            <label class="ds-label" for="sim-amount">투자금(원)</label>
+            <input class="ds-input ds-num" id="sim-amount" type="text" inputmode="numeric" value="1000000" placeholder="1000000">
+          </div>
+          <div class="ds-stack">
+            <label class="ds-label" for="sim-buy-usd">매수 시점 달러 가격</label>
+            <input class="ds-input ds-num" id="sim-buy-usd" type="text" inputmode="decimal" placeholder="81414">
+            <label class="ds-label" for="sim-buy-fx">매수 시점 환율(원)</label>
+            <input class="ds-input ds-num" id="sim-buy-fx" type="text" inputmode="decimal" placeholder="1331.45">
+          </div>
         </div>
+        <p id="sim-result" class="sim-result" aria-live="polite"></p>
       </div>
-    </section>
-  </main>
-</div>
+    </details>
+  </section>
+
+  <p id="source-line" class="ds-footer"></p>
+
+  <section id="screen-coins" hidden>
+    <div class="ds-card">
+      <h2>코인 선택</h2>
+      <p class="ds-sub">비트코인과 이더리움은 항상 표시됩니다. 추가할 코인을 고르면 대시보드가 다시 그려집니다.</p>
+      <label class="ds-label" for="extra-coin">추가 코인</label>
+      <select class="ds-select" id="extra-coin">
+        <option value="">추가 코인 없음</option>
+        <option value="solana">솔라나</option>
+      </select>
+    </div>
+  </section>
+
+  <section id="screen-backup" hidden>
+    <div class="ds-card">
+      <h2>백업과 복원</h2>
+      <p class="ds-sub">현재 코인 선택을 krcoinfx.json 파일로 내보내고, 같은 형식 파일을 가져와 복원할 수 있습니다.</p>
+      <div class="ds-row btn-row">
+        <button id="export-button" class="ds-btn ds-btn-primary" type="button">내보내기 (krcoinfx.json)</button>
+        <label class="ds-btn import-label" for="import-file">파일 선택해서 가져오기</label>
+        <input id="import-file" class="import-input" type="file" accept=".json" hidden>
+        <button id="reset-button" class="ds-btn" type="button">선택 초기화</button>
+      </div>
+    </div>
+  </section>
+
+</main>
 <script type="module" src="src/main.js"></script>
 
 </body>

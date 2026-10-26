@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>정부 혜택 찾기 — 최근 등록·수정된 정부 지원금 — 무료 웹 도구 · 커밋 한 모금</title>
+<title>정부 혜택 찾기 — 마감 임박 혜택 — 무료 웹 도구 · 커밋 한 모금</title>
 <link rel="stylesheet" href="vendor/studio.css">
 <link rel="stylesheet" href="styles.css">
 <script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="최근 등록·수정된 정부 지원금·혜택을 분야와 대상(청년·출산육아·자영업·저소득·노인)으로 골라, 마감이 임박한 순서로 카드로 보여 주는 앱입니다."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/government-benefits-finder/"></head>
 <body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 정부 혜택 찾기 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
 <header class="ds-band">
   <h1>정부 혜택 찾기</h1>
-  <p>최근 등록·수정된 정부 지원금·혜택을 분야와 대상(청년·출산육아·자영업·저소득·노인)으로 골라 마감 임박 순서로 보여 드려요.</p>
+  <p>최근 등록·수정된 정부 지원금·혜택에서 내게 맞는 것과 마감이 임박한 걸 먼저 보여 드려요.</p>
   <div class="ds-band-meta">
     <span class="ds-badge" id="total-line"></span>
     <span id="data-time"></span>
@@ -19,8 +19,6 @@
 </header>
 
 <main class="ds-page">
-  <p id="app-status" role="status"></p>
-
   <section class="ds-answer">
     <p class="ds-answer-label">보여 주는 혜택</p>
     <p class="ds-answer-num answer-num-zero" id="answer-num">—<small>건</small></p>
@@ -33,41 +31,64 @@
   </section>
 
   <div class="ds-section-title">
-    <h2>조건 정하기</h2>
-    <p>조건을 바꾸면 바로 다시 보여 드려요.</p>
+    <h2 id="target-label">누구를 위한 혜택인가요?</h2>
+    <p>내 대상을 고르면 아래 목록이 바로 좁혀져요.</p>
   </div>
-  <div class="ds-card ds-stack">
-    <label class="ds-label" for="field-select">분야</label>
-    <select class="ds-select" id="field-select"></select>
-    <label class="ds-label" for="target-select">대상</label>
-    <select class="ds-select" id="target-select">
-      <option value="all">전체 대상</option>
-      <option value="youth">청년</option>
-      <option value="childcare">출산·육아</option>
-      <option value="selfemployed">자영업</option>
-      <option value="lowincome">저소득</option>
-      <option value="senior">노인</option>
-    </select>
-    <label class="ds-label" for="sort-select">정렬</label>
-    <select class="ds-select" id="sort-select">
-      <option value="deadline" selected>마감 임박순</option>
-      <option value="name">이름순</option>
-      <option value="input">최근 등록순</option>
-    </select>
-    <div class="ds-row">
-      <button class="ds-btn ds-btn-primary" id="example-button" type="button">예시로 해 보기</button>
-      <button class="ds-btn" id="reset-button" type="button">처음으로</button>
+  <div class="ds-card">
+    <div class="ds-chip-row" id="target-chips" role="group" aria-labelledby="target-label">
+      <button class="ds-chip" type="button" data-target="all" aria-pressed="true">전체</button>
+      <button class="ds-chip" type="button" data-target="youth" aria-pressed="false">청년</button>
+      <button class="ds-chip" type="button" data-target="childcare" aria-pressed="false">출산·육아</button>
+      <button class="ds-chip" type="button" data-target="selfemployed" aria-pressed="false">자영업</button>
+      <button class="ds-chip" type="button" data-target="lowincome" aria-pressed="false">저소득</button>
+      <button class="ds-chip" type="button" data-target="senior" aria-pressed="false">노인</button>
+    </div>
+    <div class="ds-filter-row">
+      <div class="ds-filter">
+        <label class="ds-label" for="field-select">분야</label>
+        <select class="ds-select" id="field-select"></select>
+      </div>
+      <div class="ds-filter">
+        <label class="ds-label" for="target-select">대상</label>
+        <select class="ds-select" id="target-select">
+          <option value="all">전체 대상</option>
+          <option value="youth">청년</option>
+          <option value="childcare">출산·육아</option>
+          <option value="selfemployed">자영업</option>
+          <option value="lowincome">저소득</option>
+          <option value="senior">노인</option>
+        </select>
+      </div>
+      <div class="ds-filter">
+        <label class="ds-label" for="sort-select">정렬</label>
+        <select class="ds-select" id="sort-select">
+          <option value="deadline" selected>마감 임박순</option>
+          <option value="name">이름순</option>
+          <option value="input">최근 등록순</option>
+        </select>
+      </div>
     </div>
   </div>
 
+  <div class="ds-row ds-actions">
+    <button class="ds-btn ds-btn-primary" id="example-button" type="button">예시로 해 보기</button>
+    <button class="ds-btn" id="reset-button" type="button">처음으로</button>
+    <span class="ds-hint">예시 3건으로 결과가 어떻게 보이는지 확인해요. 목록은 '처음으로'로 다시 나와요.</span>
+  </div>
+
+  <p id="app-status" class="ds-status" role="status"></p>
+
   <div class="ds-section-title">
     <h2>혜택 목록</h2>
-    <p>마감이 가까운 순서로, 마감 날짜와 신청 방법을 함께 보여 드려요.</p>
+    <p>마감 날짜가 가까운 순서로, 마감과 신청 방법을 함께 보여 드려요.</p>
   </div>
   <div class="ds-card">
     <p id="summary-line" class="ds-label"></p>
     <p class="ds-hint">카드의 이름을 누르면 혜택 상세 페이지가 새 창에서 열려요.</p>
     <ul id="benefit-list" class="ds-list"></ul>
+    <div class="ds-row" id="more-row">
+      <button class="ds-btn" id="more-button" type="button">더 보기</button>
+    </div>
   </div>
 
   <div class="ds-card-tint">

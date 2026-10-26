@@ -20,7 +20,9 @@
 
 ## 최근 글
 
+- [AI 에이전트용 웹 접근 도구 Agent-Reach, 설치 없이 직접 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-27-agent-reach.html)
 - [8KB 파일 하나로 에이전트에 역공학 스킬을 심었다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-26-leanrea.html)
+- [로컬 Qwen 27B를 5개 협업시켜 코딩 대회 문제 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-26-gvs5h.html)
 - [promptfoo, 설치 없이 받아서 직접 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-25-promptfoo.html)
 - [NVIDIA 오픈쉘, 설치 없이 코드부터 읽어본 결과](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-24-openshell.html)
 - [freehire 실측 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-23-freehire.html)

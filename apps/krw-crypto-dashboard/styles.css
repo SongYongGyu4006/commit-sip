@@ -1,220 +1,370 @@
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
-  color: #1c2330;
-  background: #f2f4f8;
+/* 스타일: vendor/studio.css(디자인 시스템) 위에 앱 전용 규칙만. 토큰·ds- 구성 요소 우선 사용 */
+:root {
+  --ds-c3: #0c8599;
+  --ds-c4: #3756e3;
 }
 
-.wrap {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 24px 16px 64px;
+/* 다크 모드: 앱 색이 모두 토큰이라 여기서 토큰을 직접 바꾼다 */
+@media (prefers-color-scheme: dark) {
+  :root, :root[data-accent] {
+    color-scheme: dark;
+    --ds-bg: #111214; --ds-surface: #1a1b1e; --ds-surface-2: #232428;
+    --ds-ink: #eeeff1; --ds-ink-2: #b4b4b4; --ds-ink-3: #949494; --ds-line: #2e3035;
+    --ds-accent: #7c9bff; --ds-accent-text: #7c9bff; --ds-accent-ink: #0b0e14;
+    --ds-accent-soft: #1c2540; --ds-accent-line: #34457a;
+    --ds-band: #1b2540; --ds-band-ink: #eeeff1; --ds-band-ink-2: #c4c8d4;
+    --ds-up: #ff7b72; --ds-down: #79a8ff;
+    --ds-up-bg: #331a18; --ds-down-bg: #1a2640;
+    --ds-c1: #7c9bff; --ds-c3: #3fc1cf; --ds-c4: #f47fb0;
+    --ds-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+  }
 }
 
-.app-head h1 {
-  margin: 0;
-  font-size: 28px;
-  letter-spacing: -0.5px;
+/* 상단 밴드: 좌(제목·설명·기준) + 우(내비게이션) */
+.ds-band {
+  padding-top: 24px;
+  padding-bottom: 18px;
+}
+.ds-band-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.ds-band h1 {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+.ds-band-head > div:first-child {
+  max-width: 640px;
+}
+.ds-band-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, .88);
+  color: var(--ds-band-ink-2);
+}
+.ds-band-meta span, #data-time {
+  color: var(--ds-band-ink-2);
+}
+#fx-line {
+  color: var(--ds-band-ink);
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-.tagline {
-  margin: 8px 0 0;
-  color: #5a6577;
-}
-
+/* 상단 내비게이션 + 예시 버튼 */
 .topnav {
   display: flex;
   gap: 8px;
-  margin: 24px 0 8px;
   flex-wrap: wrap;
 }
-
-.nav-btn {
-  padding: 8px 16px;
-  font-size: 15px;
-  border: 1px solid #d5dae3;
-  border-radius: 8px;
-  background: #fff;
-  color: #1c2330;
-  cursor: pointer;
+.nav-btn, .example-btn {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--ds-radius);
+}
+.example-btn {
+  margin-left: 0;
+  order: 3;
+}
+.ds-band .ds-btn-ghost {
+  color: var(--ds-band-ink);
+  border: 1px solid color-mix(in srgb, var(--ds-band-ink) 55%, transparent);
+  background: transparent;
+}
+.ds-band .ds-btn-ghost:hover {
+  background: color-mix(in srgb, var(--ds-band-ink) 14%, transparent);
+  border-color: color-mix(in srgb, var(--ds-band-ink) 55%, transparent);
+}
+.ds-band .nav-btn.active {
+  background: var(--ds-band-ink);
+  color: var(--ds-band);
+  border-color: var(--ds-band-ink);
+}
+.ds-band .nav-btn.active:hover {
+  filter: none;
+  border-color: var(--ds-band-ink);
 }
 
-.nav-btn.active {
-  background: #2352e0;
-  border-color: #2352e0;
-  color: #fff;
+/* 상태 바: 비면 숨기고, 본문과 같은 왼쪽 선에 맞춘다 */
+.app-status:empty {
+  display: none;
 }
-
-#app-status {
-  min-height: 24px;
-  margin: 8px 0;
-  font-size: 15px;
-  color: #b3261e;
-}
-
-main h2 {
-  margin: 16px 0;
-  font-size: 20px;
-}
-
-.card {
-  background: #fff;
-  border: 1px solid #e3e7ee;
-  border-radius: 12px;
-  padding: 24px;
-  margin: 0 0 16px;
-}
-
-.card p {
-  margin: 0 0 8px;
-}
-
-#fx-line {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-#data-time {
-  color: #5a6577;
+.app-status {
+  width: min(calc(100% - 32px), calc(var(--ds-max) - 32px));
+  margin: 12px auto 0;
+  padding: 10px 14px;
+  border-radius: var(--ds-radius);
+  background: var(--ds-surface-2);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-line);
   font-size: 14px;
 }
 
+/* 첫 화면: 코인 시세 목록(핵심 답)을 차트보다 위로 */
+#screen-dashboard {
+  display: flex;
+  flex-direction: column;
+}
+#coin-list-title {
+  order: -2;
+  margin-top: 0;
+}
 #coin-list {
-  list-style: none;
-  margin: 0 0 16px;
+  order: -1;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  border-radius: 20px;
+  overflow: hidden;
   padding: 0;
+  margin: 0;
 }
 
-.coin-row {
-  background: #fff;
-  border: 1px solid #e3e7ee;
-  border-radius: 12px;
-  padding: 16px 24px;
-  margin-bottom: 8px;
+/* 섹션 제목(24시간 변동 / 그때 샀더라면 / 코인 시세) */
+.ds-section-title {
+  margin: 32px 0 12px;
 }
-
-.coin-row .coin-name {
-  display: block;
-  font-size: 17px;
-  font-weight: 600;
-  margin-bottom: 8px;
+.ds-section-title h2 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 2px;
 }
-
-.coin-row .krw-price {
-  display: block;
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.coin-row .usd-change,
-.coin-row .fx-effect,
-.coin-row .real-change {
-  display: inline-block;
-  margin-right: 16px;
+.ds-section-title p {
+  margin: 0;
   font-size: 14px;
+  line-height: 1.5;
+  max-width: 60ch;
+  color: var(--ds-ink-2);
 }
 
-.real-change.up { color: #15734b; }
-.real-change.down { color: #c62828; }
-.real-change.flat { color: #6b7280; }
+/* ── 차트 ── */
+.chart-canvas-wrap {
+  position: relative;
+  height: 260px;
+}
+#krw-chart-card, #btc-chart-card, #fx-chart-card, #unified-chart-card, #flow-chart-card {
+  box-shadow: none;
+  border: 1px solid var(--ds-line);
+  border-radius: 20px;
+  padding: 16px;
+}
 
-.bar-wrap {
-  margin-top: 8px;
-  height: 8px;
-  border-radius: 4px;
-  background: #edf0f5;
+/* ── 시뮬레이터 ── */
+.sim-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+#sim-card .ds-input {
+  width: 100%;
+  max-width: 260px;
+}
+.sim-result {
+  margin-top: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  min-height: 24px;
+}
+/* ds-up::before 등 노랩 요소가 카드 밖으로 나가 페이지 가로 스크롤을 만드는 것을 막는다 */
+.sim-result .ds-up, .sim-result .ds-down, .sim-result .ds-flat {
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* ── 코인 목록(ds-list 구조) ── */
+.coin-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.coin-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "avatar main end"
+    ". bar bar";
+  gap: 4px 14px;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--ds-line);
+}
+.coin-row:last-child {
+  border-bottom: none;
+}
+.coin-row .ds-avatar {
+  grid-area: avatar;
+}
+.coin-row .ds-list-main {
+  grid-area: main;
+  min-width: 0;
+}
+.coin-row .ds-list-end {
+  grid-area: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.coin-row .bar-wrap {
+  grid-area: bar;
+  height: 4px;
+  background: var(--ds-line);
+  border-radius: 2px;
   overflow: hidden;
 }
-
-.real-bar {
+.coin-row .bar-wrap .real-bar {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 2px;
 }
+.coin-row .real-bar.up { background: var(--ds-up); }
+.coin-row .real-bar.down { background: var(--ds-down); }
+.coin-row .real-bar.flat { background: var(--ds-ink-3); }
 
-.real-bar.up { background: #22a06b; }
-.real-bar.down { background: #e05252; }
-.real-bar.flat { background: #9aa2af; }
-
-.source-line {
-  margin: 0 0 16px;
-  font-size: 12px;
-  color: #8a93a3;
+.coin-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
-
-button.primary {
-  padding: 12px 24px;
+.coin-name {
   font-size: 15px;
-  border: none;
-  border-radius: 8px;
-  background: #2352e0;
-  color: #fff;
+  font-weight: 600;
+}
+.real-change {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--ds-radius-sm, 8px);
+}
+.real-change.up { background: var(--ds-up-bg); color: var(--ds-up); }
+.real-change.down { background: var(--ds-down-bg); color: var(--ds-down); }
+.real-change.flat { background: var(--ds-surface-2); color: var(--ds-ink-2); }
+
+.ds-list-sub {
+  margin-top: 3px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.usd-change, .fx-effect {
+  font-size: 14px;
+  color: var(--ds-ink-3);
+}
+.krw-price {
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ds-footer {
+  margin: 18px 0 0;
+  font-size: 14px;
+  text-align: left;
+  color: var(--ds-ink-3);
+}
+
+/* ── 접힌 구역(24시간 흐름) ── */
+.fold {
+  margin: 26px 0 0;
+  padding: 14px 18px 18px;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  background: var(--ds-surface);
+}
+/* 접힌 구역: 접혀 있을 때 안쪽 내용(h2·p·차트)을 숨겨 본문 하단 출처 줄과 겹치지 않게 한다.
+   [open] 이면 다시 보이게(접혀 있을 때 안쪽 요소가 summary 아래에 펼쳐져 겹치는 것을 막음) */
+.fold:not([open]) :not(summary) {
+  display: none;
+}
+.fold summary {
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--ds-ink-2);
+}
+.fold[open] summary {
+  margin-bottom: 4px;
 }
 
-button.primary:disabled {
-  background: #a8bcf0;
+/* ── 코인 선택 화면 ── */
+#screen-coins .ds-card {
+  max-width: 420px;
 }
 
+/* ── 백업 화면 ── */
+#screen-backup .ds-card {
+  max-width: 520px;
+}
 .btn-row {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
-  margin-top: 16px;
+  margin-top: 14px;
 }
-
-.btn-row button {
-  font-size: 15px;
-}
-
 .import-label {
-  font-size: 15px;
-  color: #1c2330;
-  cursor: pointer;
-  border: 1px solid #d5dae3;
-  border-radius: 8px;
-  padding: 8px 16px;
-  background: #fff;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
-
-.import-label:hover {
-  background: #f2f4f8;
-}
-
-/* 파일 입력 원본(브라우저 기본 "Choose File")은 시각적으로 숨기고 label 로 대체 */
 .import-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  display: none;
 }
 
-#extra-coin {
-  display: block;
-  margin-top: 8px;
-  padding: 8px;
-  font-size: 15px;
-  border: 1px solid #d5dae3;
-  border-radius: 8px;
-  background: #fff;
-}
-
-@media (max-width: 390px) {
-  .coin-row .usd-change,
-  .coin-row .fx-effect,
-  .coin-row .real-change {
-    display: block;
-    margin: 0 0 4px;
+/* 휴대폰: 시뮬레이터 1열·목록은 그대로(그리드 자체로 좁아짐) */
+@media (max-width: 640px) {
+  .ds-band {
+    padding: 20px 16px 16px;
+  }
+  .ds-band h1 {
+    font-size: 24px;
+  }
+  .ds-band-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .topnav {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .nav-btn {
+    padding: 0 6px;
+  }
+  .example-btn {
+    width: 100%;
+  }
+  .chart-canvas-wrap {
+    height: 220px;
+  }
+  .ds-band-meta {
+    gap: 10px;
+  }
+  .coin-row .ds-list-end {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 4px 12px;
+    text-align: left;
+  }
+  .sim-grid {
+    grid-template-columns: 1fr;
+  }
+  .coin-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "avatar main"
+      ". end"
+      ". bar";
+    padding: 14px 14px;
   }
 }

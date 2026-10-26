@@ -2,7 +2,7 @@
 import { rankLocalModels } from "./app.js";
 import { DEFAULT_STATE, normalizeState, toggleSaved, removeSaved, parseImportedState } from "./state.js";
 import { loadState, saveState, clearState } from "./storage.js";
-import { setStatus, renderHeader, setHeaderValues, downloadJson, readJsonFile } from "./ui.js";
+import { setStatus, renderHeader, setHeaderValues, measuredRange, downloadJson, readJsonFile } from "./ui.js";
 import { renderRank, bindRank } from "./screen-rank.js";
 import { renderCompare, bindCompare } from "./screen-compare.js";
 import { renderSaved, bindSaved } from "./screen-saved.js";
@@ -33,12 +33,14 @@ export async function init() {
     models = Array.isArray(bench.models) ? bench.models : [];
     meta = m && typeof m === "object" ? m : null;
     renderHeader(meta);
+    measuredRange(); // 답 카드에 실측 범위(8–48GB)
     setStatus("");
   } catch {
     dataOk = false;
     models = [];
     meta = null;
     renderHeader(null);
+    measuredRange(); // 데이터 없이도 실측 범위(8–48GB) 안내
     setStatus("모델 데이터를 읽지 못했습니다. data/local_llm_bench.json 이 app/data 폴더에 있는지 확인해 주세요.", true);
   }
 
@@ -56,9 +58,13 @@ export async function init() {
     }
   }
 
-  // 3) 첫 화면 + 헤더 값
+  // 3) 첫 화면 + 헤더 값 + 실측 메모리 범위(8–48GB)
+  // rank-warn·result-json-box 는 순위 화면 밖으로 내렸으니 rank 화면일 때만 보임.
+  $("rank-warn").classList.toggle("hidden", true);
+  $("result-json-box").classList.toggle("hidden", true);
   for (const s of SCREENS) $("screen-" + s).classList.toggle("hidden", s !== "rank");
-  $("nav-rank-btn").classList.add("active");
+  for (const s of SCREENS) $("nav-" + s + "-btn").classList.toggle("active", s === "rank");
+  for (const s of SCREENS) $("nav-" + s + "-btn").setAttribute("aria-pressed", String(s === "rank"));
   setHeaderValues(state.memoryGb, state.category);
 
   // 4) 공통 렌더/리렌더
@@ -91,10 +97,13 @@ export async function init() {
     runAndRender();
   };
 
-  // 5) 화면 전환
+  // 5) 화면 전환 (rank-warn·JSON 상자는 순위 화면이 아닐 때 숨김)
   const showScreen = (id) => {
+    $("rank-warn").classList.toggle("hidden", id !== "rank");
+    $("result-json-box").classList.toggle("hidden", id !== "rank");
     for (const s of SCREENS) $("screen-" + s).classList.toggle("hidden", s !== id);
     for (const s of SCREENS) $("nav-" + s + "-btn").classList.toggle("active", s === id);
+    for (const s of SCREENS) $("nav-" + s + "-btn").setAttribute("aria-pressed", String(s === id));
   };
   for (const s of SCREENS) $("nav-" + s + "-btn").addEventListener("click", () => showScreen(s));
 

@@ -7,11 +7,17 @@ export function setStatus(message, isError = false) {
   el.classList.toggle("ok", !isError);
 }
 
+// 실측된 메모리 범위: 이 범위 안이 "실측", 밖은 "미실측" (64·128).
+export function measuredRange() {
+  const el = document.getElementById("answer-measured");
+  if (el) el.textContent = "8–48GB";
+}
+
 export function renderHeader(meta) {
   const el = document.getElementById("data-meta");
   if (el) {
     const stamp = meta && meta.fetched_at ? meta.fetched_at.replace("T", " ").slice(0, 16) : "";
-    el.textContent = "데이터 기준: " + stamp;
+    el.textContent = "데이터 기준: " + stamp + " · " + (meta ? meta.terms || "" : "불러오는 중");
   }
   const foot = document.getElementById("data-terms");
   if (foot && meta) foot.textContent = meta.terms || "";
@@ -22,6 +28,8 @@ export function setHeaderValues(memoryGb, category) {
   const c = document.getElementById("category-select");
   if (m) m.value = String(memoryGb);
   if (c) c.value = category;
+  const note = document.querySelector(".mem-note");
+  if (note) note.hidden = memoryGb <= 48; // 64·128(미실측)을 고르면 안내 배지
 }
 
 export function downloadJson(filename, data) {

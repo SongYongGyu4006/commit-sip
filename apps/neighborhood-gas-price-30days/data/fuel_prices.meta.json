@@ -2,10 +2,10 @@
  "id": "fuel_prices",
  "name": "전국·시도 기름값과 최저가 주유소 (오피넷, 매일 수집 + 우리 기록)",
  "url": "file:///Users/hermesagent/hermes_projects/studio-evals/claude-v27-work/kh/parts/kr/fuel_prices.json",
- "fetched_at": "2026-10-26T04:04:00",
+ "fetched_at": "2026-10-27T04:03:03",
  "terms": "한국석유공사 오피넷 오픈 API(출처 표시). 키는 서버에만 있고 이 파일엔 없음",
  "cors": false,
- "items": 4,
- "bytes": 87847,
+ "items": 5,
+ "bytes": 90396,
  "trimmed": false
 }

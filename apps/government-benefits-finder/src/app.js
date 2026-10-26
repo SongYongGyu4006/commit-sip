@@ -1,5 +1,5 @@
 // GovBenefit Finder — 순수 핵심: browseBenefits. Node에서도 import해도 부작용 없음(시계·저장소·전역 읽지 않음).
-import { localTodayIso, renderList, renderMeta } from './ui.js';
+import { localTodayIso, fmtDateTime, renderList, renderMeta } from './ui.js';
 
 const KEYS = ['서비스ID', '서비스명', '서비스목적요약', '서비스분야', '지원대상', '신청기한', '신청방법', '소관기관명', '상세조회URL'];
 const TARGETS = {
@@ -143,6 +143,8 @@ if (typeof document !== 'undefined') {
   const metaNone = $('meta-none');
   const summaryLine = $('summary-line');
   const list = $('benefit-list');
+  const moreButton = $('more-button');
+  const resetButton = $('reset-button');
   const footerLine = $('footer-line');
 
   // 예시 버튼용 3개 샘플 (SPEC 고정)
@@ -153,7 +155,8 @@ if (typeof document !== 'undefined') {
     { '서비스ID': 'D1', '서비스명': '노인 일자리 사업', '서비스분야': '고용·창업', '지원대상': '만 65세 이상 어르신', '신청기한': '상시', '상세조회URL': 'https://www.gov.kr/portal/gnb/contents/22146', '신청방법': '정부24온라인신청' },
   ];
 
-  const S = { liveRows: [], todayIso: localTodayIso(), usingSample: false, loaded: false, total: null, fetchedAt: '', terms: '' };
+  const PAGE = 20; // '더 보기' 단위로 한 번에 추가할 카드 수
+  const S = { liveRows: [], todayIso: localTodayIso(), usingSample: false, loaded: false, total: null, fetchedAt: '', terms: '', limit: PAGE };
 
   // 시작: 데이터 파일 2개 불러오기
   Promise.all([fetch('data/gov_benefits.json').then((r) => (r.ok ? r.json() : Promise.reject(new Error('data')))),
@@ -164,7 +167,7 @@ if (typeof document !== 'undefined') {
       S.fetchedAt = typeof meta.fetched_at === 'string' ? meta.fetched_at : '';
       S.terms = typeof meta.terms === 'string' ? meta.terms : '';
       S.loaded = true;
-      dataTime.textContent = S.fetchedAt ? '데이터 기준: ' + S.fetchedAt : '';
+      dataTime.textContent = S.fetchedAt ? '데이터 기준: ' + fmtDateTime(S.fetchedAt) : '';
       sourceLine.textContent = '출처: 행정안전부·공공데이터포털 (공공누리 제1유형)' + (S.terms ? ' · ' + S.terms : '');
       totalLine.textContent = S.total !== null ? '전체 혜택 ' + S.total + '건' : '';
       renderFooter();
@@ -180,12 +183,14 @@ if (typeof document !== 'undefined') {
     });
 
   const renderFooter = () => {
-    footerLine.textContent = S.fetchedAt ? '데이터 기준: ' + S.fetchedAt + ' · 출처: 행정안전부·공공데이터포털 (공공누리 제1유형)' : '출처: 행정안전부·공공데이터포털 (공공누리 제1유형)';
+    footerLine.textContent = S.fetchedAt ? '데이터 기준: ' + fmtDateTime(S.fetchedAt) + ' · 출처: 행정안전부·공공데이터포털 (공공누리 제1유형)' : '출처: 행정안전부·공공데이터포털 (공공누리 제1유형)';
   };
   renderFooter();
 
   function render({ todayIso } = {}) {
     if (!S.loaded && !S.usingSample) return;
+    // 조건이 바뀌면(이 render 는 select 칩·버튼에서 불림) 목록을 처음 20개로 되돌린다
+    if (!todayIso) S.limit = PAGE;
     const rows = S.usingSample ? SAMPLE_ROWS : S.liveRows;
     let result;
     try {
@@ -193,6 +198,7 @@ if (typeof document !== 'undefined') {
     } catch (e) {
       appStatus.textContent = '조건을 처리할 수 없습니다.';
       list.textContent = '';
+      moreButton.hidden = true;
       return;
     }
     // 분야 선택지 갱신: 결과 fields 순서 그대로, 현재 선택 유지
@@ -208,7 +214,11 @@ if (typeof document !== 'undefined') {
     }
     if (cur && result.fields.includes(cur)) fieldSelect.value = cur;
 
-    renderList(list, result.items);
+    renderList(list, result.items, S.limit);
+    // '더 보기': 남은 개수가 있으면 버튼에 남는 수, 없으면 숨김
+    const remain = result.items.length - S.limit;
+    moreButton.hidden = remain <= 0;
+    moreButton.textContent = remain > 0 ? '더 보기 (남은 ' + remain + '건)' : '더 보기';
     summaryLine.textContent = '표시 ' + result.shown + '건 / 전체 ' + result.totalRows + '건 (마감 지난 ' + result.closedCount + '건 제외)';
     answerNum.textContent = String(result.shown);
     answerNum.appendChild(document.createElement('small')).textContent = '건';
@@ -217,8 +227,12 @@ if (typeof document !== 'undefined') {
     const none = result.items.filter((i) => i.status === 'none').length;
     answerText.textContent = result.shown === 0
       ? '조건에 맞는 혜택이 없어요. 조건을 바꿔 보세요.'
-      : '조건에 맞는 혜택입니다. 마감 14일 이내인 혜택은 D-n 배지로 표시해요.';
+      : (S.usingSample
+        ? '예시로 3개만 보여 드려요. 실제 목록은 처음으로를 누르면 다시 나와요.'
+        : '조건에 맞는 혜택이에요. 마감 14일 이내인 혜택은 D-n 배지로 표시해요.');
     renderMeta(metaTotal, metaClosing, metaNone, S.usingSample ? result.totalRows : (S.total !== null ? S.total : result.totalRows), closing, none);
+    // 예시 화면일 때 '처음으로'가 눈에 띄게 강조
+    resetButton.classList.toggle('ds-btn-primary', S.usingSample);
     appStatus.textContent = result.shown === 0
       ? '조건에 맞는 혜택이 없습니다.'
       : (S.usingSample ? '예시 데이터입니다. 실제 데이터는 처음으로를 누르세요.' : '');
@@ -226,17 +240,34 @@ if (typeof document !== 'undefined') {
 
   for (const s of [fieldSelect, targetSelect, sortSelect]) s.addEventListener('change', () => { if (S.loaded || S.usingSample) render(); });
 
+  // 대상 칩: 누르면 select 값을 바꾸고 change 를 보내(선택 상태는 칩과 select 가 일치)
+  const targetChips = document.querySelectorAll('#target-chips .ds-chip');
+  const syncTargetChips = () => {
+    const v = targetSelect.value;
+    targetChips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.target === v)));
+  };
+  targetChips.forEach((c) => c.addEventListener('click', () => {
+    targetSelect.value = c.dataset.target;
+    syncTargetChips();
+    targetSelect.dispatchEvent(new Event('change'));
+  }));
+
+  moreButton.addEventListener('click', () => { S.limit += PAGE; render(); });
+
   $('example-button').addEventListener('click', () => {
     S.usingSample = true;
+    S.limit = PAGE;
     render({ todayIso: '2026-10-22' });
   });
 
   $('reset-button').addEventListener('click', () => {
     S.usingSample = false;
     S.todayIso = localTodayIso();
+    S.limit = PAGE;
     fieldSelect.value = '';
     targetSelect.value = 'all';
     sortSelect.value = 'deadline';
+    syncTargetChips();
     if (S.loaded) render();
   });
 }

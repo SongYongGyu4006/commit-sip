@@ -2,7 +2,7 @@
 import { summarizeKrwCoins } from "./app.js";
 import { loadAllData, SAMPLE_DATA } from "./data.js";
 import { loadCoinIds, setExample } from "./storage.js";
-import { renderDashboard, renderError, bindExample } from "./dashboard.js";
+import { renderDashboard, renderError, bindExample, bindSim } from "./dashboard.js";
 import { initCoinsScreen, initBackupScreen } from "./coins-backup.js";
 
 const $ = (sel) => document.querySelector(sel);
@@ -32,6 +32,7 @@ function refresh() {
   try {
     const result = summarizeKrwCoins(data.coinPrice, data.fxRates, coinIds);
     renderDashboard(result, metaOf(data), isExample);
+    bindSim(result);
     bindExample(isExample);
   } catch {
     renderError("데이터를 계산하지 못했습니다", "데이터 형식이 올바르지 않아 표시할 수 없습니다");
