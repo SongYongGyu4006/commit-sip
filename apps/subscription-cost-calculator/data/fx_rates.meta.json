@@ -2,7 +2,7 @@
  "id": "fx_rates",
  "name": "환율",
  "url": "https://open.er-api.com/v6/latest/USD",
- "fetched_at": "2026-10-27T04:03:02",
+ "fetched_at": "2026-10-28T04:02:51",
  "terms": "무료, 화면에 'Rates By Exchange Rate API' 출처 표기 필요, 하루 1회 갱신",
  "cors": true,
  "items": 0,

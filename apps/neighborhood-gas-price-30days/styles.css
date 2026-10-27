@@ -1,177 +1,197 @@
-/* 우리동네 기름값 30일 — studio.css 위에 쌓는 스타일 */
+/* 우리동네 기름값 30일 — studio.css 위에서 쌓는 스타일 */
 
-/* 1. 최저가 주유소 빈 메시지 — 더 눈에 띄게 (회색 + 굵게 + 파란색 테두리 + 아이콘 느낌) */
-#lowest-list .ds-empty {
-  background: var(--ds-surface-2);
-  border: 1px dashed var(--ds-line);
-  color: var(--ds-ink-2);
-  font-weight: 400;
-  font-size: 14px;
-  text-align: left;
-  max-width: none;
-  margin: 0;
-  padding: var(--ds-s4);
-}
-#lowest-list .ds-empty::after {
-  content: '잠시 뒤 다시 확인해 주세요.';
-  display: block;
-  color: var(--ds-ink-3);
-  font-size: 14px;
-  margin-top: 4px;
-}
-
-/* lowest-list 너비 제한 — 스크롤 방지 */
-#lowest-list {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-/* 띠: 위 여백 줄이고 아래만 확보, 안쪽 컨테이너는 본문과 같은 왼쪽 선 */
+/* 띠: body 바로 아래 전폭, 안쪽은 본문과 같은 폭 */
 .ds-band {
-  padding-block: 28px 56px;
+  padding-block: 32px 88px;
   padding-inline: 0;
 }
-.ds-band > .ds-page {
+.ds-band .ds-band-in {
   padding-block: 0;
 }
-.ds-band p {
-  max-width: 36em;
+.ds-band .ds-band-in p {
+  max-width: 38em;
 }
 
-/* 본문 흐름: 답 → 컨트롤 → 예시 → 카드 */
-main.ds-page > .ds-stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-s3);
+/* 띠에 걸친 답 카드 */
+.ds-page > .ds-answer:first-child {
+  margin-top: -64px;
 }
-main.ds-page > .ds-stack > * + * {
-  margin-top: 0;
-}
-main.ds-page > .ds-stack > .ds-answer {
-  order: 1;
-  margin: -32px 0 0;
-  position: relative;
-  background: var(--ds-accent-soft);
-  border: 0;
-  border-radius: 20px;
-  box-shadow: none;
-}
-main.ds-page > .ds-stack > .app-controls { order: 2; }
-main.ds-page > .ds-stack > #example-button {
-  order: 4;
-  align-self: flex-start;
-  min-height: 44px;
-  background: transparent;
-  color: var(--ds-accent-text);
-  border: 1px solid var(--ds-line);
-}
-main.ds-page > .ds-stack > .ds-card { order: 5; }
 
-/* 컨트롤 묶음 카드 */
+/* 2단: 좌측(입력·예시) / 우측(최저가 목록) */
+.app-main {
+  align-items: start;
+}
+.app-left,
+.app-right {
+  min-width: 0;
+}
+@media (min-width: 1280px) {
+  .app-main.ds-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  }
+  .app-left,
+  .app-right {
+    max-width: 560px;
+  }
+}
+
+/* 컨트롤 카드 */
 .app-controls {
   display: grid;
   gap: var(--ds-s4);
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-line);
-  border-radius: 20px;
-  padding: var(--ds-s4);
-}
-.app-controls .ds-label {
-  font-size: 14px;
-  color: var(--ds-ink-2);
-  margin-bottom: 6px;
 }
 .app-controls .ds-select {
   min-height: 44px;
   font-size: 16px;
 }
+.app-controls .ds-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ds-s3);
+}
+.app-controls .ds-label {
+  font-size: 14px;
+}
 #apply-button {
-  min-height: 44px;
+  justify-self: start;
+  width: auto;
+}
+
+/* 예시 버튼(보조) */
+#example-button {
+  margin-top: 2px;
+}
+
+/* 답 카드 보조 숫자 */
+.ds-answer-meta {
+  flex-wrap: wrap;
+  gap: var(--ds-s3) 0;
+}
+.ds-answer-meta > div + div {
+  border-left: 1px solid var(--ds-line);
+}
+@media (max-width: 520px) {
+  .ds-answer-meta {
+    gap: var(--ds-s3);
+  }
+  .ds-answer-meta > div {
+    padding: 0 var(--ds-s3);
+  }
+  .ds-answer-meta > div + div {
+    border-left: 0;
+  }
+  .ds-answer-meta > div:first-child {
+    padding-left: 0;
+  }
+  .ds-answer-meta > div:last-child {
+    padding-right: 0;
+  }
+}
+
+/* 시군구/지역 목록: 긴 주소가 휴대폰에서 넘치지 않게 */
+.ds-list-title {
+  max-width: 100%;
+}
+.ds-list-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.ds-list-sub {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.ds-list-end {
+  flex: none;
+}
+.ds-list-amount {
+  white-space: nowrap;
+}
+
+/* 30일 추이 차트: 래퍼 높이는 CSS, 캔버스는 responsively */
+.history-chart-wrap {
+  position: relative;
   width: 100%;
-}
-@media (min-width: 860px) {
-  .app-controls {
-    grid-template-columns: 1fr auto;
-    align-items: end;
-  }
-  #apply-button {
-    width: auto;
-    min-width: 120px;
-    align-self: flex-end;
-  }
+  height: 240px;
 }
 
-/* 답 카드 위계 */
-#national-price {
-  font-size: clamp(44px, 10vw, 56px);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-  color: var(--ds-accent-text);
+/* 시도별 평균: 접는 구역 */
+.ds-details {
+  margin-top: var(--ds-s5);
 }
-.ds-answer-label {
+.ds-details-sum {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px var(--ds-s3);
+  margin: 0 0 var(--ds-s3);
+  cursor: pointer;
+  list-style: none;
+}
+.ds-details-sum::-webkit-details-marker {
+  display: none;
+}
+.ds-details-sum::before {
+  content: '＋ ';
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ds-ink-3);
+}
+.ds-details[open] .ds-details-sum::before {
+  content: '－ ';
+}
+.ds-details-sum h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.ds-details-sum p {
+  flex-basis: 100%;
+  margin: 0;
   font-size: 14px;
-  color: var(--ds-ink-2);
-}
-.ds-answer-text {
-  font-size: 16px;
-  color: var(--ds-ink-2);
-  margin-top: 8px;
+  color: var(--ds-ink-3);
 }
 
-/* 메타 줄 */
-#data-meta {
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--ds-band-ink-2);
+/* 빈 상태 */
+.ds-empty {
+  text-align: center;
+  padding: var(--ds-s5) var(--ds-s4);
+  color: var(--ds-ink-2);
+  border: 1px dashed var(--ds-line);
+  border-radius: var(--ds-radius);
+}
+
+/* 메타 줄: 한 줄당 한 단위로만 줄바꿈 */
+#data-meta span {
+  white-space: nowrap;
+}
+
+/* 푸터 */
+#data-footer {
+  margin-top: var(--ds-s6);
+  color: var(--ds-ink-3);
+  font-size: 13px;
+  text-align: center;
   overflow-wrap: anywhere;
 }
 
-/* 2. 시도별 평균 — sub에 전국 평균 대신 실제 시도 가격 표시용 (JS에서 수정) */
-.ds-list-sub.sido-price {
-  color: var(--ds-ink-2);
-  font-weight: 500;
+/* 상태 영역 위치 */
+#app-status {
+  margin-top: var(--ds-s5);
 }
 
-/* 3. 차트 높이 늘리고 모바일 대응 */
-.history-chart-wrap {
-  width: 100%;
-  height: 320px;
-  position: relative;
-}
-
-/* 모바일 (390px) — 차트 축 겹침 방지 */
+/* 휴대폰 (390px) */
 @media (max-width: 520px) {
   .ds-band {
-    padding-block: 20px 48px;
+    padding-block: 24px 72px;
   }
-  [data-meta] {
-    display: block;
-  }
-  .ds-list-item {
-    flex-wrap: wrap;
-  }
-  .ds-list-title {
-    white-space: normal;
+  .ds-page > .ds-answer:first-child {
+    margin-top: -56px;
   }
   .history-chart-wrap {
-    height: 260px;
+    height: 220px;
   }
-  .history-chart-wrap canvas {
-    width: 100% !important;
-    height: 260px !important;
+  .app-controls .ds-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--ds-s2);
   }
-}
-
-[data-meta] {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-}
-
-#data-footer {
-  margin-top: 48px;
-  color: var(--ds-ink-3);
-  font-size: 14px;
-  text-align: center;
 }

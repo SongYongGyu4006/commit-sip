@@ -1,0 +1,13 @@
+const m = require('./fuel_prices.meta.json');
+const d = require('./fuel_prices.json');
+console.log('meta keys:', Object.keys(m));
+console.log('meta.source:', JSON.stringify(m.source));
+console.log('meta.terms:', JSON.stringify(m.terms));
+console.log('top keys:', Object.keys(d));
+const l = Array.isArray(d.lowest_20) ? d.lowest_20 : [];
+console.log('lowest_20 type:', Array.isArray(d.lowest_20) ? 'array len ' + l.length : typeof d.lowest_20);
+console.log('first lowest:', JSON.stringify(l[0]));
+console.log('history len:', Array.isArray(d.history) ? d.history.length : typeof d.history);
+const h = d.history || [];
+console.log('history dates:', h.slice(0, 3).map(x => x.date).join(','), '...', h.slice(-2).map(x => x.date).join(','));
+console.log('sido keys:', Object.keys(d.today.sido).join(','));

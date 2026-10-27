@@ -3,7 +3,8 @@ import { buildRadarBoard } from './app.js';
 
 const $ = (id) => document.getElementById(id);
 
-const DEFAULT_FILTER = { tier: 0, interestOnly: false, crossConfirmedOnly: false, sortBy: 'score' };
+// 수요가 높은 주제로 시작: 처음부터 관심 주제만 켜 둔다(필터 초기화도 이 상태로).
+const DEFAULT_FILTER = { tier: 0, interestOnly: true, crossConfirmedOnly: false, sortBy: 'score' };
 const TIER_NAME = { 1: '공식', 2: '언론', 3: '전문가', 4: '커뮤니티' };
 const DATA_URL = 'data/tech_radar.json';
 const META_URL = 'data/tech_radar.meta.json';
@@ -16,6 +17,7 @@ const EMPTY_HINT = "데이터를 불러오지 못했습니다. '예시로 해 �
 
 let currentData = null;
 let resultHasData = false;
+let resultTopThree = [];
 let resultUniqueStories = 0;
 
 function currentFilter() {
@@ -69,42 +71,78 @@ function ageText(h) {
   return Math.round(h / 24) + '일 전';
 }
 
-// 출처 · 지표 + 원문 제목(링크) 행을 만든다.
-function linkRow(l) {
+// 원문 제목(링크) 행을 만든다.
+// dedupeTitle 이 true 이고 행 제목이 소식 제목과 같으면, 제목이 같은 링크 문구를 '원문 보기'로 줄인다.
+// 지표(metric)는 한국어 안내문 뒤 작은 글씨로 보여 준다.
+function linkRow(l, dedupeTitle, storyTitle) {
   const row = makeEl('div', 'link');
-  row.appendChild(makeEl('span', 'link-source', l.source + (l.metric ? ' · ' + l.metric : '')));
   const a = document.createElement('a');
   a.href = l.url;
   a.target = '_blank';
   a.rel = 'noopener';
   a.className = 'link-title';
-  a.textContent = l.title;
+  a.title = l.title;
+  a.textContent = dedupeTitle && storyTitle && l.title.trim() === storyTitle.trim() ? '원문 보기' : l.title;
   row.appendChild(a);
+  const src = makeEl('span', 'link-source');
+  src.appendChild(makeEl('span', '', '기사를 쓴 사이트: ' + l.source + ' · 원문 링크'));
+  if (l.metric) src.appendChild(makeEl('span', 'link-metric', ' · 지표 ' + l.metric));
+  row.appendChild(src);
   return row;
+}
+
+// 첫 화면에 처음부터 계산된 결과가 보일 수 있게 예시 데이터로 화면을 채운다.
+// (실제 데이터 파일이 있으면 그걸 쓰러 시도하되 실패하면 이 화면이 그대로 유지된다.)
+function seedSample() {
+  if (resultHasData || $('sample-button').dataset.seeding === '1') return;
+  $('sample-button').dataset.seeding = '1';
+  (async () => {
+    let sampleRes = await fetch(SAMPLE_URL).catch(() => null);
+    if (!sampleRes || !sampleRes.ok) {
+      $('sample-button').dataset.seeding = '';
+      return;
+    }
+    currentData = structuredClone(JSON.parse(await sampleRes.text()));
+    $('fetched-at').textContent = '오늘 내장 예시(5개)';
+    $('data-terms').textContent = '기술 출처가 공개로 낸 제목과 링크만 표시해요. 내용은 출처가 정한 조건 그대로입니다.';
+    clearError();
+    resetFilters();
+    render();
+  })();
 }
 
 function renderAnswer(result) {
   const top = result.topThree[0];
+  const total = result.sourceSummary.uniqueStories;
+  resultTopThree = result.topThree;
   const num = $('answer-num');
-  const text = $('answer-text');
+  num.innerHTML = '';
   if (!top) {
-    num.textContent = '0';
+    num.appendChild(document.createTextNode('0'));
     const small = document.createElement('small');
-    small.textContent = '개';
+    small.textContent = '위';
     num.appendChild(small);
-    text.textContent = '데이터가 준비되면 지금 가장 큰 소식부터 보여 드려요.';
+    $('answer-text').textContent = '데이터가 준비되면 지금 가장 큰 소식부터 보여 드려요.';
+    seedSample();
   } else {
-    num.textContent = String(top.scoreRounded);
+    num.appendChild(document.createTextNode('1'));
     const small = document.createElement('small');
-    small.textContent = '점';
+    small.textContent = total ? '개 중 1위' : '위';
     num.appendChild(small);
-    text.textContent = '지금은 ' + top.title + '이(가) 가장 크게 다뤄지고 있어요.';
+    $('answer-text').textContent = '지금 가장 크게 다뤄지는 소식: ' + top.title;
   }
-  $('answer-total').textContent = result.sourceSummary.uniqueStories + '개';
-  const s = result.sourceSummary;
-  $('answer-sources').textContent = s.totalSources + '곳';
+  $('answer-total').textContent = total + '개';
+  $('answer-sources').textContent = result.sourceSummary.totalSources + '곳';
   const crossCount = result.filteredStories.filter((st) => st.crossConfirmed).length;
   $('answer-cross').textContent = crossCount + '개';
+  const sum = $('summary-block');
+  if (!resultHasData || !top || !total) {
+    sum.hidden = true;
+  } else {
+    sum.hidden = false;
+    $('summary-text').textContent =
+      result.sourceSummary.totalSources + '곳에서 ' + total + '개 소식을 모았어요';
+  }
 }
 
 function renderTopThree(items) {
@@ -126,23 +164,66 @@ function renderTopThree(items) {
     a.target = '_blank';
     a.rel = 'noopener';
     a.className = 'title';
-    a.textContent = s.title;
+    a.title = s.title;
+    a.textContent = s.title.length > 60 ? s.title.slice(0, 60) + '…' : s.title;
     main.appendChild(a);
-    const meta = makeEl('span', 'meta', '점수 ' + s.scoreRounded + ' (전체 상위 ' + (i + 1) + '위' + (total ? ' / ' + total + '개' : '') + ')');
-    for (const t of s.tiers) meta.appendChild(badge(TIER_NAME[t] || String(t), 'tier-' + t));
-    meta.appendChild(makeEl('span', '', ' · '));
-    meta.appendChild(makeEl('span', '', ageText(s.ageHours)));
+    const meta = makeEl('span', 'meta');
+    meta.appendChild(makeEl('span', '', (total ? total + '개 중 ' : '') + (i + 1) + '위 · ' + ageText(s.ageHours)));
+    for (const t of s.tiers) meta.appendChild(badge('기사 종류: ' + (TIER_NAME[t] || String(t)), 'tier-' + t));
+    if (s.crossConfirmed) meta.appendChild(badge('여러 곳에서 다뤄진 소식', 'cross'));
+    if (s.interest) meta.appendChild(badge('많은 사람이 찾는 주제', 'interest'));
     main.appendChild(meta);
+    main.appendChild(makeEl('span', 'plain', plainText(s)));
     li.appendChild(main);
     const links = makeEl('div', 'links');
-    for (const l of s.links.slice(0, 2)) links.appendChild(linkRow(l));
+    for (const l of s.links.slice(0, 2)) links.appendChild(linkRow(l, true, s.title));
     if (links.children.length) li.appendChild(links);
     ul.appendChild(li);
   });
 }
 
+// 소식 하나를 누구나 아는 말로 한 줄로 풀어서 쓴다.
+// 원문 제목은 영어인 경우가 많아, 뜻을 한 번 더 한국어로 붙여 주는 게 첫 화면 읽기 쉽게 한다.
+const PLAIN_HINTS = [
+  [/open[ -]?(?:weight|source)|openai/i, '누구나 쓸 수 있는 AI 모델(공개 모델) 관련 소식입니다.'],
+  [/agent|agentic|claude|codex|chatgpt|gemini|llama|copilot|assistant/i, '컴퓨터가 대신 일을 하는 AI 도구나 그 활용법을 다루는 소식입니다.'],
+  [/(?:api|pricing|price|cost|fee|rate)[\s-]?(?:update|change|cut|change|adjustment)?|price/i, 'AI 서비스를 쓰는 비용과 요금을 다루는 소식입니다.'],
+  [/security|vulnerab|exploit|hack|injection|safe|safety/i, '보안과 안전 문제를 다루는 소식입니다.'],
+  [/benchmark|evaluat|compare|test/i, '성능 비교와 시험 결과를 다루는 소식입니다.'],
+  [/release|launch|introduc|announc|unveil|debut/i, '새 서비스나 제품 출고를 다루는 소식입니다.'],
+  [/open[ -]?(?:source|sourced)/i, '공개(오픈소스) 프로젝트 관련 소식입니다.'],
+];
+function plainText(s) {
+  let t = '';
+  for (const [re, text] of PLAIN_HINTS) {
+    if (re.test(s.title)) { t = text; break; }
+  }
+  if (!t) t = /[a-z]{3,}/i.test(s.title)
+    ? '원문이 외국어라 어떤 내용인지 바로 보이지 않아요. 제목을 누르면 원문으로 이동해요.'
+    : '지금 많은 곳에서 함께 전하고 있는 소식입니다.';
+  if (s.crossConfirmed) t += ' ' + s.sourceCount + '곳에서 같은 내용으로 확인했어요.';
+  return t;
+}
+
+// 첫 화면 '지금 가장 큰 소식 3개' 옆 복사 버튼: 블로그·쇼츠에 붙여넣을 줄 3개를 클립보드에 넣는다.
+function copyTopThree() {
+  const lines = resultTopThree.map((s, i) =>
+    (i + 1) + '. ' + s.title + ' (' + s.sources.join(', ') + ' · 점수 ' + s.scoreRounded + ') ' + s.url
+  ).join('\n');
+  const done = (ok) => {
+    const status = $('app-status');
+    status.textContent = ok ? '복사했어요' : '복사하지 못했습니다. 브라우저가 클립보드 권한을 막고 있어요.';
+    if (ok) setTimeout(() => { if (status.textContent === '복사했어요') status.textContent = ''; }, 2000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(lines).then(() => done(true)).catch(() => done(false));
+  } else {
+    done(false);
+  }
+}
+
 // 처음 8개만 그린다. "더 보기"를 누를 때마다 8개씩 추가한다.
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 10;
 let visibleCount = PAGE_SIZE;
 let lastStoryItems = [];
 
@@ -183,16 +264,16 @@ function renderStoryList(items) {
     const li = makeEl('li', 'story');
     li.tabIndex = 0;
     li.setAttribute('aria-expanded', 'false');
-    const titleRow = makeEl('span', 'title-row');
-    const title = makeEl('span', 'title', s.title);
-    titleRow.appendChild(title);
+    const title = makeEl('span', 'title', s.title.length > 60 ? s.title.slice(0, 60) + '…' : s.title);
+    title.title = s.title;
     const chev = makeEl('span', 'chev', '▾ 원문·지표');
-    titleRow.appendChild(chev);
-    li.appendChild(titleRow);
-    const meta = makeEl('span', 'meta', '점수 ' + s.scoreRounded + ' · 출처 ' + s.sourceCount + '곳 · ' + ageText(s.ageHours));
-    if (s.crossConfirmed) meta.appendChild(badge('교차 확인', 'cross'));
-    if (s.interest) meta.appendChild(badge('관심 주제', 'interest'));
+    li.appendChild(title);
+    li.appendChild(chev);
+    const meta = makeEl('span', 'meta', '기사는 ' + s.sourceCount + '곳에서 · ' + ageText(s.ageHours));
+    if (s.crossConfirmed) meta.appendChild(badge('여러 곳에서 다뤄진 소식', 'cross'));
+    if (s.interest) meta.appendChild(badge('많은 사람이 찾는 주제', 'interest'));
     li.appendChild(meta);
+    li.appendChild(makeEl('span', 'plain', plainText(s)));
     const show = () => renderDetail(s, li);
     li.addEventListener('click', show);
     li.addEventListener('keydown', (e) => {
@@ -236,7 +317,7 @@ function renderDetail(story, li) {
     return;
   }
   detail.innerHTML = '';
-  for (const l of story.links) detail.appendChild(linkRow(l));
+  for (const l of story.links) detail.appendChild(linkRow(l, false));
   if (!story.links.length) {
     detail.appendChild(makeEl('p', 'empty', '출처 링크가 아직 수집되지 않았습니다.'));
   }
@@ -264,7 +345,7 @@ function collapseDetail() {
 
 function renderSourceSummary(summary) {
   $('source-summary-text').textContent =
-    '출처 ' + summary.totalSources + ' 곳 · 성공 ' + summary.okSources + ' 곳 · 수집 ' + summary.collectedItems + '건 · 소식 ' + summary.uniqueStories + '개';
+    '확인한 사이트 ' + summary.totalSources + '곳(모아 온 곳 ' + summary.okSources + '곳) · 기사 ' + summary.uniqueStories + '개';
 }
 
 function renderSourceStatus(sources) {
@@ -277,32 +358,42 @@ function renderSourceStatus(sources) {
   const maxCount = Math.max(...sources.map((s) => s.count), 1);
   for (const s of sources) {
     const li = makeEl('li', 'source' + (s.ok ? '' : ' fail'));
-    li.appendChild(makeEl('span', 'source-name', s.name + ' 출처'));
+    li.appendChild(makeEl('span', 'source-name', s.name));
     const bar = makeEl('span', 'bar');
     bar.style.width = (s.count / maxCount * 100) + '%';
     li.appendChild(bar);
-    li.appendChild(makeEl('span', 'source-meta', '등급: ' + (TIER_NAME[s.tier] || s.tier) + ' · 수집 ' + s.count + '건 · ' + (s.ok ? '정상 수집 완료' : '수집 실패, 확인 필요')));
+    li.appendChild(makeEl('span', 'source-meta', (s.ok ? '정상적으로 모아 왔어요(' : '모아 오지 못했어요(') + s.count + '건) · 기사 종류: ' + (TIER_NAME[s.tier] || s.tier)));
     ul.appendChild(li);
   }
 }
 
-// 첫 화면 '모델 출시·가격' 구역: data/ai_models.json 의 [{title, params, price, url}]
+// '모델 출시·가격' 구역: data/ai_models.json 의 [{title, params, price, url}] — 0개면 숨긴다.
 const MODEL_CARD_LIMIT = 8;
 let modelsCache = null;
 
 function renderModelList(models) {
   const ul = $('model-list');
+  const section = $('models-section');
   ul.innerHTML = '';
   if (!models.length) {
-    const li = makeEl('li', 'empty');
-    li.appendChild(makeEl('p', 'empty-text', '모델 출시·가격 데이터가 아직 준비되지 않았습니다.'));
-    ul.appendChild(li);
+    section.hidden = true;
     return;
   }
+  section.hidden = false;
+  $('models-count').textContent = models.length + '개';
   for (const m of models.slice(0, MODEL_CARD_LIMIT)) {
     const li = makeEl('li', 'model');
-    li.appendChild(makeEl('span', 'model-title', m.title));
-    const meta = makeEl('span', 'meta', (m.params || '정보 없음') + ' · ' + (m.price || '정보 없음'));
+    const mt = makeEl('span', 'model-title', m.title);
+    mt.title = m.title;
+    li.appendChild(mt);
+    const meta = makeEl('span', 'meta', (m.params ? '파라미터 ' + m.params : '') + (m.params && m.price ? ' · ' : '') + (m.price ? '가격 ' + m.price : ''));
+    if (!m.params && !m.price) meta.textContent = '상세 값은 원문 링크에서 확인해요';
+    if (m.name) {
+      const src = makeEl('span', 'source-name');
+      src.textContent = m.name;
+      src.title = '출처: ' + m.name;
+      li.appendChild(src);
+    }
     li.appendChild(meta);
     if (m.url) {
       const a = document.createElement('a');
@@ -318,26 +409,9 @@ function renderModelList(models) {
   if (models.length > MODEL_CARD_LIMIT) {
     const li = makeEl('li', 'model');
     li.appendChild(makeEl('span', 'model-title', '외 ' + (models.length - MODEL_CARD_LIMIT) + '개'));
-    li.appendChild(makeEl('span', 'meta', '전체 목록은 아래 AI 모델 동향 탭에서 볼 수 있어요.'));
+    li.appendChild(makeEl('span', 'meta', '전체 목록은 위에서 등급·정렬을 바꾸어 볼 수 있어요.'));
     ul.appendChild(li);
   }
-}
-
-// 첫 화면 '최근 7일 새 모델' 요약 카드
-function renderModelAnswer(models) {
-  const num = $('model-num');
-  const text = $('model-text');
-  num.textContent = String(models.length);
-  const small = document.createElement('small');
-  small.textContent = '개';
-  num.appendChild(small);
-  if (!models.length) {
-    text.textContent = '모델 출시·가격 데이터가 준비되면 여기에 보여 드려요.';
-  } else {
-    const named = models.filter((m) => m.price).length;
-    text.textContent = '최근 7일간 나온 새 모델 ' + models.length + '개 중 가격 정보는 ' + named + '건이에요.';
-  }
-  $('models-count').textContent = '최근 7일간 출시된 새 모델 ' + models.length + '개의 제목·파라미터·가격이에요.';
 }
 
 // data/ai_models.json 이 없으면(404) 샘플 파일로 내려간다.
@@ -361,55 +435,15 @@ async function loadModels() {
   }
   modelsCache = models;
   renderModelList(models);
-  renderModelAnswer(models);
-}
-
-// 'AI 모델 동향' 탭: 첫 화면 모델 구역과 같은 데이터를 전체로 보여 준다.
-function renderPaneModelList() {
-  const ul = $('pane-model-list');
-  ul.innerHTML = '';
-  if (!modelsCache || !modelsCache.length) {
-    const li = makeEl('li', 'empty');
-    li.appendChild(makeEl('p', 'empty-text', 'AI 모델 데이터가 아직 준비되지 않았습니다.'));
-    ul.appendChild(li);
-    return;
-  }
-  for (const m of modelsCache) {
-    const li = makeEl('li', 'model');
-    li.appendChild(makeEl('span', 'model-title', m.title));
-    const meta = makeEl('span', 'meta', (m.params || '정보 없음') + ' · ' + (m.price || '정보 없음'));
-    li.appendChild(meta);
-    if (m.url) {
-      const a = document.createElement('a');
-      a.href = m.url;
-      a.target = '_blank';
-      a.rel = 'noopener';
-      a.className = 'model-link';
-      a.textContent = '원문 보기';
-      li.appendChild(a);
-    }
-    ul.appendChild(li);
-  }
-}
-
-let activeTab = 'stories';
-
-function selectTab(name) {
-  activeTab = name;
-  const stories = name === 'stories';
-  $('tab-stories').setAttribute('aria-selected', String(stories));
-  $('tab-models').setAttribute('aria-selected', String(!stories));
-  $('pane-stories').hidden = !stories;
-  $('pane-models').hidden = stories;
-  if (!stories) renderPaneModelList();
 }
 
 function render() {
   if (!currentData) {
     clearLists();
+    resultTopThree = [];
+    renderAnswer({ topThree: [], filteredStories: [], sourceSummary: { totalSources: 0, okSources: 0, collectedItems: 0, uniqueStories: 0 } });
     renderTopThree([]);
     renderStoryList([]);
-    renderAnswer({ topThree: [], filteredStories: [], sourceSummary: { totalSources: 0, okSources: 0, collectedItems: 0, uniqueStories: 0 } });
     return;
   }
   const result = buildRadarBoard(currentData, currentFilter());
@@ -433,8 +467,7 @@ function attach() {
     $('app-status').textContent = '';
     render();
   });
-  $('tab-stories').addEventListener('click', () => selectTab('stories'));
-  $('tab-models').addEventListener('click', () => selectTab('models'));
+  $('copy-button').addEventListener('click', copyTopThree);
   $('sample-button').addEventListener('click', async () => {
     try {
       // 받아 둔 실제 데이터를 우선 쓰고, 읽지 못하면 내장 예시로 대체한다.
@@ -442,8 +475,8 @@ function attach() {
       if (!sampleRes.ok) sampleRes = await fetch(SAMPLE_URL);
       if (!sampleRes.ok) throw new Error('HTTP ' + sampleRes.status);
       currentData = structuredClone(JSON.parse(await sampleRes.text()));
-      $('fetched-at').textContent = '내장 예시 데이터';
-      $('data-terms').textContent = '공개 피드에서 모은 제목·링크·지표만 표시합니다.';
+      $('fetched-at').textContent = '오늘 내장 예시(5개)';
+      $('data-terms').textContent = '기술 출처가 공개로 낸 제목과 링크만 표시해요. 내용은 출처가 정한 조건 그대로입니다.';
       clearError();
       resetFilters();
       render();
@@ -475,6 +508,7 @@ function init() {
       render();
     } catch (err) {
       setError('기술 레이더 데이터를 불러오지 못했습니다. 예시로 해 보기 버튼을 눌러 확인하세요.');
+      seedSample();
     }
   })();
 }
