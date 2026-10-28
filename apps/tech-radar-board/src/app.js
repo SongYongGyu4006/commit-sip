@@ -83,6 +83,58 @@ const cmpRecent = (a, b) =>
   b.scoreRounded - a.scoreRounded ||
   (a.title < b.title ? -1 : a.title > b.title ? 1 : 0);
 
+// AI 기업 속도계: 6개 기업이 최근 24시간에 낸 소식 수를 신호등으로 센다.
+// 뉴스 속보처럼 같은 소식이 여러 출처에 중복 집계되는 걸 막기 위해 제목을 정규화해 중복을 제거한다.
+// (buildRadarBoard 는 건드리지 않는다.)
+const SPEED_COMPANIES = [
+  { id: 'openai', name: 'OpenAI', re: /openai|chatgpt|gpt|sora|dall/i },
+  { id: 'google', name: 'Google·DeepMind', re: /google|deepmind|gemini|genie/i },
+  { id: 'anthropic', name: 'Anthropic', re: /anthropic|claude/i },
+  { id: 'meta', name: 'Meta', re: /\bmeta\b|llama|instagram|whatsapp|facebook/i },
+  { id: 'microsoft', name: 'Microsoft', re: /microsoft|copilot|azure/i },
+  { id: 'xai', name: 'xAI', re: /\bxai\b|grok/i },
+];
+
+function normTitle(t) {
+  return t.replace(/[^a-z0-9가-힣]+/gi, ' ').trim().toLowerCase().slice(0, 80);
+}
+
+export function buildSpeedometer(radarData) {
+  if (!isPlainObject(radarData) || !Array.isArray(radarData.stories)) {
+    throw new TypeError('radarData 는 stories 배열이 있는 객체여야 합니다.');
+  }
+  const rows = radarData.stories.filter((r) => isPlainObject(r) && typeof r.title === 'string' && r.title.trim() !== '');
+  const seen = new Set();
+  const unique = [];
+  for (const r of rows) {
+    const key = normTitle(r.title);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(r);
+  }
+  return SPEED_COMPANIES.map((c) => {
+    let best = null;
+    let count = 0;
+    for (const s of unique) {
+      if (!c.re.test(s.title)) continue;
+      const fresh = typeof s.age_h === 'number' && Number.isFinite(s.age_h) && s.age_h <= 24;
+      if (!fresh) continue;
+      count += 1;
+      if (best === null || (typeof s.score === 'number' && s.score > best.score)) best = s;
+    }
+    const level = count >= 3 ? 'fast' : count >= 1 ? 'mid' : 'quiet';
+    return {
+      id: c.id,
+      name: c.name,
+      count,
+      level,
+      label: level === 'fast' ? '빠름' : level === 'mid' ? '보통' : '조용',
+      topUrl: best && typeof best.url === 'string' ? best.url.trim() : '',
+      topScore: best && typeof best.score === 'number' && Number.isFinite(best.score) ? Math.round(best.score * 10) / 10 : null,
+    };
+  });
+}
+
 export function buildRadarBoard(radarData, filter) {
   if (!isPlainObject(radarData)) throw new TypeError('radarData 는 객체여야 합니다.');
   if (!Array.isArray(radarData.stories)) throw new TypeError('stories 는 배열이어야 합니다.');

@@ -290,6 +290,7 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
   const $ = (id) => document.getElementById(id);
   const statusEl = $('app-status');
   const matrixBody = $('matrix-body');
+  const matrixCards = $('matrix-cards');
   const matrixEmpty = $('matrix-empty');
   const sectionsEl = $('company-sections');
   const jsonEl = $('matrix-json');
@@ -299,7 +300,7 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
   const summary24El = $('summary-24h-count');
   const sourceTermsEl = $('source-terms');
 
-  const DEFAULT_SUMMARY = '6개 회사 모두를 보고 있어요. 위 파란 버튼을 누르면 Mistral과 Anthropic만 비교해요.';
+  const DEFAULT_SUMMARY = '아무것도 고르지 않으면 6개 회사 전체를 보여 줍니다. 예시로 해 보기를 누르면 Mistral과 Anthropic만 비교해요.';
 
   const SOURCE_DEFS = [
     { id: 'tech_radar', key: 'techRadar', label: '기술 레이더' },
@@ -330,24 +331,28 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
 
   function clearResults() {
     matrixBody.innerHTML = '';
+    if (matrixCards) matrixCards.innerHTML = '';
     sectionsEl.innerHTML = '';
     jsonEl.textContent = '';
     matrixEmpty.hidden = true;
+    const actionLines = $('action-lines');
+    if (actionLines) actionLines.innerHTML = '';
     resultSummaryEl.textContent = DEFAULT_SUMMARY;
   }
 
   function selectedCompanies() {
-    // UX-REVIEW 4.1: 모두 꺼 놓으면 "전체"가 아니라 "아무도 선택되지 않음" → 빈 결과 상태.
+    // SPEC: 체크 박스 6개 모두 해제(checked 0개) = 6개 회사 전체가 활성.
     const set = new Set(toggles.filter((t) => t.checked).map((t) => t.value));
     return [...set];
   }
 
   const SIGNAL_COLOR = { GREEN: '초록', AMBER: '주황', RED: '빨강' };
+  const SIGNAL_NAME = { GREEN: '활발', AMBER: '보통', RED: '조용' };
   function renderResultSummary(result) {
-    if (!result.matrix.length) return '선택된 기업이 없어요. 위 토글에서 기업을 골라 주세요.';
+    const all = !selectedCompanies().length; // 체크 0개 = 6개 전체(SPEC)
     if (result.matrix.length === 1) {
       const r = result.matrix[0];
-      return `${r.company}: ${r.velocityScore}점, 종합 ${SIGNAL_COLOR[r.overallSignal] || ''}`;
+      return `${r.company}: ${r.velocityScore}점, 종합 ${SIGNAL_NAME[r.overallSignal] || ''}`;
     }
     let fastest = result.matrix[0];
     let slowest = result.matrix[0];
@@ -355,32 +360,34 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
       if (r.velocityScore > fastest.velocityScore) fastest = r; // 동점이면 표 순서상 앞
       if (r.velocityScore < slowest.velocityScore) slowest = r;
     }
+    const who = all ? `${result.matrix.length}개 기업 전체 중` : '';
     if (fastest.velocityScore === slowest.velocityScore) {
-      return `${fastest.company} 등 ${result.matrix.length}개 기업이 모두 ${fastest.velocityScore}점으로 ${SIGNAL_COLOR[fastest.overallSignal] || ''} 신호예요.`;
+      return `${who} ${fastest.company} 등 ${result.matrix.length}개 기업이 모두 ${fastest.velocityScore}점으로 ${SIGNAL_NAME[fastest.overallSignal] || ''} 신호예요.`;
     }
-    return `결론: 최근 7일 가장 활발한 곳은 ${fastest.company}(${fastest.velocityScore}점), 가장 조용한 곳은 ${slowest.company}(${slowest.velocityScore}점)`;
+    return `${who} 결론: 최근 7일 가장 활발한 곳은 ${fastest.company}(${fastest.velocityScore}점), 가장 조용한 곳은 ${slowest.company}(${slowest.velocityScore}점)`;
   }
   function makeSignal(kind, label, count) {
     const span = document.createElement('span');
     span.className = 'signal ' + kind;
     const dot = document.createElement('span');
     dot.className = 'dot';
+    // UX-REVIEW E: 색 이름(활발/보통/조용)을 칸 안에 실제 글자로 보여 준다.
     const text = document.createElement('span');
     text.className = 'label-text';
-    text.textContent = label;
+    text.textContent = `${label} ${SIGNAL_NAME[kind] || ''}`.replace(/^ +| +$/g, '');
     span.append(dot, text);
     if (count !== null) {
       const c = document.createElement('span');
       c.className = 'count';
-      c.textContent = `(${count})`;
+      c.textContent = `7일 ${count}건`;
       span.append(c);
     }
-    // 접근성: 색은 스크린리더에 안 보이므로 색 이름(초록·주황·빨강)을 텍스트로 덧붙인다.
+    // 접근성: 색 이름(초록·주황·빨강)과 건수를 스크린리더용으로 덧붙는다.
     const color = SIGNAL_COLOR[kind] || '';
-    const bits = [label];
+    const bits = [label, SIGNAL_NAME[kind] || ''];
     if (count !== null) bits.push(`최근 7일 ${count}건`);
     if (color) bits.push(color);
-    span.setAttribute('aria-label', bits.join(', '));
+    span.setAttribute('aria-label', bits.filter(Boolean).join(', '));
     return span;
   }
 
@@ -388,6 +395,7 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
 
   function renderMatrix(result) {
     matrixBody.innerHTML = '';
+    if (matrixCards) matrixCards.innerHTML = '';
     for (const row of result.matrix) {
       const tr = document.createElement('tr');
       tr.dataset.company = row.company;
@@ -402,13 +410,128 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
       const tdModel = document.createElement('td');
       tdModel.appendChild(makeSignal(row.signals.modelSignal, '새 AI 모델', row.counts.modelCount));
       const tdRepo = document.createElement('td');
-      tdRepo.appendChild(makeSignal(row.signals.repoSignal, '새 개발 자료', row.counts.repoCount));
+      tdRepo.appendChild(makeSignal(row.signals.repoSignal, '개발자 코드 공개', row.counts.repoCount));
       const tdNews = document.createElement('td');
-      tdNews.appendChild(makeSignal(row.signals.hnSignal, '뉴스', row.counts.newsCount));
+      tdNews.appendChild(makeSignal(row.signals.hnSignal, '관련 뉴스', row.counts.newsCount));
       tr.append(tdCo, tdScore, tdOverall, tdModel, tdRepo, tdNews);
       matrixBody.appendChild(tr);
+
+      // 휴대폰: 표 대신 회사마다 세로 카드(회사 이름 + 점수 위, 3개 신호 줄바꿈)
+      if (matrixCards) {
+        const card = document.createElement('div');
+        card.className = 'matrix-card';
+        card.dataset.company = row.company;
+        const head = document.createElement('div');
+        head.className = 'matrix-card-head';
+        const name = document.createElement('span');
+        name.className = 'matrix-card-name';
+        name.textContent = row.company;
+        const sc = document.createElement('span');
+        sc.className = 'matrix-card-score';
+        sc.textContent = `활동 점수 ${row.velocityScore}`;
+        head.append(name, sc);
+        card.appendChild(head);
+        const rows = document.createElement('div');
+        rows.className = 'matrix-card-rows';
+        rows.append(
+          makeSignal(row.signals.modelSignal, '새 AI 모델', row.counts.modelCount),
+          makeSignal(row.signals.repoSignal, '개발자 코드 공개', row.counts.repoCount),
+          makeSignal(row.signals.hnSignal, '관련 뉴스', row.counts.newsCount),
+        );
+        card.appendChild(rows);
+        matrixCards.appendChild(card);
+      }
     }
     matrixEmpty.hidden = result.matrix.length > 0;
+  }
+
+  // "이번 주 이렇게 써 보세요" — 사용자가 실제로 쓸 수 있는 3줄.
+  // ① 가장 활발한 회사 → 그 회사 급상승 모델 1개(없으면 상위 모델) ② 그 회사 신규 저장소 1개(없으면 뉴스)
+  // ③ 그 회사 기술 소식 1개(링크)
+  function renderActionCard(result) {
+    const ol = $('action-lines');
+    if (!ol) return;
+    ol.innerHTML = '';
+    const rows = result.matrix;
+    if (!rows.length) return;
+    const top = [...rows].sort((a, b) => b.velocityScore - a.velocityScore)[0];
+    const lines = [];
+
+    // ① 모델(제목 = 모델 ID, 그 뒤에는 한 줄 설명)
+    const model = top.topModels[0] || null;
+    lines.push({
+      tag: '모형을 먼저 써 보기',
+      body: model
+        ? [
+          `${top.company} · 가중 파일 ${model.weightSizeGB === null ? '정보 없음' : model.weightSizeGB + ' GB'}`,
+          `다운로드 ${num(model.downloads)}회`,
+          `트렌드 ${num(model.trendingScore)}`,
+        ].join(' · ')
+        : `${top.company}에서 이번 주 새로 나온 AI 모델은 없어요. 아래 목록에서 최근 등록된 모델을 골라 보세요.`,
+      href: model ? `https://huggingface.co/${model.id}` : null,
+      linkText: model ? model.id : null,
+    });
+
+    // ② 코드(제목 = 저장소 이름, 그 뒤에는 한 줄 설명)
+    const repo = top.topRepos[0] || null;
+    lines.push(
+      repo
+        ? {
+            tag: '코드를 참고해 보기',
+            body: `${top.company} · 개발자 추천 ${num(repo.stars)}개`,
+            href: repo.url || null,
+            linkText: repo.url ? repo.fullName : null,
+          }
+        : {
+            tag: '코드를 참고해 보기',
+            body: `${top.company}에서 이번 주 신규 저장소는 없어요. 아래 목록에서 최근 등록된 저장소를 골라 보세요.`,
+            href: null,
+            linkText: null,
+          }
+    );
+
+    // ③ 뉴스(제목 = 기사 제목, 그 뒤에는 한 줄 설명)
+    const story = top.topStories[0] || null;
+    lines.push(
+      story
+        ? {
+            tag: '소식을 읽기',
+            body: `${story.sourceType === 'RADAR' ? '해외 IT 뉴스' : story.sourceType === 'HN' ? '해외 IT 커뮤니티' : '해외 IT 뉴스'} · 인기 ${story.score}${story.ageH === null ? '' : ` · ${story.ageH}시간 전`}`,
+            href: story.url || null,
+            linkText: story.title ? `(${story.title.slice(0, 30)}…)(영문)` : '(영문)',
+          }
+        : {
+            tag: '소식을 읽기',
+            body: `${top.company}에서 최근 7일 기술 소식은 없어요. 아래 목록을 참고해 주세요.`,
+            href: null,
+            linkText: null,
+          }
+    );
+
+    for (const l of lines) {
+      const li = document.createElement('li');
+      const tag = document.createElement('span');
+      tag.className = 'act-tag';
+      tag.textContent = l.tag;
+      li.appendChild(tag);
+      const body = document.createElement('span');
+      body.className = 'act-body';
+      if (l.href && l.linkText) {
+        const a = document.createElement('a');
+        a.href = l.href;
+        a.textContent = l.linkText;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        body.appendChild(a);
+        if (l.body) {
+          body.appendChild(document.createTextNode(' — ' + l.body));
+        }
+      } else {
+        body.textContent = l.body;
+      }
+      li.appendChild(body);
+      ol.appendChild(li);
+    }
   }
 
   function makeList(items, renderItem, emptyText, cls) {
@@ -429,9 +552,10 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     return ul;
   }
 
-  function linkNode(text) {
+  function linkNode(text, cls) {
     const a = document.createElement('a');
     a.className = 'item-main';
+    if (cls) a.className += ' ' + cls;
     a.textContent = text; // 원문 그대로(번역 금지)
     return a;
   }
@@ -499,9 +623,9 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     storyBlock.appendChild(makeList(
       row.topStories,
       (s) => [
-        (() => { const a = linkNode(s.title); if (s.url) a.href = s.url; return a; })(),
+        (() => { const a = linkNode(s.title, 'story-title'); a.textContent = `(${a.textContent.slice(0, 30)}…)(영문)`; if (s.url) a.href = s.url; return a; })(),
         spanNode(
-          [s.sourceType, `가중치 ${s.score}`, s.ageH === null ? null : `${s.ageH}시간 전`].filter(Boolean).join(' · '),
+          [s.sourceType === 'RADAR' ? '해외 IT 뉴스' : s.sourceType === 'HN' ? '해외 IT 커뮤니티' : '해외 IT 뉴스', `인기 ${s.score}`, s.ageH === null ? null : `${s.ageH}시간 전`].filter(Boolean).join(' · '),
           'item-sub',
         ),
       ],
@@ -532,6 +656,7 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     // 표 바로 위의 "한 줄 결론": 7일 속도 점수가 가장 큰(동점이면 표 순서상 앞) 기업을 씀. 순수 함수는 건드리지 않는다.
     resultSummaryEl.textContent = selectedCompanies().length ? renderResultSummary(result) : DEFAULT_SUMMARY;
     renderMatrix(result);
+    renderActionCard(result);
     sectionsEl.innerHTML = '';
     for (const row of result.matrix) sectionsEl.appendChild(renderCompanyCard(row));
     jsonEl.textContent = JSON.stringify(result, null, 2);
@@ -583,13 +708,15 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     render();
   }
 
+  // SPEC 5: 기본 선택 = 6개 기업 전체 체크
+  for (const t of toggles) t.checked = true;
   for (const t of toggles) t.addEventListener('change', render);
-  // "예시로 해 보기"는 데모 편의: Mistral + Anthropic만, 그 외 모두 해제
+  // SPEC 8: "예시로 해 보기" = Mistral + Anthropic만, 그 외 해제
   $('demo-mistral-button').addEventListener('click', () => {
     for (const t of toggles) t.checked = (t.value === 'Mistral' || t.value === 'Anthropic');
     render();
   });
-  // UX-REVIEW 4.1/7.2: 초기 상태는 6개 기업 전체가 켜진 상태
+  // 전체 초기화: 6개 기업 전체 체크
   $('reset-button').addEventListener('click', () => {
     for (const t of toggles) t.checked = true;
     showStatus(null);

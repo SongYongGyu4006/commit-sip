@@ -1,5 +1,5 @@
 // 화면 로직: 데이터 fetch, 예시 버튼, 필터, 렌더링. 순수 함수는 app.js 의 buildRadarBoard.
-import { buildRadarBoard } from './app.js';
+import { buildRadarBoard, buildSpeedometer } from './app.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -14,6 +14,7 @@ const AI_MODELS_SAMPLE_URL = 'samples/ai_models_예시.json';
 
 // 데이터가 없을 때 세 목록의 빈 상태 안내(예시로 해 보기 버튼과 함께 쓴다).
 const EMPTY_HINT = "데이터를 불러오지 못했습니다. '예시로 해 보기' 버튼으로 확인할 수 있어요.";
+const SPEED_EMPTY = '데이터가 준비되면 최근 24시간 소식 수를 신호등으로 보여 드려요.';
 
 let currentData = null;
 let resultHasData = false;
@@ -38,7 +39,8 @@ function resetFilters() {
 
 function clearLists() {
   restoreDetail();
-  for (const id of ['top-three-list', 'story-list', 'source-status-list']) $(id).innerHTML = '';
+  for (const id of ['top-three-list', 'story-list', 'source-status-list', 'speed-list']) $(id).innerHTML = '';
+  $('speed-list').appendChild(speedEmptyLi());
   $('filtered-count').textContent = '';
   $('source-summary-text').textContent = '데이터가 준비되면 수집 현황을 여기에 표시합니다.';
 }
@@ -131,11 +133,12 @@ function renderAnswer(result) {
     num.appendChild(small);
     $('answer-text').textContent = '지금 가장 크게 다뤄지는 소식: ' + top.title;
   }
-  $('answer-total').textContent = total + '개';
-  $('answer-sources').textContent = result.sourceSummary.totalSources + '곳';
+  // 통계 3칸은 화면에서 뺐다. 남은 값 id는 DOM 에 없는 걸 참고:
+  $('answer-total') && ($('answer-total').textContent = total + '개');
+  $('answer-sources') && ($('answer-sources').textContent = result.sourceSummary.totalSources + '곳');
   const crossCount = result.filteredStories.filter((st) => st.crossConfirmed).length;
-  $('answer-cross').textContent = crossCount + '개';
-  const sum = $('summary-block');
+  $('answer-cross') && ($('answer-cross').textContent = crossCount + '개');
+  const sum = $('summary-text');
   if (!resultHasData || !top || !total) {
     sum.hidden = true;
   } else {
@@ -247,6 +250,118 @@ function emptyLi(text) {
   return li;
 }
 
+// 속도계 빈 상태(데이터 없을 때): 안내 문구 + 예시로 해 보기 버튼
+function speedEmptyLi() {
+  const li = makeEl('li', 'empty speed-empty');
+  li.appendChild(makeEl('p', 'empty-text', SPEED_EMPTY));
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'ds-btn ds-btn-primary ds-btn-sm';
+  btn.textContent = '예시로 해 보기';
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    $('sample-button').click();
+  });
+  li.appendChild(btn);
+  return li;
+}
+
+// AI 기업 속도계: 6개 칸 신호등. 칸을 누르면(링크를 안 누르면) 대표 소식 상세로 이동한다.
+function renderSpeedometer(radarData) {
+  const ul = $('speed-list');
+  ul.innerHTML = '';
+  const cells = buildSpeedometer(radarData);
+  const hasAny = cells.some((c) => c.count > 0);
+  if (!hasAny) {
+    ul.appendChild(speedEmptyLi());
+    return;
+  }
+  for (const c of cells) {
+    const li = makeEl('li', 'speed-cell ' + c.level);
+    // 칸 전체를 버튼으로: 어디를 눌러도 대표 소식 상세로 이동한다(0건 칸은 반응 없음).
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'speed-btn ' + c.level;
+    btn.disabled = !c.topUrl;
+    const top = makeEl('span', 'speed-top');
+    top.appendChild(makeEl('span', 'speed-dot ' + c.level));
+    top.appendChild(makeEl('span', 'speed-name', c.name));
+    btn.appendChild(top);
+    btn.appendChild(makeEl('span', 'speed-label ' + c.level, c.label + ' · ' + c.count + '건'));
+    btn.appendChild(makeEl('span', 'speed-link' + (c.topUrl ? '' : ' speed-link-off'), c.topUrl ? '대표 소식' : ''));
+    li.appendChild(btn);
+    // 칸을 누르면: 해당 기업의 대표 소식을 목록에서 찾아 여닫고 스크롤해 준다.
+    // 대표 소식이 목록에 안 보이면(필터로 걸리면) 목록 바로 아래 상세 칸에 보여 주고,
+    // 다시 누르면 닫는다. 0건 칸은 버튼을 비활성화해서 아무 반응이 없게 한다.
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const detail = $('story-detail');
+      // 대표 소식 상세를 열려 있을 때(어디에서든) 다시 누르면 닫는다.
+      if (speedDetailFor && detail.querySelector('.speed-detail')) {
+        restoreDetail();
+        return;
+      }
+      const expanded = $('story-list').querySelector('.story[aria-expanded="true"]');
+      if (expanded) expanded.click(); // 이미 열려 있으면 닫는다
+      let target = jumpToStory(c.topUrl);
+      if (target) {
+        detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else if (c.topUrl) {
+        showSpeedDetail(c);
+      }
+    });
+    ul.appendChild(li);
+  }
+}
+
+// 속도계 칸을 눌렀는데 대표 소식이 목록에 안 보이는 경우(필터로 걸렸을 때):
+// 목록 바깥의 상세 칸(누른 칸 바로 아래쪽)에 대표 소식 원문 링크를 보여 준다.
+// speedDetailFor 에 회사 id 를 남기고, 재클릭·렌더 시점에 닫아 준다.
+let speedDetailFor = null;
+function showSpeedDetail(c) {
+  const detail = $('story-detail');
+  restoreDetail();
+  detail.innerHTML = '';
+  const box = makeEl('div', 'speed-detail');
+  box.appendChild(makeEl('p', 'speed-detail-head', c.name + ' 대표 소식 · ' + c.label + ' (목록에 없어 여기 보여 줘요)'));
+  const a = document.createElement('a');
+  a.href = c.topUrl;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.className = 'link-title';
+  a.textContent = c.name + ' 대표 소식 원문 보기';
+  box.appendChild(a);
+  detail.appendChild(box);
+  speedDetailFor = c.id;
+  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// 상세 칸에 열려 있는 속도계 대표 소식 상세를 닫는다.
+function closeSpeedDetail() {
+  if (!speedDetailFor) return;
+  if ($('story-detail').querySelector('.speed-detail')) restoreDetail();
+  speedDetailFor = null;
+}
+
+// URL 로부터 소식 상세로 이동한다. 해당 행에 원문 링크가 없으면(필터 등으로 안 보이면) 아무것도 안 한다.
+function jumpToStory(url) {
+  let abs;
+  try {
+    abs = new URL(url, document.baseURI).href;
+  } catch {
+    return null;
+  }
+  for (const li of $('story-list').querySelectorAll('.story')) {
+    const a = li.querySelector('a');
+    if (a && a.href === abs) {
+      li.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      li.click();
+      return li;
+    }
+  }
+  return null;
+}
+
 function renderStoryList(items) {
   const ul = $('story-list');
   restoreDetail();
@@ -264,18 +379,32 @@ function renderStoryList(items) {
     const li = makeEl('li', 'story');
     li.tabIndex = 0;
     li.setAttribute('aria-expanded', 'false');
+    // 1행: 제목(2줄까지만) + 오른쪽 '원문·지표' 힌트. 항목을 누르면 아래에 원문 링크·지표를 바로 보여 준다.
+    const row = makeEl('span', 'title-row');
     const title = makeEl('span', 'title', s.title.length > 60 ? s.title.slice(0, 60) + '…' : s.title);
     title.title = s.title;
     const chev = makeEl('span', 'chev', '▾ 원문·지표');
-    li.appendChild(title);
-    li.appendChild(chev);
+    row.appendChild(title);
+    row.appendChild(chev);
+    li.appendChild(row);
     const meta = makeEl('span', 'meta', '기사는 ' + s.sourceCount + '곳에서 · ' + ageText(s.ageHours));
     if (s.crossConfirmed) meta.appendChild(badge('여러 곳에서 다뤄진 소식', 'cross'));
     if (s.interest) meta.appendChild(badge('많은 사람이 찾는 주제', 'interest'));
     li.appendChild(meta);
     li.appendChild(makeEl('span', 'plain', plainText(s)));
     const show = () => renderDetail(s, li);
-    li.addEventListener('click', show);
+    const toggle = (e) => {
+      // '원문·지표' 힌트를 직접 누르면 행 전체 토글 대신, 바로 아래 원문 링크·지표 상세만 여닫는다.
+      if (e && e.target && e.target.closest && e.target.closest('.chev')) {
+        const detail = $('story-detail');
+        const wasOpen = li.getAttribute('aria-expanded') === 'true';
+        renderDetail(s, li); // 토글(닫힘) 동작
+        if (!wasOpen) detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); // 열면 상세로 스크롤
+        return;
+      }
+      show(); // 행 나머지 부분을 누르면 기존과 동일하게 상세를 여닫는다.
+    };
+    li.addEventListener('click', toggle);
     li.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
@@ -302,6 +431,9 @@ function restoreDetail() {
   const list = $('story-list');
   if (detail.parentElement !== list.parentElement || detail.previousElementSibling !== list) {
     list.after(detail);
+  }
+  if (typeof speedDetailFor !== 'undefined' && speedDetailFor) {
+    speedDetailFor = null;
   }
 }
 
@@ -442,6 +574,7 @@ function render() {
     clearLists();
     resultTopThree = [];
     renderAnswer({ topThree: [], filteredStories: [], sourceSummary: { totalSources: 0, okSources: 0, collectedItems: 0, uniqueStories: 0 } });
+    renderSpeedometer({ stories: [] });
     renderTopThree([]);
     renderStoryList([]);
     return;
@@ -450,6 +583,7 @@ function render() {
   resultHasData = true;
   resultUniqueStories = result.sourceSummary.uniqueStories;
   renderAnswer(result);
+  renderSpeedometer(currentData);
   renderTopThree(result.topThree);
   renderStoryList(result.filteredStories);
   renderSourceSummary(result.sourceSummary);

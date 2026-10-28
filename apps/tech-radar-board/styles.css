@@ -2,30 +2,21 @@
    Tokens come from vendor/studio.css (loaded first in index.html).
    Do NOT redefine --ds-* tokens here; reference them. */
 
-/* ===== layout: 띠 → 답 카드 → 요약(작게) → 목록. DOM 은 그대로, 순서만 CSS 로 ===== */
+/* ===== layout: 얇은 띠 → 답 카드 → 속도계 → 큰 소식 3개 → 목록. DOM 순서가 바로 화면 순서 ===== */
 .ds-page { display: flex; flex-direction: column; }
 .ds-page > * { min-width: 0; }
-#app-status { order: -2; }
-#answer-radar { order: -1; }
-/* 머리말 여백 절반으로: 첫 화면에 1~3위 목록이 보이게 한다 */
-.ds-band { padding: var(--ds-s4) max(var(--ds-s4),calc((100% - var(--ds-max))/2 + var(--ds-s4))) var(--ds-s6); }
-.ds-band h1 { margin-bottom: 0; }
-.ds-band > p { margin: var(--ds-s2) 0 var(--ds-s3); max-width: 56ch; line-height: 1.5; }
-/* '데이터 기준' 날짜는 제목 옆 작은 글씨로 */
-.band-date { font-size: 13px; font-weight: 400; color: var(--ds-band-ink-2); margin-left: var(--ds-s3); white-space: nowrap; }
-#sample-button { width: auto; align-self: flex-start; margin: 0; }
-.sample-hint { margin: var(--ds-s2) 0 0 !important; color: var(--ds-band-ink-2); }
-/* vendor 의 -64px 겹침을 취소하고 여백 절반으로 */
-.ds-band + .ds-page > .ds-answer:is(#answer-radar) { margin-top: calc(-1 * var(--ds-s5)); }
+#app-status { order: -1; }
+#answer-radar { margin-top: 0; }
+/* 기술 도구: 얇은 띠 + 첫 화면에 답 카드·속도계·1위가 모두 보이도록 여백 조율 */
+.ds-band.ds-band-thin { padding-left: max(var(--ds-s4),calc((100% - var(--ds-max))/2 + var(--ds-s4))); padding-right: max(var(--ds-s4),calc((100% - var(--ds-max))/2 + var(--ds-s4))); }
+.ds-band.ds-band-thin > p { margin: var(--ds-s2) 0; max-width: 56ch; line-height: 1.5; }
+.ds-band-meta { margin-top: var(--ds-s3); }
+#sample-button { width: auto; margin: 0; }
+#speed-section { margin-top: var(--ds-s4); }
 
-/* ===== answer card: 큰 숫자만. 통계 3칸은 첫 화면에서 지운다 =====
-   (통계 값 id — #answer-total/#answer-sources/#answer-cross — 은 DOM 에 그대로 두고 가독성만 낮춘다) */
+/* ===== answer card: 큰 숫자 + 한 문장 (통계 3칸은 삭제) ===== */
 #answer-radar { position: relative; padding: var(--ds-s4); }
-#answer-text { font-size: 20px; font-weight: 600; color: var(--ds-ink); max-width: none; }
 #answer-num small { font-size: 24px; }
-.ds-answer-meta { opacity: 0.5; }
-.ds-answer-meta dt { color: var(--ds-ink-3); }
-.ds-answer-meta dd { font-size: 15px; font-weight: 500; }
 
 /* ===== status ===== */
 #app-status:empty { display: none; }
@@ -77,19 +68,6 @@
 .tech-details summary { padding: 0; gap: 0; }
 .tech-note { margin: var(--ds-s2) 0 0; font-size: 14px; color: var(--ds-ink-2); max-width: 70ch; }
 
-/* ===== data summary (한 줄 요약, 목록 아래로) ===== */
-.ds-summary:empty, .ds-summary[hidden] { display: none; }
-.ds-summary { margin: 0 0 var(--ds-s3); order: 100; }
-.ds-summary p {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--ds-ink-3);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
 /* ===== tips (이 보드 보는 법) ===== */
 .tips { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .tips li {
@@ -112,6 +90,59 @@
 }
 #tips-details { margin-top: var(--ds-s5); }
 #tips-details .tips { counter-reset: tip; padding: 8px 12px 12px; }
+
+/* ===== speedometer: AI 기업 6칸 신호등 매트릭스 ( 휴대폰 3열 × 2행, 데스크톱 6열 ) ===== */
+#speedometer { margin-bottom: var(--ds-s1); }
+.speed-grid {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--ds-s2);
+}
+.speed-cell {
+  display: flex; flex-direction: column;
+  min-width: 0;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+/* 칸 전체를 버튼으로: 누르면 대표 소식 상세로 이동한다 */
+.speed-btn {
+  display: flex; flex-direction: column; gap: 4px;
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  min-width: 0;
+}
+.speed-btn:hover:not(:disabled) { border-color: var(--ds-ink-3); }
+.speed-btn:focus-visible { outline: 2px solid var(--ds-focus); outline-offset: 2px; }
+.speed-btn:disabled { cursor: default; }
+.speed-btn .speed-top { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.speed-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--ds-ink-3); }
+.speed-dot.fast { background: var(--ds-good); }
+.speed-dot.mid { background: var(--ds-warn); }
+.speed-name { font-size: 14px; font-weight: 600; color: var(--ds-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.speed-label { font-size: 13px; font-weight: 700; color: var(--ds-ink-3); }
+.speed-label.fast { color: var(--ds-good); }
+.speed-label.mid { color: var(--ds-warn); }
+.speed-count { font-size: 13px; color: var(--ds-ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.speed-btn .speed-link { font-size: 13px; font-weight: 600; color: var(--ds-accent-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 14px; }
+.speed-btn:disabled .speed-link { color: var(--ds-ink-3); }
+.speed-btn:disabled .speed-label { color: var(--ds-ink-3); }
+/* 속도계 칸 클릭 시 목록에 안 보이는 대표 소식을 상세 칸에 보여 준다 */
+#story-detail .speed-detail-head { margin: 0 0 8px; font-size: 14px; font-weight: 700; color: var(--ds-ink-2); }
+.speed-empty { grid-column: 1 / -1; }
+.speed-empty p { margin: 0; color: var(--ds-ink-3); font-size: 14px; }
+.speed-empty button { margin-top: var(--ds-s2); }
+@media (max-width: 640px) {
+  .speed-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .speed-cell { padding: 8px 10px; }
+}
 
 /* ===== answer number pulse (error state) ===== */
 #sample-button.pulse { animation: pulse-border 1.2s ease-in-out 3; }
@@ -219,6 +250,7 @@
   gap: 4px;
   padding: 14px 8px;
   cursor: pointer;
+  padding-right: 34px;
   border-radius: var(--ds-radius);
   border-bottom: 1px solid var(--ds-line);
   transition: background-color var(--ds-fast) var(--ds-ease), transform var(--ds-fast) var(--ds-ease);
@@ -239,6 +271,8 @@
   overflow: hidden;
   min-width: 0;
 }
+/* 1행: 제목 + 오른쪽 '원문·지표' 힌트(겹치지 않게). 열리면 제목이 2줄로, 상세 링크를 펼쳐 준다 */
+.story .title-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
 .story[aria-expanded="true"] .title {
   display: block;
   -webkit-line-clamp: unset;
@@ -291,6 +325,9 @@
 .link-source { font-size: 14px; font-weight: 600; color: var(--ds-ink-3); }
 .link-metric { font-weight: 400; }
 .link-title { font-weight: 600; color: var(--ds-accent-text); text-decoration: underline; overflow-wrap: anywhere; }
+
+/* ===== data summary (한 줄 요약, 푸터에서 접힌다) ===== */
+#summary-text { color: var(--ds-ink-3); }
 
 /* ===== empty states ===== */
 .empty {
@@ -359,23 +396,18 @@ button:focus-visible, select:focus-visible, a:focus-visible {
 
 /* ===== responsive ===== */
 @media (max-width: 640px) {
-  .ds-band { padding: var(--ds-s5) var(--ds-s4) var(--ds-s5); }
-  .band-date { display: block; margin: var(--ds-s1) 0 0; }
+  .ds-band.ds-band-thin { padding-top: var(--ds-s4); padding-bottom: var(--ds-s4); }
   #app-status { margin-bottom: var(--ds-s3); }
-  .ds-summary p {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    max-height: 3.2em;
-  }
   .controls { gap: 0 var(--ds-s4); padding-bottom: var(--ds-s2); }
   .top-card { padding: var(--ds-s2) var(--ds-s4); }
   /* top-item: show only 1 link */
   .top-item .links .link:nth-child(n + 2) { display: none; }
+  .story { padding-right: 0; }
+  .story .title-row { grid-template-columns: minmax(0, 1fr) 56px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
+  .speed-cell { animation: none !important; }
   .story:active { transform: none; }
 }
