@@ -35,7 +35,6 @@
 
 ## 앱 실험실
 
-- [한국 제출 사진 규격 검사기](https://songyonggyu4006.github.io/commit-sip/apps/korean-photo-spec-checker/): 토익·정부24·여권 등 한국 주요
 - [우리동네 기름값 30일](https://songyonggyu4006.github.io/commit-sip/apps/neighborhood-gas-price-30days/): 오늘 시도별 기름값 평균과 최저가 주유소 20곳, 그리고 30일 가격 추이를 한눈에 보여줍니다.
 - [정부 혜택 찾기](https://songyonggyu4006.github.io/commit-sip/apps/government-benefits-finder/): 최근 등록·수정된 정부 지원금·혜택을 분야와 대상(청년·출산육아·자영업·저소득·노인)으로 골라, 마감이 임박한 순서로 카드로 보여 주는 앱입니다.
 - [구독 요금 계산기](https://songyonggyu4006.github.io/commit-sip/apps/subscription-cost-calculator/): 오늘의 달러-원 환율과 비트코인·이더리움 시세로 Netflix·ChatGPT Plus 등 해외 구독 6종의 원화 월액·연액과 기준 환율(7일 평균) 대비 증감액을 즉시 계산합니다.

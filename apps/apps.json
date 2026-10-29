@@ -1,17 +1,5 @@
 [
  {
-  "slug": "korean-photo-spec-checker",
-  "guide": true,
-  "title": "한국 제출 사진 규격 검사기",
-  "pitch": "토익·정부24·여권 등 한국 주요 제출처의 증명사진 규격(크기·비율·용량·확장자)에 사진을 맞게 해 주는 오프라인 도구입니다.",
-  "who": "공공기관·채용·학교 사이트에 '500KB 이하', '50KB 이하' 사진을 올려야 하는 일반인, 증명사진·여",
-  "date": "",
-  "versions": 2,
-  "updated": "2026-10-28",
-  "views": 0,
-  "views_from": "public"
- },
- {
   "slug": "neighborhood-gas-price-30days",
   "guide": true,
   "title": "우리동네 기름값 30일",
