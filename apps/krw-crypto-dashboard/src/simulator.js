@@ -43,6 +43,14 @@ export function simCoinChange(result) {
   renderSimResult(result);
 }
 
+// 입력 필드(금액·매수 가격·환율·코인)에 이벤트 연결: 값이 바뀌면 #sim-result 즉시 갱신.
+export function bindSim(result) {
+  for (const sel of ["#sim-amount", "#sim-buy-usd", "#sim-buy-fx"]) {
+    $(sel).addEventListener("input", () => renderSimResult(result));
+  }
+  $("#sim-coin").addEventListener("change", () => simCoinChange(result));
+}
+
 // 입력값으로 결과를 계산해 #sim-result 에 쓴다. 값이 없거나 0 이하이면 한국어 안내.
 // 부호·색(up/down/flat)은 목록과 같은 방식으로: ds-up(빨강)·ds-down(파랑)·ds-flat(회색).
 export function renderSimResult(result) {
@@ -65,7 +73,8 @@ export function renderSimResult(result) {
   line.textContent =
     formatWon(amount) + "원 → 지금 " + formatWon(Math.round(s.currentKrw)) + "원 (" +
     formatSigned(s.pct) + "%, 코인 " + formatSigned(row.usdChangePct) + "% · 환율 " +
-    formatSigned(row.fxEffectPct) + "%p)";
+    formatSigned(row.fxEffectPct) + "%)";
+  // NOTE: percent unit for fx effect
   const hint = document.createElement("span");
   hint.className = "ds-hint";
   hint.style.display = "block";

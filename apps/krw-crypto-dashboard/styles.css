@@ -45,7 +45,6 @@
   flex-wrap: wrap;
   margin-top: 8px;
   font-size: 14px;
-  color: rgba(255, 255, 255, .88);
   color: var(--ds-band-ink-2);
 }
 .ds-band-meta span, #data-time {
@@ -53,7 +52,7 @@
 }
 #fx-line {
   color: var(--ds-band-ink);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -107,28 +106,35 @@
   font-size: 14px;
 }
 
-/* 첫 화면: 코인 시세 목록(핵심 답)을 차트보다 위로 */
+/* 첫 화면: 답 카드(24시간 원화 변동)를 띠 바로 아래에, 코인 목록을 그 아래에 */
 #screen-dashboard {
   display: flex;
   flex-direction: column;
 }
-#coin-list-title {
-  order: -2;
-  margin-top: 0;
+.ds-answer {
+  margin-top: -48px;
+  position: relative;
 }
-#coin-list {
-  order: -1;
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-line);
-  border-radius: 20px;
-  overflow: hidden;
-  padding: 0;
-  margin: 0;
+.ds-answer-num {
+  font-size: clamp(38px, 9vw, 52px);
+}
+.ds-answer-meta {
+  flex-wrap: wrap;
+  gap: 8px 0;
+}
+.ds-answer-meta > div {
+  padding: 0 16px;
+}
+.ds-answer-meta > div:first-child {
+  padding-left: 0;
+}
+.ds-answer-meta > div + div {
+  border-left: 1px solid var(--ds-line);
 }
 
-/* 섹션 제목(24시간 변동 / 그때 샀더라면 / 코인 시세) */
+/* 섹션 제목(코인 시세 / 24시간 흐름 / 그때 샀더라면) */
 .ds-section-title {
-  margin: 32px 0 12px;
+  margin: 28px 0 12px;
 }
 .ds-section-title h2 {
   font-size: 20px;
@@ -141,6 +147,9 @@
   line-height: 1.5;
   max-width: 60ch;
   color: var(--ds-ink-2);
+}
+#coin-list-title {
+  margin-top: 24px;
 }
 
 /* ── 차트 ── */
@@ -209,6 +218,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  gap: 2px;
 }
 .coin-row .bar-wrap {
   grid-area: bar;
@@ -261,6 +271,11 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+.real-amount {
+  font-size: 13px;
+  color: var(--ds-ink-3);
+  white-space: nowrap;
+}
 
 .ds-footer {
   margin: 18px 0 0;
@@ -269,7 +284,7 @@
   color: var(--ds-ink-3);
 }
 
-/* ── 접힌 구역(24시간 흐름) ── */
+/* ── 접힌 구역(24시간 흐름 / 차트) ── */
 .fold {
   margin: 26px 0 0;
   padding: 14px 18px 18px;

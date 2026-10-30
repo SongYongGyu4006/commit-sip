@@ -186,8 +186,8 @@ export function fitByVram(item, vramGb) {
  * mode('trending'|'downloads'|'optimized')로 정렬된 복사본을 반환 — 원배열 불변, 항목 키 순서 보존.
  * trending: trendingScore↓→downloads↓→likes↓(= planModels 기본 순서)
  * downloads: downloads↓
- * optimized: RAM 대비 적합도(estimatedTotalGb/ramGb) 오름 — RAM에 가장 잘 맞는 순.
- *   estimatedTotalGb 가 null 인 행은 항상 뒤로. ramGb 도 없으면 현재 순서 유지.
+ * optimized: 실행 가능(추정)인 모델(runnable)을 앞으로, 그중 다운로드 많음순.
+ *   불가능한 행(추정 불가·RAM 부족)은 뒤로. ramGb 도 없으면 현재 순서 유지.
  * @param {Array<object>} items planModels 반환 models
  * @param {'trending'|'downloads'|'optimized'} mode
  * @param {number} [ramGb] 'optimized' 모드 기준 RAM
@@ -201,12 +201,13 @@ export function rankModels(items, mode, ramGb) {
     case 'downloads':
       arr.sort((a, b) => num(b.downloads) - num(a.downloads));
       break;
-    case 'optimized': {
-      if (typeof ramGb !== 'number' || !Number.isFinite(ramGb) || ramGb <= 0) return arr;
-      const ratio = (it) => (it.estimatedTotalGb === null ? Infinity : it.estimatedTotalGb / ramGb);
-      arr.sort((a, b) => ratio(a) - ratio(b));
+    case 'optimized':
+      // 가능한(추정) 모델이 맨 앞에, 그중 많이 사용(다운로드↓)순
+      arr.sort((a, b) => {
+        if (!!a.runnable !== !!b.runnable) return a.runnable ? -1 : 1;
+        return num(b.downloads) - num(a.downloads);
+      });
       break;
-    }
     case 'trending':
     default:
       arr.sort((a, b) => {

@@ -119,7 +119,7 @@ export function renderFlowCharts(result) {
         y1: { ...DUAL_SCALES.y1, title: { display: true, text: "1$(원)" } },
       },
       plugins: {
-        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + (ctx.parsed.y !== null ? (ctx.datasetIndex < 2 ? "₩" + ctx.parsed.y.toLocaleString() : formatRate(ctx.parsed.y) + "원") : "데이터 없음") } },
+        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + (ctx.parsed.y !== null ? (ctx.datasetIndex < 2 ? "₩" + ctx.parsed.y.toLocaleString() : formatRate(ctx.parsed.y)) : "데이터 없음") } },
       },
     },
   });
@@ -154,7 +154,7 @@ export function renderAllCharts(result) {
       indexAxis: "y",
       scales: { ...DUAL_SCALES, x: { stacked: false }, y: { title: { display: true, text: "1$(원)" } } },
       plugins: {
-        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + (ctx.datasetIndex ? formatSigned(ctx.parsed.x) + "%" : formatRate(ctx.parsed.y) + "원") } },
+        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + (ctx.datasetIndex ? formatSigned(ctx.parsed.x) + "%" : formatRate(ctx.parsed.y)) } },
       },
     },
   });
@@ -169,7 +169,7 @@ export function renderAllCharts(result) {
         y1: { ...DUAL_SCALES.y1, title: { display: true, text: "1$(원)" } },
       },
       plugins: {
-        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + (ctx.parsed.y !== null ? (ctx.datasetIndex < 2 ? "₩$" + ctx.parsed.y.toLocaleString() : formatRate(ctx.parsed.y) + "원") : "데이터 없음") } },
+        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + (ctx.parsed.y !== null ? (ctx.datasetIndex < 2 ? "₩$" + ctx.parsed.y.toLocaleString() : formatRate(ctx.parsed.y)) : "데이터 없음") } },
       },
     },
   });

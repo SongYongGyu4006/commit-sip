@@ -1,89 +1,128 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-accent="violet">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>시니어 역할 점검 — 무료 웹 도구 · 커밋 한 모금</title>
+  <title>역량 점검 — 무료 웹 도구 · 커밋 한 모금</title>
+  <link rel="stylesheet" href="vendor/studio.css" />
   <link rel="stylesheet" href="styles.css" />
 <script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="내 이력 텍스트를 입력하면 AI가 내 역량 강점과 공백을 요약해서 보여주고, AI 결과를 JSON 파일로 내려받아 나중에 다시 불러와서 확인할 수 있는 앱."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/senior-role-check/"></head>
-<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 시니어 역할 점검 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
-  <div class="page">
-    <header class="app-header">
-      <h1>시니어 역할 점검</h1>
-      <p class="app-tagline">
-        이력 텍스트를 붙여넣으면 역량 강점과 공백을 요약해서 보여 주고,
-        결과를 JSON 파일로 내려받았다가 다시 불러와 확인할 수 있습니다.
-      </p>
-    </header>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 내 역량, 한 번에 점검 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+  <header class="ds-band">
+    <h1>내 역량, 한 번에 점검</h1>
+    <p>
+      경력·프로젝트·동아리·인턴 경험을 적으면 내 강점과 보완할 점을 알려 줍니다.
+      신입·학생·취준생도 OK. 채용 공고를 함께 붙여 보면 요구 역량까지 대조해요.
+    </p>
+    <div class="ds-band-meta">
+      <span class="ds-badge">15개 역량 키워드</span>
+      <span>네트워크·저장 없이 이 안에서만 동작</span>
+    </div>
+  </header>
 
-    <main>
-      <section class="card" aria-labelledby="input-heading">
-        <h2 id="input-heading">이력 입력</h2>
-        <p class="field-hint">
-          이력서나 경력 사항을 자유롭게 붙여넣어 주세요. 최대 20,000자까지 입력할 수 있습니다.
-        </p>
+  <main class="ds-page">
+    <section class="ds-answer" aria-labelledby="answer-label">
+      <p class="ds-answer-label" id="answer-label">진행 방향</p>
+      <p class="ds-answer-num" id="answer-num">탐색형</p>
+      <p class="ds-answer-text" id="answer-text">아래 이력을 붙여 넣고 "점검하기"를 누르면, 여기에 결과가 나와요.</p>
+      <dl class="ds-answer-meta">
+        <div><dt>공고 대조</dt><dd id="meta-match" class="ds-flat">—</dd></div>
+        <div><dt>보완 영역</dt><dd id="meta-gaps">—</dd></div>
+      </dl>
+    </section>
+
+    <div class="ds-check-grid">
+      <div class="ds-section-title">
+        <h2>내 이력</h2>
+        <p>학교 프로젝트, 동아리, 인턴, 자격증도 적어 보세요. 최대 20,000자까지.</p>
+      </div>
+      <div class="ds-card">
+        <label class="ds-label" for="profile-input">이력 텍스트</label>
         <textarea
           id="profile-input"
-          rows="8"
-          placeholder="이력서나 경력 내용을 여기에 붙여넣어 주세요"
+          class="ds-textarea"
+          rows="5"
+          placeholder="예: 캡스톤 프로젝트를 리드하고, 코드 리뷰를 하고, 테스트를 작성하고, 배포를 했습니다."
           aria-label="이력 텍스트"
         ></textarea>
+
+        <label class="ds-label" for="job-input">채용 공고 (선택)</label>
+        <textarea
+          id="job-input"
+          class="ds-textarea"
+          rows="3"
+          placeholder="예: 백엔드 신입 채용, 코드 리뷰·테스트·배포 경험 우대"
+          aria-label="채용 공고 텍스트"
+        ></textarea>
+
         <div class="btn-row">
-          <button id="assess-button" class="btn btn-primary" type="button">점검하기</button>
-          <button id="example-button" class="btn btn-secondary" type="button">예시로 해 보기</button>
-          <button id="reset-button" class="btn btn-ghost" type="button">초기화</button>
+          <button id="assess-button" class="ds-btn ds-btn-primary" type="button">점검하기</button>
+          <button id="example-button" class="ds-btn" type="button">예시: 취준생</button>
+          <button id="example-career" class="ds-btn" type="button">예시: 경력직</button>
+          <button id="reset-button" class="ds-btn ds-btn-ghost" type="button">초기화</button>
         </div>
-      </section>
+      </div>
 
-      <section class="card" aria-labelledby="result-heading">
-        <h2 id="result-heading">점검 결과</h2>
-
+      <div class="ds-section-title">
+        <h2>점검 결과</h2>
+        <p>한 번의 언급만으로 강점이 입증되는 건 아니에요. 맥락에 따라 읽을 수 달라집니다.</p>
+      </div>
+      <div class="ds-card" aria-live="polite">
         <div class="status" id="app-status" role="status"></div>
 
-        <div class="result-grid">
-          <div class="result-block">
-            <h3>역량 강점 <span class="badge" id="strengths-count"></span></h3>
-            <ul id="strengths-list" class="tag-list"></ul>
-            <p class="empty-note" id="strengths-empty">아직 결과가 없습니다. <b>점검하기</b>를 눌러 보세요.</p>
-          </div>
+        <div class="result-block">
+          <h3>역량 강점 <span class="badge" id="strengths-count"></span></h3>
+          <ul id="strengths-list" class="tag-list"></ul>
+          <p class="empty-note" id="strengths-empty">아직 결과가 없습니다. <b>점검하기</b>를 눌러 보세요.</p>
+        </div>
 
-          <div class="result-block">
-            <h3>보완하면 좋은 영역 <span class="badge" id="gaps-count"></span></h3>
-            <ul id="gaps-list" class="tag-list"></ul>
-            <p class="empty-note" id="gaps-empty">아직 결과가 없습니다.</p>
-          </div>
+        <div class="result-block">
+          <h3>보완하면 좋은 영역 <span class="badge" id="gaps-count"></span></h3>
+          <ul id="gaps-list" class="tag-list"></ul>
+          <p class="empty-note" id="gaps-empty">아직 결과가 없습니다.</p>
         </div>
 
         <div class="direction-row">
           <span class="direction-label">진행 방향</span>
           <span id="direction-output" class="direction-value"></span>
+          <span id="direction-note" class="direction-note">점검하면 여기에 나와요.</span>
         </div>
 
-        <p class="caveat">
-          참고: 한 번의 언급만으로 강점이 입증되는 것은 아니고, 언급되지 않은 영역이 실제로 공백이라는
-          보장은 없습니다. 부정 표현, 다른 팀의 업무, 맥락에 따라 읽을 수 달라질 수 있습니다.
-        </p>
-      </section>
-
-      <section class="card" aria-labelledby="file-heading">
-        <h2 id="file-heading">결과 저장하기 · 불러오기</h2>
-        <p class="field-hint">
-          결과는 <b>role-check.json</b> 파일로 내려받을 수 있고, 같은 형식의 JSON 파일을 다시 불러와
-          확인할 수 있습니다. 이 앱은 데이터를 어디에도 저장하지 않습니다. 새로고침하면 처음과 같은
-          빈 상태로 시작됩니다.
-        </p>
-        <div class="btn-row">
-          <button id="export-button" class="btn btn-secondary" type="button">JSON으로 내려받기</button>
-          <label class="btn btn-ghost file-btn" for="import-file">JSON 불러오기</label>
-          <input id="import-file" type="file" accept=".json" hidden />
+        <div class="result-block job-match" id="job-match" hidden>
+          <h3>채용 공고 대조</h3>
+          <ul id="job-match-list" class="tag-list"></ul>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
 
-    <footer class="app-footer">
-      <p>이 앱은 네트워크를 쓰지 않고, 계정을 만들지 않으며, 입력한 내용을 어디에도 저장하지 않습니다.</p>
+    <div class="ds-card-tint">
+      <h2>알아 두세요</h2>
+      <p class="caveat">
+        한 번의 언급만으로 강점이 입증되는 것은 아니고, 언급되지 않은 영역이 실제로 공백이라는
+        보장은 없습니다. 부정 표현, 다른 팀의 업무, 맥락에 따라 읽을 수 달라질 수 있습니다.
+      </p>
+    </div>
+
+    <div class="ds-section-title">
+      <h2>결과 저장하기 · 불러오기</h2>
+      <p>
+        결과는 <b>role-check.json</b> 파일로 내려받을 수 있고, 같은 형식의 JSON 파일을 다시
+        불러와 확인할 수 있습니다. 이 앱은 데이터를 어디에도 저장하지 않습니다.
+        새로고침하면 처음과 같은 빈 상태로 시작됩니다.
+      </p>
+    </div>
+    <div class="ds-card">
+      <div class="btn-row">
+        <button id="export-button" class="ds-btn" type="button">JSON으로 내려받기</button>
+        <label class="ds-btn file-btn" for="import-file">JSON 불러오기</label>
+        <input id="import-file" type="file" accept=".json" hidden />
+      </div>
+    </div>
+
+    <footer class="ds-footer">
+      이 앱은 네트워크를 쓰지 않고, 계정을 만들지 않으며, 입력한 내용을 어디에도 저장하지 않습니다.
     </footer>
-  </div>
+  </main>
 
   <script type="module" src="src/ui.js"></script>
 

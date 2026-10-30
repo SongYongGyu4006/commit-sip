@@ -1,284 +1,241 @@
+/* 앱 고윳질 — vendor/studio.css 를 먼저 연결해 토큰(var(--ds-...))으로만 색·간격을 다룹니다. */
 :root {
-  --bg: #f2f4f8;
-  --card: #ffffff;
-  --ink: #1c2330;
-  --muted: #5b6472;
-  --line: #e3e7ee;
-  --accent: #2f6df6;
-  --accent-ink: #ffffff;
-  --green: #1f8a4c;
-  --green-bg: #e5f5ec;
-  --red: #c0392b;
-  --red-bg: #fbeae7;
-  --amber: #9a6b00;
-  --amber-bg: #fff4d6;
-  --blue-bg: #e8efff;
-  --radius: 16px;
+  --ds-avatar-hues: #2f5bea, #0f7a4f, #c2410c, #c0266d, #6d3fd9, #0b7285, #c8322b, #475569;
 }
 
-* { box-sizing: border-box; }
+/* 띠와 본문이 같은 왼쪽 선·폭을 쓰도록 padding 통일 */
+.ds-page { padding-inline: var(--ds-s4); }
+.ds-band { padding-block: var(--ds-s5) var(--ds-s6); }
+.ds-band:has(+ .ds-page > .ds-answer:first-child) { padding-bottom: var(--ds-s6); }
+.ds-band+.ds-page>.ds-answer:first-child { margin-top: -24px; }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
-  font-size: 15px;
-  line-height: 1.55;
+/* 헤더: 이렇게 쓰세요 1·2·3 단계(짧게) */
+.ds-band .howto { margin-top: var(--ds-s3); }
+.ds-band .howto ol { margin: 0; padding: 0; list-style: none; }
+.ds-band .howto li {
+  font-size: 14px;
+  color: var(--ds-band-ink-2, rgba(255, 255, 255, .85));
+  line-height: 1.7;
+  white-space: normal;
+}
+.ds-band .howto li b { margin-right: 6px; }
+@media (max-width: 560px) {
+  .ds-band .howto li { line-height: 1.6; }
 }
 
-.page {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 32px 16px 64px;
+/* 답 카드: 평평하게 */
+.ds-answer { border: 1px solid var(--ds-line); }
+.ds-answer-meta {
+  background: transparent;
+  border-radius: 0;
+  border-top: 1px solid var(--ds-line);
+  margin-top: var(--ds-s4);
+  padding: var(--ds-s3) 0 0;
+}
+.ds-answer-meta dt { font-size: 13px; color: var(--ds-ink-2); }
+.ds-answer-meta dd { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (max-width: 520px) {
+  .ds-answer-meta dd { font-size: 16px; }
 }
 
-.card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 24px;
-  margin-bottom: 24px;
-}
+/* 응답 카드를 띠 바로 아래로 붙여(기술 도구 변형은 ds-band-thin 기준) */
+.ds-band-thin + .ds-page > .ds-answer:first-child { margin-top: var(--ds-s4); }
 
-h1 {
-  margin: 0 0 8px;
-  font-size: 26px;
-  letter-spacing: -0.02em;
-}
-
-.tagline {
-  margin: 0 0 16px;
-  color: var(--muted);
-  font-size: 15px;
-}
-
-/* 상태(오류/안내) 영역 */
-#app-status {
-  min-height: 1px;
-  margin-bottom: 16px;
-}
+/* 상태(오류/안내) */
 #app-status:empty { display: none; }
 #app-status .status {
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: var(--red-bg);
-  color: var(--red);
+  margin-top: var(--ds-s3);
+  padding: var(--ds-s3) var(--ds-s4);
+  border-radius: var(--ds-radius);
+  background: var(--ds-bad-soft);
+  color: var(--ds-bad);
+  font-size: 14px;
   font-weight: 500;
 }
 #app-status .status.ok {
-  background: var(--blue-bg);
-  color: #1d3f8f;
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent-text);
 }
 
-/* 컨트롤 */
-.controls-card {
+/* 설정: 2열 grid — 셀마다 label + select 를 한 세로 묶음으로 */
+.ctl-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-s3) var(--ds-s4);
+}
+.ctl-grid .ds-select { margin-bottom: var(--ds-s4); }
+.ctl-grid .ds-select:last-child { margin-bottom: 0; }
+.ctl-more .ds-select { margin-bottom: 0; }
+/* 라벨 + 안내 한 줄(안내 없으면 빈 셀) */
+.ctl-cell .ds-label { margin-bottom: 2px; }
+.ctl-cell .ds-hint { margin: 0 0 6px; line-height: 1.45; }
+details.details-more {
+  margin-top: var(--ds-s4);
+  padding-top: var(--ds-s3);
+  border-top: 1px solid var(--ds-line);
+}
+details.details-more summary {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-s2);
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-accent-text);
+}
+details.details-more summary::-webkit-details-marker { display: none; }
+details.details-more summary::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 150ms ease-out;
+}
+details.details-more[open] summary::before { transform: rotate(45deg); }
+details.details-more summary:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+  border-radius: var(--ds-radius-s);
+}
+details.details-more[open] summary { margin-bottom: var(--ds-s3); }
+
+/* 핵심 설정 3줄: 라벨(+안내) + select 를 한 행에 */
+.ctl-core {
+  grid-template-columns: minmax(132px, 176px) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ds-s3) var(--ds-s4);
+}
+.ctl-core .ds-select { margin-bottom: 0; width: 100%; min-height: 44px; }
+.ctl-core .ctl-cell .ds-label { margin: 0 0 2px; font-size: 14px; font-weight: 600; color: var(--ds-ink); }
+.ctl-more { grid-template-columns: 88px minmax(0, 1fr); align-items: center; }
+.ctl-more .ctl-cell .ds-label { margin: 0; }
+
+.ctl-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  align-items: flex-end;
+  gap: var(--ds-s3);
+  margin-top: var(--ds-s5);
 }
-.ctl {
+.ctl-actions .ds-btn-primary { min-width: 120px; min-height: 48px; }
+.ctl-actions .ds-btn:not(.ds-btn-primary) {
+  background: transparent;
+  border: 1px solid var(--ds-line);
+  color: var(--ds-ink-2);
+}
+@media (max-width: 560px) {
+  .ctl-grid { gap: var(--ds-s3); }
+  .ctl-core, .ctl-more { grid-template-columns: 88px minmax(0, 1fr); }
+  .ctl-core .ctl-cell .ds-hint { font-size: 12px; margin-bottom: 4px; }
+  .ctl-actions .ds-btn { flex: 1 1 0; width: auto; }
+}
+
+/* 예시 결과(상위 3): 항목 3개를 1px 선으로 나누는 행 */
+.top-row { display: flex; }
+.top-item {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: var(--ds-s3) var(--ds-s4);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 14px;
-  color: var(--muted);
-  font-weight: 500;
+  gap: 2px;
 }
-.ctl select {
-  font: inherit;
-  font-size: 15px;
-  color: var(--ink);
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fff;
-  min-width: 140px;
+.top-item + .top-item { border-left: 1px solid var(--ds-line); }
+.top-id,
+.top-sub {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
-
-button {
-  font: inherit;
-  font-size: 15px;
-  padding: 11px 20px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--ink);
-  cursor: pointer;
-}
-button:hover { border-color: #c9d2e0; }
-button.primary, #apply-button {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-  font-weight: 600;
-}
-button.primary:hover, #apply-button:hover { opacity: 0.92; border-color: var(--accent); }
-#example-button { margin-top: 8px; }
-
-/* 요약 + 메타 */
-#summary {
-  margin-bottom: 8px;
-}
-#summary .summary-main {
-  font-size: 18px;
-  font-weight: 700;
-}
-#summary .summary-sub {
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* TOP3 요약 카드 */
-#top-card:empty { display: none; }
-#top-card { margin: 8px 0; }
-#top-card .top-label {
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-#top-card .top-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-#top-card .top-item {
-  flex: 1 1 160px;
-  min-width: 0;
-  background: #f6f8fc;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 8px 12px;
-}
-#top-card .top-id {
+.top-id {
   display: block;
-  font-weight: 700;
   font-size: 14px;
+  font-weight: 700;
+  color: var(--ds-accent-text);
+  text-decoration: none;
   word-break: break-all;
 }
-#top-card .top-sub {
-  margin-top: 2px;
-  color: var(--muted);
+.top-id:hover { text-decoration: underline; }
+.top-sub {
   font-size: 13px;
+  color: var(--ds-ink-3);
 }
-.meta-line {
+/* 숫자 아래 예시 결과 카드 끝 → 목록 연결 안내 */
+.see-all { margin: var(--ds-s3) 0 0; }
+
+/* 모델 목록(ds-list) — 행은 카드 패딩 안에서 카드 너비로 채운다 */
+.model-list .ds-list-item {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--ds-s3);
+  border-radius: var(--ds-radius);
+}
+/* 제목 행: 이름 + 출시일(같은 줄). 폭이 넓으면(태블릿/데스크톱) 출시일이 배지 줄로 내려가 */
+.model-list .ds-list-title-row { display: block; }
+.model-list .ds-list-title { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.model-list .ds-list-release { display: none; font-size: 13px; color: var(--ds-ink-3); white-space: nowrap; }
+@media (max-width: 560px) {
+  .model-list .ds-list-title-row { display: flex; align-items: baseline; gap: 6px; }
+  .model-list .ds-list-title { flex: 0 1 auto; min-width: 0; }
+  .model-list .ds-list-release { display: block; flex: none; overflow: hidden; text-overflow: ellipsis; max-width: 92px; }
+}
+.model-list li.disabled { opacity: 0.55; }
+.model-list li.no-params { opacity: 0.8; }
+/* 보조 줄(좋아요/다운로드 + 배지): 배지는 줄바꿈 허용, 카드 밖으로 넘치지 않게 */
+.model-list .ds-list-sub {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  color: var(--muted);
-  font-size: 13px;
-}
-.meta-line:empty { display: none; }
-
-.fit-note {
-  margin: 0 0 16px;
-  padding: 12px 16px;
-  background: #eef2fb;
-  border: 1px solid #d9e2f5;
-  border-radius: 12px;
-  color: #3d4b66;
-  font-size: 13.5px;
-}
-
-/* 모델 목록 */
-.model-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.model-list:empty::after {
-  content: "표시할 모델이 없습니다.";
-  display: block;
-  text-align: center;
-  color: var(--muted);
-  padding: 32px 0;
-}
-
-li.model {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 16px;
-}
-li.model.disabled {
-  opacity: 0.55;
-  cursor: pointer;
-}
-/* '파라미터 미상' 행은 RAM 부족 행보다 밝게 (CHANGES #1) */
-li.model.no-params {
-  opacity: 0.75;
-}
-li.model:not(.disabled) { cursor: default; }
-
-.model .head {
-  display: flex;
+  flex: 1 1 auto;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 2px 6px;
+  margin-top: 4px;
+  min-width: 0;
 }
-.model .mid {
-  font-weight: 700;
-  font-size: 16px;
-  word-break: break-all;
+/* 좋아요·다운로드: 한 줄이 너무 길면 카드 밖으로 안 넘게(줄바꿈) */
+.model-list .ds-list-sub > span:not(.ds-badge):not(.ds-list-release) {
+  min-width: max-content;
+  max-width: 100%;
 }
-a.mid {
-  color: var(--accent);
-  text-decoration: none;
+.model-list .ds-list-sub .ds-list-release { flex: none; overflow: hidden; text-overflow: ellipsis; max-width: 92px; }
+.model-list .ds-list-end { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.model-list .ds-list-end .ds-list-sub { display: flex; justify-content: flex-end; }
+.model-list .model-detail {
+  display: none;
+  flex-basis: 100%;
+  margin-top: var(--ds-s2);
+  padding: var(--ds-s3);
+  background: var(--ds-surface-2);
+  border-radius: var(--ds-radius-s);
+  font-size: 13px;
+  color: var(--ds-ink-2);
 }
-a.mid:hover { text-decoration: underline; }
-.model .sub {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 14px;
-}
+.model-list .model-detail.show { display: block; }
 
-.badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 999px;
+/* '모델 목록' 섹션: '자세히' 접히는 기술 설명(항상 보일 문구 그대로) */
+.fit-details { flex-basis: 100%; margin: 0; }
+.fit-details summary {
+  cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  white-space: nowrap;
+  color: var(--ds-accent-text);
 }
-.badge.new { background: var(--blue-bg); color: #1d3f8f; }
-.badge.quant { background: #eef0f4; color: var(--ink); }
-.badge.ok { background: var(--green-bg); color: var(--green); }
-.badge.no { background: var(--red-bg); color: var(--red); }
-.badge.dim { background: var(--amber-bg); color: var(--amber); }
-.badge.vram { background: #ece7f8; color: #5b4593; }
-.badge.vram.off { background: #f0ece7; color: #6b5b45; }
-#top-card a.top-id {
-  color: var(--accent);
-  text-decoration: none;
-}
-#top-card a.top-id:hover { text-decoration: underline; }
+.fit-details summary::-webkit-details-marker { display: none; }
+.fit-details[open] summary { margin-bottom: 4px; }
+.fit-details .fit-note { margin: 0; font-size: 13px; color: var(--ds-ink-3); line-height: 1.5; }
 
-.detail {
-  margin-top: 12px;
-  padding: 10px 12px;
-  border-left: 3px solid var(--accent);
-  background: #f6f8fc;
-  border-radius: 8px;
-  color: var(--ink);
-  font-size: 14px;
-}
+/* '총 필요 메모리 NGB': 긴 숫자가 휴대폰에서 카드 밖으로 안 넘게 */
+.model-list .ds-list-amount { min-width: 0; overflow-wrap: anywhere; }
 
-/* 모바일 */
+/* 휴대폰(≤560px) */
 @media (max-width: 560px) {
-  .page { padding: 16px 12px 48px; }
-  .card { padding: 16px; }
-  .controls-card { flex-direction: column; align-items: stretch; }
-  .ctl select { width: 100%; min-width: 0; }
-  button { width: 100%; }
+  .ds-page { padding: var(--ds-s4) var(--ds-s4) var(--ds-s6); }
+  .model-list .ds-list-sub { margin-top: 2px; }
+  .top-row { flex-direction: column; }
+  .top-item + .top-item { border-left: 0; border-top: 1px solid var(--ds-line); }
+  /* 폭이 좁으면 긴 이름/배지 내용이 카드 폭을 키우지 않도록 주 영역 폭을 0 기준 + 줄바꿈 */
+  .model-list .ds-list-main { flex: 1 1 0; }
+  .model-list .ds-list-sub { gap: 3px 8px; }
 }

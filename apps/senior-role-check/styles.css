@@ -1,186 +1,45 @@
-/* 시니어 역할 점검 — 스타일
-   시스템 폰트만 사용하고, 네트워크 리소스 없이 동작한다. */
+/* 시니어 역량 점검 — 앱 전용 스타일
+   색·간격·모서리는 vendor/studio.css 의 ds- 토큰(var(--ds-...))만 쓴다.
+   여기서는 레이아웃과 app 클래스의 세부 조정만 한다. */
 
-:root {
-  --bg: #f5f3ef;
-  --surface: #ffffff;
-  --ink: #22201c;
-  --ink-soft: #5c574e;
-  --line: #e5e0d6;
-  --accent: #2f6f4f;
-  --accent-ink: #ffffff;
-  --accent-soft: #e6f2ec;
-  --gap-soft: #fdf1e3;
-  --gap-ink: #8a5a2b;
-  --danger: #a63d2f;
-  --danger-soft: #fbeae7;
-  --ok-soft: #e6f2ec;
-  --radius: 16px;
-  --shadow: 0 1px 2px rgba(34, 32, 28, 0.05), 0 8px 24px rgba(34, 32, 28, 0.06);
+/* 답 카드의 보조 숫자를 띠 메타처럼 정렬 */
+.ds-answer-meta dd.ds-flat {
+  color: var(--ds-ink-3);
 }
 
-* {
-  box-sizing: border-box;
+/* 입력·결과를 데스크톱에서 나란히, 휴대폰에서는 1열로 */
+.ds-check-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ds-s4);
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
+@media (min-width: 860px) {
+  .ds-check-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
 }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
-}
-
-.page {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 40px 24px 56px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* ── 헤더 ─────────────────────────────────────────── */
-.app-header {
-  text-align: center;
-  padding: 8px 0 0;
-}
-
-.app-header h1 {
-  margin: 0 0 8px;
-  font-size: 32px;
-  letter-spacing: -0.02em;
-}
-
-.app-tagline {
-  margin: 0 auto;
-  max-width: 560px;
-  color: var(--ink-soft);
-  font-size: 16px;
-}
-
-/* ── 카드 ─────────────────────────────────────────── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 24px;
-}
-
-.card h2 {
-  margin: 0 0 8px;
-  font-size: 18px;
-  letter-spacing: -0.01em;
-}
-
-.card h3 {
-  margin: 0 0 8px;
-  font-size: 15px;
-  color: var(--ink-soft);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.field-hint {
-  margin: 0 0 16px;
-  color: var(--ink-soft);
-  font-size: 14px;
-}
-
-/* ── 입력 ─────────────────────────────────────────── */
-textarea#profile-input {
-  width: 100%;
-  min-height: 176px;
-  resize: vertical;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fcfbf9;
-  color: var(--ink);
-  font: inherit;
-  line-height: 1.6;
-}
-
-textarea#profile-input:focus-visible {
-  outline: 3px solid var(--accent-soft);
-  border-color: var(--accent);
-}
-
-/* ── 버튼 ─────────────────────────────────────────── */
+/* 버튼 줄: 주 버튼 1개, 나머지는 보조 */
 .btn-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
+  gap: var(--ds-s2);
+  margin-top: var(--ds-s4);
 }
 
-.btn {
-  appearance: none;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  padding: 10px 20px;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+@media (max-width: 520px) {
+  .btn-row .ds-btn {
+    flex: 1 1 auto;
+  }
 }
 
-.btn:active {
-  transform: translateY(1px);
-}
-
-.btn:focus-visible {
-  outline: 3px solid var(--accent-soft);
-}
-
-.btn-primary {
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-
-.btn-primary:hover {
-  background: #275e43;
-}
-
-.btn-secondary {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-color: #cfe5d9;
-}
-
-.btn-secondary:hover {
-  background: #d9ebdf;
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--ink-soft);
-  border-color: var(--line);
-}
-
-.btn-ghost:hover {
-  background: #faf8f5;
-  color: var(--ink);
-}
-
-.file-btn {
-  display: inline-block;
-  cursor: pointer;
-}
-
-/* ── 상태 영역 ──────────────────────────────────── */
+/* 상태 영역 (ds-status 계열 토큰) */
 .status {
-  margin: 0 0 16px;
-  min-height: 0;
   font-size: 14px;
-  border-radius: 10px;
+  border-radius: var(--ds-radius);
+  margin-bottom: var(--ds-s3);
 }
 
 .status:empty {
@@ -188,56 +47,67 @@ textarea#profile-input:focus-visible {
 }
 
 .status.error {
-  background: var(--danger-soft);
-  color: var(--danger);
-  border: 1px solid #f0c9c2;
-  padding: 12px 16px;
+  background: var(--ds-bad-soft);
+  color: var(--ds-bad);
+  border: 1px solid var(--ds-bad);
+  padding: var(--ds-s3) var(--ds-s4);
 }
 
 .status.ok {
-  background: var(--ok-soft);
-  color: var(--accent);
-  border: 1px solid #cfe5d9;
-  padding: 12px 16px;
+  background: var(--ds-good-soft);
+  color: var(--ds-good);
+  border: 1px solid var(--ds-good);
+  padding: var(--ds-s3) var(--ds-s4);
 }
 
-/* ── 결과 그리드 ─────────────────────────────────── */
-.result-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
+/* 결과 블록: 카드 안에서 한 단계 밝은 바탕 + 1px 선으로만 구분 */
 .result-block {
-  background: #fcfbf9;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 16px;
+  background: var(--ds-surface-2);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  padding: var(--ds-s4);
 }
 
+.result-block + .result-block {
+  margin-top: var(--ds-s3);
+}
+
+.result-block h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-s2);
+  margin: 0 0 var(--ds-s3);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ds-ink-2);
+}
+
+/* 개수 뱃지: 13px 이상으로 키워요 */
 .badge {
   display: inline-block;
   min-width: 20px;
-  padding: 0 8px;
+  padding: 0 var(--ds-s2);
   border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent-text);
   font-size: 13px;
   font-weight: 700;
   text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .badge:empty {
   display: none;
 }
 
+/* 태그 목록 */
 .tag-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--ds-s2);
 }
 
 .tag-list li {
@@ -245,99 +115,74 @@ textarea#profile-input:focus-visible {
   border-radius: 999px;
   font-size: 14px;
   font-weight: 500;
+  line-height: 1.5;
 }
 
 #strengths-list li {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent-text);
 }
 
 #gaps-list li {
-  background: var(--gap-soft);
-  color: var(--gap-ink);
+  background: var(--ds-warn-soft);
+  color: var(--ds-warn);
+}
+
+#job-match-list li {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  color: var(--ds-ink-2);
 }
 
 .empty-note {
-  margin: 8px 0 0;
-  color: var(--ink-soft);
+  margin: var(--ds-s2) 0 0;
+  color: var(--ds-ink-3);
   font-size: 13px;
 }
 
-/* ── 방향 출력 ────────────────────────────────────── */
+/* 진행 방향: 큰 값 + 한 줄 풀이 */
 .direction-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 16px 0 8px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fcfbf9;
+  align-items: baseline;
+  gap: var(--ds-s3);
+  margin-top: var(--ds-s4);
+  padding: var(--ds-s4);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  background: var(--ds-surface-2);
 }
 
 .direction-label {
-  color: var(--ink-soft);
+  color: var(--ds-ink-3);
   font-size: 14px;
+  flex: none;
 }
 
 .direction-value {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--ds-accent-text);
   min-height: 1.2em;
+  flex: none;
 }
 
+.direction-note {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--ds-ink-2);
+  font-size: 14px;
+}
+
+/* 참고 문구: 13px 이상 */
 .caveat {
-  margin: 8px 0 0;
-  color: var(--ink-soft);
-  font-size: 13px;
+  margin: var(--ds-s2) 0 0;
+  color: var(--ds-ink-3);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-/* ── 푸터 ─────────────────────────────────────────── */
-.app-footer {
-  text-align: center;
-  color: var(--ink-soft);
-  font-size: 13px;
-}
-
-.app-footer p {
-  margin: 0;
-}
-
-/* ── 휴대폰 (390px) ───────────────────────────────── */
-@media (max-width: 640px) {
-  .page {
-    padding: 24px 16px 40px;
-    gap: 16px;
-  }
-
-  .app-header h1 {
-    font-size: 26px;
-  }
-
-  .app-tagline {
-    font-size: 15px;
-  }
-
-  .card {
-    padding: 16px;
-  }
-
-  .result-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .btn-row {
-    width: 100%;
-  }
-
-  .btn {
-    flex: 1 1 auto;
-  }
-
-  .direction-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
+/* 파일 불러오기 버튼: label 을 ds-btn 으로 보이게 */
+.file-btn {
+  display: inline-flex;
+  cursor: pointer;
 }

@@ -12,29 +12,8 @@ export const SENIOR_KEYWORDS = [
 // 리더십 계열 키워드 (direction 판정에서 "lead"와 함께 쓰이는 키워드)
 const LEADERSHIP_KEYWORDS = new Set(['team', 'mentor', 'manage']);
 
-// 한국어 동어/파생어 대응: 각 영어 키워드(내부 값)가 매치될 한국어 형태.
-// "코딩"은 "코딩하는"처럼 뒤에 조사·어미가 붙는 형태가 흔하므로 접미어 허용(true).
-const KO_SYNONYMS = {
-  design: { forms: ['디자인', '설계', '기획'], suffixOk: false },
-  architecture: { forms: ['아키텍처'], suffixOk: false },
-  code: { forms: ['코딩', '코드'], suffixOk: true },
-  review: { forms: ['리뷰', '검토'], suffixOk: false },
-  mentor: { forms: ['멘토링', '멘토', '코칭'], suffixOk: false },
-  scale: { forms: ['스케일링'], suffixOk: false },
-  refactor: { forms: ['리팩터링'], suffixOk: false },
-  test: { forms: ['테스트'], suffixOk: false },
-  security: { forms: ['보안'], suffixOk: false },
-  performance: { forms: ['성능'], suffixOk: false },
-  team: { forms: ['팀'], suffixOk: false },
-  lead: { forms: ['리드', '리더'], suffixOk: false },
-  manage: { forms: ['관리'], suffixOk: false },
-  ship: { forms: ['출시'], suffixOk: false },
-  deploy: { forms: ['배포'], suffixOk: false },
-};
-
 const MAX_LENGTH = 20000;
 const WORD_RE = /[a-z]+/g;
-const KO_RE = /[가-힣]+/g;
 
 // 단어 w가 base의 허용된 변화형(원형/복수 -s -es/과거 -ed/3인칭단수 -s -es/진행 -ing)
 // 으로 읽히는지를 판정한다. 이미 소문자로 정규화되어 전달된다.
@@ -80,14 +59,9 @@ export function assessSeniorRole(profileText) {
   }
 
   const words = (trimmed.toLowerCase().match(WORD_RE) || []);
-  const koWords = (trimmed.match(KO_RE) || []);
   const matched = [];
   for (const keyword of SENIOR_KEYWORDS) {
-    const ko = KO_SYNONYMS[keyword];
-    const koHit = ko && koWords.some((w) =>
-      ko.forms.some((f) => w === f || (ko.suffixOk && w.length > f.length && w.slice(0, f.length) === f))
-    );
-    if (words.some((w) => matchesInflection(w, keyword)) || koHit) {
+    if (words.some((w) => matchesInflection(w, keyword))) {
       matched.push(keyword); // 목록 순서대로, 중복 제거
     }
   }

@@ -2,7 +2,8 @@
 import { summarizeKrwCoins } from "./app.js";
 import { loadAllData, SAMPLE_DATA } from "./data.js";
 import { loadCoinIds, setExample } from "./storage.js";
-import { renderDashboard, renderError, bindExample, bindSim } from "./dashboard.js";
+import { renderDashboard, renderError, bindExample } from "./dashboard.js";
+import { bindSim } from "./simulator.js";
 import { initCoinsScreen, initBackupScreen } from "./coins-backup.js";
 
 const $ = (sel) => document.querySelector(sel);
@@ -22,16 +23,22 @@ function show(name) {
   }
 }
 
-function metaOf(data) {
-  return { coinMeta: data.coinMeta, fxMeta: data.fxMeta };
+// summarizeKrwCoins 는 순수(SPEC 규칙)라 화면 전용 필드(usdKrw·prevFx·prevKrwPrice)는 여기서 채운다.
+function enrich(result, data) {
+  for (const row of result.rows) {
+    row.usdKrw = result.usdKrw;
+    row.prevFx = data.fxPrevUsdKrw ?? null;
+    row.prevKrwPrice = Math.round(row.krwPrice / (1 + row.krwChangePct / 100));
+  }
+  return result;
 }
 
 function refresh() {
   const data = isExample ? SAMPLE_DATA : liveData;
   if (!data) return;
   try {
-    const result = summarizeKrwCoins(data.coinPrice, data.fxRates, coinIds);
-    renderDashboard(result, metaOf(data), isExample);
+    const result = enrich(summarizeKrwCoins(data.coinPrice, data.fxRates, coinIds), data);
+    renderDashboard(result, { coinMeta: data.coinMeta, fxMeta: data.fxMeta }, isExample);
     bindSim(result);
     bindExample(isExample);
   } catch {

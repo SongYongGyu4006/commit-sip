@@ -14,9 +14,9 @@
   <div class="ds-band-head">
     <div>
       <h1>원화 코인 대시보드</h1>
-      <p>원화·비트코인·환율 시세와 24시간 변동을 달러 변동·환율 효과와 함께 보여 줍니다</p>
+      <p>원화 시세와 24시간 변동을 달러 변동·환율 효과로 나눠 보여 줍니다</p>
       <div class="ds-band-meta" id="band-meta">
-        <span id="fx-line">오늘 1$ 환율을 불러오는 중입니다</span>
+        <span id="fx-line" class="ds-badge">오늘 1$ 환율을 불러오는 중</span>
         <span id="data-time"></span>
       </div>
     </div>
@@ -34,43 +34,24 @@
 <main class="ds-page">
 
   <section id="screen-dashboard">
-    <div class="ds-section-title" id="krw-chart-title">
-      <h2>원화 시세</h2>
-      <p>코인별 원화 가격과 24시간 원화 실질 변동을 보여 줍니다. 24시간 전부터 지금까지의 흐름은 아래 접힌 구역에서 볼 수 있어요.</p>
-    </div>
-    <div class="ds-card" id="krw-chart-card">
-      <div class="chart-canvas-wrap"><canvas id="krw-price-chart" aria-label="코인별 원화 가격과 24시간 변동 차트"></canvas></div>
-    </div>
-
-    <div class="ds-section-title" id="btc-title">
-      <h2>비트코인 시세</h2>
-      <p>코인별 달러 가격과 24시간 달러 변동, 환율 효과까지 합친 원화 실질 변동을 보여 줍니다.</p>
-    </div>
-    <div class="ds-card" id="btc-chart-card">
-      <div class="chart-canvas-wrap"><canvas id="btc-chart" aria-label="비트코인 달러 가격과 24시간 변동 차트"></canvas></div>
-    </div>
-
-    <div class="ds-section-title" id="fx-title">
-      <h2>환율</h2>
-      <p>오늘 1$ 환율과 각 코인의 24시간 환율 효과를 보여 줍니다. 환율이 원화 수익에 얼마나 작용했는지 비교해 보세요.</p>
-    </div>
-    <div class="ds-card" id="fx-chart-card">
-      <div class="chart-canvas-wrap"><canvas id="fx-chart" aria-label="오늘 1달러 환율과 환율 효과 차트"></canvas></div>
-    </div>
-
-    <div class="ds-section-title" id="unified-title">
-      <h2>통합 시세(원화·비트코인·환율)</h2>
-      <p>코인별 원화 가격과 달러 가격, 그리고 오늘 환율을 함께 비교해 줍니다. 24시간 흐름은 아래 접힌 구역에서 볼 수 있어요.</p>
-    </div>
-    <div class="ds-card" id="unified-chart-card">
-      <div class="chart-canvas-wrap"><canvas id="unified-chart" aria-label="원화·달러·환율 통합 시세 차트"></canvas></div>
-    </div>
+    <section class="ds-answer" aria-labelledby="answer-label">
+      <p class="ds-answer-label" id="answer-label">보유한 코인의 24시간 원화 변동</p>
+      <p class="ds-answer-num" id="answer-num"><small>—</small></p>
+      <p class="ds-answer-text" id="answer-text">시세를 불러오는 중이에요</p>
+      <dl class="ds-answer-meta">
+        <div><dt>24시간 달러 변동</dt><dd id="answer-usd" class="ds-num">—</dd></div>
+        <div><dt>환율 효과</dt><dd id="answer-fx" class="ds-num">—</dd></div>
+        <div><dt>오늘 1$</dt><dd id="answer-rate" class="ds-num">—</dd></div>
+      </dl>
+    </section>
 
     <div class="ds-section-title" id="coin-list-title">
       <h2>코인 시세</h2>
-      <p>원화 가격과 24시간 변동을 코인별로 보여 줍니다.</p>
+      <p>원화 가격과 24시간 변동을 코인별로 보여 줍니다. 원화 변동은 달러 변동과 환율 효과의 합이에요.</p>
     </div>
-    <ul id="coin-list" class="coin-list ds-answer ds-list"></ul>
+    <div class="ds-card">
+      <ul id="coin-list" class="ds-list"></ul>
+    </div>
 
     <details class="fold">
       <summary>24시간 흐름·그때 샀더라면 보기</summary>
@@ -102,15 +83,50 @@
             <label class="ds-label" for="sim-buy-usd">매수 시점 달러 가격</label>
             <input class="ds-input ds-num" id="sim-buy-usd" type="text" inputmode="decimal" placeholder="81414">
             <label class="ds-label" for="sim-buy-fx">매수 시점 환율(원)</label>
-            <input class="ds-input ds-num" id="sim-buy-fx" type="text" inputmode="decimal" placeholder="1331.45">
+            <input class="ds-input ds-num" id="sim-buy-fx" type="text" inputmode="decimal" placeholder="1331">
           </div>
         </div>
         <p id="sim-result" class="sim-result" aria-live="polite"></p>
       </div>
     </details>
-  </section>
 
-  <p id="source-line" class="ds-footer"></p>
+    <details class="fold charts-fold">
+      <summary>차트 보기(원화·비트코인·환율·통합)</summary>
+      <div class="ds-section-title" id="krw-chart-title">
+        <h2>원화 시세</h2>
+        <p>코인별 원화 가격과 24시간 원화 실질 변동을 보여 줍니다.</p>
+      </div>
+      <div class="ds-card" id="krw-chart-card">
+        <div class="chart-canvas-wrap"><canvas id="krw-price-chart" aria-label="코인별 원화 가격과 24시간 변동 차트"></canvas></div>
+      </div>
+
+      <div class="ds-section-title" id="btc-title">
+        <h2>비트코인 시세</h2>
+        <p>코인별 달러 가격과 24시간 달러 변동, 원화 실질 변동을 보여 줍니다.</p>
+      </div>
+      <div class="ds-card" id="btc-chart-card">
+        <div class="chart-canvas-wrap"><canvas id="btc-chart" aria-label="비트코인 달러 가격과 24시간 변동 차트"></canvas></div>
+      </div>
+
+      <div class="ds-section-title" id="fx-title">
+        <h2>환율</h2>
+        <p>오늘 1$ 환율과 각 코인의 24시간 환율 효과를 보여 줍니다.</p>
+      </div>
+      <div class="ds-card" id="fx-chart-card">
+        <div class="chart-canvas-wrap"><canvas id="fx-chart" aria-label="오늘 1달러 환율과 환율 효과 차트"></canvas></div>
+      </div>
+
+      <div class="ds-section-title" id="unified-title">
+        <h2>통합 시세(원화·비트코인·환율)</h2>
+        <p>코인별 원화 가격과 달러 가격, 그리고 오늘 환율을 함께 비교해 줍니다.</p>
+      </div>
+      <div class="ds-card" id="unified-chart-card">
+        <div class="chart-canvas-wrap"><canvas id="unified-chart" aria-label="원화·달러·환율 통합 시세 차트"></canvas></div>
+      </div>
+    </details>
+
+    <p id="source-line" class="ds-footer"></p>
+  </section>
 
   <section id="screen-coins" hidden>
     <div class="ds-card">
