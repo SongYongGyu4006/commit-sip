@@ -1,0 +1,44 @@
+/* Submission Photo Fit — 앱 전용 스타일 (색·간격·모서리는 studio.css 토큰만 사용) */
+.app-status{margin-top:var(--ds-s4)}
+.app-status:empty{margin-top:0}
+.app-status:empty{display:none}
+
+/* 제출처 버튼: ds-chip 의 스타일을 .preset-button 으로도 적용 */
+.preset-button{border:1px solid var(--ds-line)}
+.preset-button[aria-pressed="true"]{background:var(--ds-accent-soft);border-color:var(--ds-accent-line);color:var(--ds-accent-text);font-weight:600}
+.preset-button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
+
+.spec-line{margin:var(--ds-s4) 0 0;font-size:16px;font-weight:600;color:var(--ds-ink);min-height:1.6em;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.spec-line:empty{font-weight:400}
+#spec-source{text-decoration:none;font-weight:600;white-space:nowrap}
+#spec-checked{font-size:14px;font-weight:400;color:var(--ds-ink-3);white-space:normal}
+
+.custom-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--ds-s3);margin-top:var(--ds-s4)}
+@media (max-width:560px){.custom-fields{grid-template-columns:1fr}}
+.custom-fields .ds-input{min-height:44px}
+
+.photo-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--ds-s3);margin-top:var(--ds-s5)}
+.photo-row .ds-hint{flex:1 1 220px}
+
+.work-grid{display:grid;gap:var(--ds-s4);align-items:start}
+@media (min-width:860px){.work-grid{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:var(--ds-s5)}}
+.work-grid .ds-card{margin-top:0}
+
+.crop-card{padding:var(--ds-s3)}
+#crop-canvas{display:block;width:100%;height:auto;border-radius:var(--ds-radius);cursor:grab;touch-action:none}
+#crop-canvas:active{cursor:grabbing}
+.crop-card .ds-empty{margin:var(--ds-s3);border-radius:var(--ds-radius)}
+.result-col{display:grid;gap:var(--ds-s4)}
+
+#result-preview{display:block;width:100%;max-width:100%;border-radius:var(--ds-radius);border:1px solid var(--ds-line);margin-bottom:var(--ds-s4)}
+#checklist{list-style:none;margin:0 0 var(--ds-s4);padding:0}
+#checklist li{padding:var(--ds-s2) 0;border-bottom:1px solid var(--ds-line);font-size:15px;font-variant-numeric:tabular-nums}
+#checklist li:last-child{border-bottom:0}
+.result-actions{justify-content:flex-start}
+#content-note{margin:var(--ds-s4) 0 0;font-size:14px;line-height:1.6;color:var(--ds-ink-2)}
+#result-empty .ds-empty{border:none;padding:var(--ds-s5)}
+
+.ans-size,.ans-limit,.ans-dims{white-space:nowrap}
+.ds-link{background:none;border:0;padding:0;margin:0;color:var(--ds-accent-text);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.ds-link:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px;border-radius:var(--ds-radius-s)}
+#where-title{font-size:20px}

@@ -145,7 +145,22 @@ if (typeof document !== 'undefined') {
   const list = $('benefit-list');
   const moreButton = $('more-button');
   const resetButton = $('reset-button');
-  const footerLine = $('footer-line');
+  const copyLinkButton = $('copy-link-button');
+  const sampleBadgeList = $('sample-badge-list');
+  const sampleBadgeControls = $('sample-badge-controls');
+  const targetChips = document.querySelectorAll('#target-chips .ds-chip');
+  const filterToggle = $('filter-toggle');
+  const filterBody = $('filter-body');
+  const filterCount = $('filter-count');
+
+  const CHIP_LABELS = { all: '전체', youth: '청년', childcare: '출산·육아', selfemployed: '자영업', lowincome: '저소득', senior: '노인' };
+
+  // 조건 조절 접기: 칩·버튼 아래로 눌러 접었다 펼친다(공유 링크가 조건을 싣으면 render 가 자동으로 펼쳐)
+  const setFilterOpen = (open) => {
+    filterBody.hidden = !open;
+    filterToggle.setAttribute('aria-expanded', String(open));
+  };
+  filterToggle.addEventListener('click', () => setFilterOpen(filterBody.hidden));
 
   // 예시 버튼용 3개 샘플 (SPEC 고정)
   // 상세링크는 url 이 https:// 로 시작할 때만 보이므로, 샘플 3개에 정부24 상세페이지 주소를 넣어 두어요.
@@ -158,6 +173,13 @@ if (typeof document !== 'undefined') {
   const PAGE = 20; // '더 보기' 단위로 한 번에 추가할 카드 수
   const S = { liveRows: [], todayIso: localTodayIso(), usingSample: false, loaded: false, total: null, fetchedAt: '', terms: '', limit: PAGE };
 
+  // 답 카드 문장: 현재 선택 기준(대상) 한 문장으로
+  const answerSentence = (t, c, closing) => {
+    if (!c || c.shown === null) return '';
+    if (t === 'all') return c.shown + '건 중 ' + closing + '건이 14일 안에 마감돼요. 급한 것부터 보여 드려요.';
+    return CHIP_LABELS[t] + ' 혜택 ' + c.shown + '건 중 14일 안에 마감 ' + closing + '건이에요.';
+  };
+
   // 시작: 데이터 파일 2개 불러오기
   Promise.all([fetch('data/gov_benefits.json').then((r) => (r.ok ? r.json() : Promise.reject(new Error('data')))),
                fetch('data/gov_benefits.meta.json').then((r) => (r.ok ? r.json() : Promise.reject(new Error('meta'))))])
@@ -167,40 +189,51 @@ if (typeof document !== 'undefined') {
       S.fetchedAt = typeof meta.fetched_at === 'string' ? meta.fetched_at : '';
       S.terms = typeof meta.terms === 'string' ? meta.terms : '';
       S.loaded = true;
+      // #data-time·#source-line 은 푸터로 옮김(첫 화면 여백 확보) — id 유지, 같은 내용은 푸터에
       dataTime.textContent = S.fetchedAt ? '데이터 기준: ' + fmtDateTime(S.fetchedAt) : '';
-      sourceLine.textContent = '출처: 행정안전부·공공데이터포털 (공공누리 제1유형)' + (S.terms ? ' · ' + S.terms : '');
+      sourceLine.textContent = '출처: 행정안전부·공공데이터포털 (공공누리 제1유형)' + (S.terms && !S.terms.includes('출처 표시') ? ' · ' + S.terms : '');
       totalLine.textContent = S.total !== null ? '전체 혜택 ' + S.total + '건' : '';
-      renderFooter();
+      applyParams(); // ?field=… 가 데이터 목록의 분야에 없으면 빈 값으로 (있는 값일 때만 유지)
       render();
     })
     .catch(() => {
       dataTime.textContent = '';
       sourceLine.textContent = '출처: 행정안전부·공공데이터포털 (공공누리 제1유형)';
       totalLine.textContent = '';
-      renderFooter();
       appStatus.textContent = '데이터 파일을 불러오지 못했습니다.';
       list.textContent = '';
     });
-
-  const renderFooter = () => {
-    footerLine.textContent = S.fetchedAt ? '데이터 기준: ' + fmtDateTime(S.fetchedAt) + ' · 출처: 행정안전부·공공데이터포털 (공공누리 제1유형)' : '출처: 행정안전부·공공데이터포털 (공공누리 제1유형)';
-  };
-  renderFooter();
 
   function render({ todayIso } = {}) {
     if (!S.loaded && !S.usingSample) return;
     // 조건이 바뀌면(이 render 는 select 칩·버튼에서 불림) 목록을 처음 20개로 되돌린다
     if (!todayIso) S.limit = PAGE;
     const rows = S.usingSample ? SAMPLE_ROWS : S.liveRows;
+    const today = todayIso || S.todayIso;
     let result;
     try {
-      result = browseBenefits(rows, { field: fieldSelect.value, target: targetSelect.value, sort: sortSelect.value, todayIso: todayIso || S.todayIso });
+      result = browseBenefits(rows, { field: fieldSelect.value, target: targetSelect.value, sort: sortSelect.value, todayIso: today });
     } catch (e) {
       appStatus.textContent = '조건을 처리할 수 없습니다.';
       list.textContent = '';
       moreButton.hidden = true;
       return;
     }
+    // 대상 칩: 대상별로 한 번씩 계산해 건수 표시(마감 급한 것부터 알리기 위해)
+    const counts = {};
+    for (const t of ['all', ...Object.keys(TARGETS)]) {
+      try {
+        const r = browseBenefits(rows, { field: '', target: t, sort: 'deadline', todayIso: today });
+        counts[t] = { shown: r.shown, closing: r.items.filter((i) => i.status === 'closing').length };
+      } catch (e) {
+        counts[t] = { shown: null, closing: null };
+      }
+    }
+    targetChips.forEach((c) => {
+      const t = c.dataset.target;
+      const n = counts[t] ? counts[t].shown : null;
+      c.textContent = n !== null ? CHIP_LABELS[t] + ' ' + n + '건' : CHIP_LABELS[t];
+    });
     // 분야 선택지 갱신: 결과 fields 순서 그대로, 현재 선택 유지
     const cur = fieldSelect.value;
     fieldSelect.textContent = '';
@@ -229,10 +262,24 @@ if (typeof document !== 'undefined') {
       ? '조건에 맞는 혜택이 없어요. 조건을 바꿔 보세요.'
       : (S.usingSample
         ? '예시로 3개만 보여 드려요. 실제 목록은 처음으로를 누르면 다시 나와요.'
-        : '조건에 맞는 혜택이에요. 마감 14일 이내인 혜택은 D-n 배지로 표시해요.');
+        : answerSentence(targetSelect.value, counts[targetSelect.value], closing));
     renderMeta(metaTotal, metaClosing, metaNone, S.usingSample ? result.totalRows : (S.total !== null ? S.total : result.totalRows), closing, none);
-    // 예시 화면일 때 '처음으로'가 눈에 띄게 강조
+    // 예시 화면일 때: 목록·조작 위 '예시 화면' 표시 + '처음으로'를 눈에 띄게
+    sampleBadgeList.hidden = !S.usingSample;
+    sampleBadgeControls.hidden = !S.usingSample;
     resetButton.classList.toggle('ds-btn-primary', S.usingSample);
+    // 조건 조절 접기: 조건이 기본값과 다르면 개수 배지 + 자동 펼쳐서(공유 링크로 열렸을 때 바로 반영)
+    const parts = [];
+    if (targetSelect.value !== 'all') parts.push('대상');
+    if (fieldSelect.value) parts.push('분야');
+    if (sortSelect.value !== 'deadline') parts.push('정렬');
+    if (parts.length) {
+      filterCount.textContent = parts.join('·') + ' ' + parts.length + '개';
+      filterCount.hidden = false;
+      if (filterBody.hidden) setFilterOpen(true);
+    } else {
+      filterCount.hidden = true;
+    }
     appStatus.textContent = result.shown === 0
       ? '조건에 맞는 혜택이 없습니다.'
       : (S.usingSample ? '예시 데이터입니다. 실제 데이터는 처음으로를 누르세요.' : '');
@@ -241,7 +288,6 @@ if (typeof document !== 'undefined') {
   for (const s of [fieldSelect, targetSelect, sortSelect]) s.addEventListener('change', () => { if (S.loaded || S.usingSample) render(); });
 
   // 대상 칩: 누르면 select 값을 바꾸고 change 를 보내(선택 상태는 칩과 select 가 일치)
-  const targetChips = document.querySelectorAll('#target-chips .ds-chip');
   const syncTargetChips = () => {
     const v = targetSelect.value;
     targetChips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.target === v)));
@@ -270,4 +316,35 @@ if (typeof document !== 'undefined') {
     syncTargetChips();
     if (S.loaded) render();
   });
+
+  // 내 조건 링크 복사: ?target=&field=&sort= 로 공유·다시 열기(저장소 없이)
+  copyLinkButton.addEventListener('click', () => {
+    const p = new URLSearchParams();
+    if (targetSelect.value !== 'all') p.set('target', targetSelect.value);
+    if (fieldSelect.value) p.set('field', fieldSelect.value);
+    if (sortSelect.value !== 'deadline') p.set('sort', sortSelect.value);
+    const url = location.origin + location.pathname + (p.toString() ? '?' + p.toString() : '');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(
+        () => { appStatus.textContent = '링크를 복사했어요.'; },
+        () => { appStatus.textContent = '주소창의 링크를 복사하세요.'; }
+      );
+    } else {
+      appStatus.textContent = '주소창의 링크를 복사하세요.';
+    }
+  });
+
+  // 시작할 때 주소 파라미터(?target=&field=&sort=)를 읽어서 세 셀렉트·칩에 맞춤
+  const applyParams = () => {
+    try {
+      const p = new URLSearchParams(location.search);
+      const t = p.get('target');
+      if (t && ['all', ...Object.keys(TARGETS)].includes(t)) targetSelect.value = t;
+      const s = p.get('sort');
+      if (s && ALLOWED_SORTS.includes(s)) sortSelect.value = s;
+      const f = p.get('field');
+      if (f) fieldSelect.value = f; // render 가 options 로 검증(없는 분야면 빈 값으로)
+      syncTargetChips();
+    } catch (e) { /* URL 이 없거나 비정상이면 기본 값 그대로 */ }
+  };
 }

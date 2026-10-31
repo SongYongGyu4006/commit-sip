@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko" data-accent="violet" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Submission Photo Fit — 무료 웹 도구 · 커밋 한 모금</title>
+<link rel="stylesheet" href="vendor/studio.css">
+<link rel="stylesheet" href="styles.css">
+<script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="제출처(토익·큐넷·공무원 원서·정부24·이력서)의 사진 규격(용량·픽셀·JPG)에 맞춰, 사진 파일만 브라우저 안에서 변환하고 통과 여부를 체크리스트로 알려 주는 도구입니다."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/submission-photo-resizer/"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 제출 사진 규격 변환기 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+<header class="ds-band">
+  <h1>제출 사진 규격 변환기</h1>
+  <p>토익·큐넷·공무원 원서 등 제출처의 사진 규격(비율·픽셀·JPG·용량)에 맞춰 사진만 변환하고 통과 여부를 확인해 드려요. 사진은 브라우저 안에서만 처리돼요.</p>
+  <div class="ds-band-meta">
+    <button type="button" class="ds-btn" id="sample-button">예시로 해 보기</button>
+    <span class="ds-hint" id="sample-hint">파일 없이 예시로 결과를 볼 수 있어요. 이 예시는 항상 통과예요.</span>
+  </div>
+  <div id="app-status" class="app-status" role="status" aria-live="polite"></div>
+</header>
+
+<main class="ds-page">
+  <section class="ds-answer" aria-label="결과 요약">
+    <p class="ds-answer-label">제출 가능 여부</p>
+    <p class="ds-answer-num" id="verdict">제출 가능</p>
+    <p class="ds-answer-text" id="verdict-text">큐넷 규격 예시 48700바이트 사진으로, 98000바이트 상한 안에 들어가요.</p>
+    <p class="ds-hint" id="upscale-note">원본이 작아 확대되었습니다. 화질이 낮을 수 있습니다.</p>
+    <dl class="ds-answer-meta">
+      <div><dt>사진 용량</dt><dd class="ans-size">48700바이트</dd></div>
+      <div><dt>용량 상한</dt><dd class="ans-limit">98000바이트</dd></div>
+      <div><dt>변환 크기</dt><dd class="ans-dims">413×531</dd></div>
+    </dl>
+  </section>
+
+  <div class="ds-section-title">
+    <h2 id="where-title">어디에 제출하세요?</h2>
+    <p>제출처를 고르면 사진 규격(용량·크기·JPG)이 이쪽에 나타나요.</p>
+  </div>
+  <div class="ds-card">
+    <div class="ds-row" id="preset-buttons">
+      <button type="button" class="ds-chip preset-button" data-id="toeic" aria-pressed="false">토익</button>
+      <button type="button" class="ds-chip preset-button" data-id="qnet" aria-pressed="false">큐넷</button>
+      <button type="button" class="ds-chip preset-button" data-id="civil" aria-pressed="false">공무원 원서</button>
+      <button type="button" class="ds-chip preset-button" data-id="gov24" aria-pressed="false">정부24</button>
+      <button type="button" class="ds-chip preset-button" data-id="resume" aria-pressed="false">이력서</button>
+      <button type="button" class="ds-chip preset-button" data-id="custom" aria-pressed="false">직접 입력</button>
+    </div>
+    <p id="spec-line" class="spec-line"></p>
+    <div id="custom-box" hidden>
+      <div class="custom-fields">
+        <label class="ds-label" for="custom-kb">용량 상한 (KB)</label>
+        <input class="ds-input ds-num" type="text" id="custom-kb" inputmode="numeric" placeholder="예: 100">
+        <label class="ds-label" for="custom-width">너비 (픽셀)</label>
+        <input class="ds-input ds-num" type="text" id="custom-width" inputmode="numeric" placeholder="예: 413">
+        <label class="ds-label" for="custom-height">높이 (픽셀)</label>
+        <input class="ds-input ds-num" type="text" id="custom-height" inputmode="numeric" placeholder="예: 531">
+      </div>
+    </div>
+    <div class="photo-row">
+      <button type="button" class="ds-btn" id="choose-btn">파일 고르기</button>
+      <input type="file" id="photo-file" accept="image/*" hidden>
+      <span class="ds-hint" id="photo-hint">제출할 사진(JPG·PNG)을 골라 주세요. 내보내거나 올리는 곳 없이 브라우저 안에서만 처리해요.</span>
+    </div>
+    <div class="ds-row" style="margin-top:var(--ds-s4)">
+      <button type="button" class="ds-btn ds-btn-primary" id="process-button">규격에 맞게 변환</button>
+    </div>
+  </div>
+
+  <div class="ds-section-title">
+    <h2 id="work-title">사진으로 확인해 보기</h2>
+    <p id="work-hint">제출처를 먼저 고르고 사진을 골라 주세요.</p>
+  </div>
+  <div class="work-grid">
+    <div class="ds-card crop-card" id="crop-card">
+      <canvas id="crop-canvas" hidden></canvas>
+      <p id="crop-empty" class="ds-empty">아직 사진이 없어요. <button type="button" class="ds-link" id="crop-choose">파일 고르기</button>를 누르거나 위의 <button type="button" class="ds-link" id="crop-sample">예시로 해 보기</button>를 눌러 보세요.</p>
+    </div>
+    <div class="result-col">
+      <div class="ds-card result-card" id="result-card" hidden>
+        <img id="result-preview" alt="변환 결과 미리보기" hidden>
+        <ul id="checklist" class="ds-list"></ul>
+        <div class="ds-row result-actions">
+          <a id="download-link" class="ds-btn ds-btn-primary" href="#" download="photo.jpg">사진 내리기</a>
+          <button type="button" class="ds-btn" id="reset-button">다시 처음</button>
+        </div>
+        <p id="content-note" hidden></p>
+      </div>
+      <div id="result-empty" class="ds-card">
+        <p class="ds-empty" id="result-empty-text">변환 결과가 여기에 보여요. 예시로 해 보기를 누르면 큐넷 규격(413×531, JPG, 최대 100KB — 확인 전 규격, 제출 전 제출처 안내에서 확인)으로 바로 확인할 수 있어요.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="ds-footer">사진은 이 페이지 안에서만 처리돼요. 외부로 전송되지 않으니 안심하고 사용해 주세요. 제출처의 얼굴·배경·촬영 규정(정면·배경 색·최근 촬영 등)은 이 앱이 판단하지 않으므로, 실제 제출 전에는 제출처 공식 안내에서 직접 확인해 주세요.</p>
+</main>
+
+<script src="src/shim.js"></script>
+<script src="src/ui.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko" data-accent="teal" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>heicpack — 아이클라우드 사진 용량 정리 — 무료 웹 도구 · 커밋 한 모금</title>
+<link rel="stylesheet" href="vendor/studio.css">
+<link rel="stylesheet" href="styles.css">
+<script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="아이클라우드에서 통째로 내려받은 사진 묶음을 넣으면, 라이브포토 영상·사본·편집 전 원본이 각각 몇 GB인지 바로 보여 주고 버릴 항목을 체크하면 촬영일 폴더 구조까지 미리 보여 주는 앱이에요."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/icloud-photo-organizer/"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 아이클라우드 사진 정리 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+<header class="ds-band ds-band-thin">
+  <h1>아이클라우드 사진 정리</h1>
+  <p>아이클라우드에서 통째로 내려받은 사진 묶음을 넣으면 라이브포토 영상·사본·편집 전 원본이 각각 몇 GB인지 보여 주고, 버릴 것을 골라 촬영일 폴더 구조를 미리 보여 줘요.</p>
+</header>
+
+<nav class="hp-nav" aria-label="화면 이동">
+  <button id="nav-diagnose" class="hp-nav-btn" type="button" aria-current="page">용량 진단</button>
+  <button id="nav-tree" class="hp-nav-btn" type="button">폴더 미리보기</button>
+  <button id="nav-data" class="hp-nav-btn" type="button">데이터 관리</button>
+</nav>
+
+<main class="ds-page">
+  <p id="app-status" role="status"></p>
+
+  <section id="screen-diagnose">
+    <h2 class="hp-h">용량 진단</h2>
+    <p class="hp-sub">사진 묶음을 넣으면 버릴 수 있는 용량이 바로 나와요.</p>
+    <section class="ds-answer">
+      <p class="ds-answer-label" id="sample-label">예시 묶음</p>
+      <p class="ds-answer-num" id="headline"></p>
+      <p id="savings"></p>
+      <p class="ds-answer-text" id="bar">
+        <span id="seg-liveVideo" class="hp-seg" style="width:0%"></span><span id="seg-copy" class="hp-seg" style="width:0%"></span><span id="seg-editedOriginal" class="hp-seg" style="width:0%"></span><span id="seg-keep" class="hp-seg" style="width:0%"></span>
+      </p>
+      <p id="bar-legend" class="hp-legend"></p>
+    </section>
+    <div class="ds-section-title">
+      <h2>범주별 용량</h2>
+      <p>체크하면 해당 범주를 폴더 미리보기에서 뺍니다.</p>
+    </div>
+    <div class="ds-card">
+      <ul id="category-list" class="ds-list"></ul>
+    </div>
+    <div class="ds-card-tint">
+      <h2>사진을 여기에 올리세요</h2>
+      <p class="ds-hint">아이클라우드에서 내려받은 폴더를 통째로 골라 주세요. iPhone에서는 '사진' 앱에서 사진을 전부 선택한 뒤 '내보내기 → 복사/내보내기'로 내려받을 수 있어요. 사진은 기기에서 바로 계산돼 외부로 전송되지 않아요.</p>
+      <div class="hp-file-row">
+        <label class="ds-btn ds-btn-primary">폴더 고르기<input id="folder-input" type="file" webkitdirectory multiple hidden></label>
+        <label class="ds-btn">파일 고르기<input id="files-input" type="file" multiple accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.mov,.mp4,.csv" hidden></label>
+        <button id="sample-button" class="ds-btn" type="button">예시로 해 보기</button>
+      </div>
+      <p id="csv-hint" class="hp-csv-hint"></p>
+    </div>
+    <p id="privacy-badge" class="ds-hint hp-privacy">용량 제한 없음 · 업로드 없음 · 사진이 기기 밖으로 나가지 않음</p>
+  </section>
+
+  <section id="screen-tree" hidden>
+    <h2 class="hp-h">폴더 미리보기</h2>
+    <p class="hp-sub">버릴 것을 뺀 뒤 촬영일 폴더로 정리하면 이렇게 생겼어요.</p>
+    <p id="tree-summary" class="hp-tree-summary"></p>
+    <div class="ds-card">
+      <h2>촬영일 폴더</h2>
+      <ul id="tree-list" class="ds-list"></ul>
+    </div>
+  </section>
+
+  <section id="screen-data" hidden>
+    <h2 class="hp-h">데이터 관리</h2>
+    <p class="hp-sub">지금 결과를 확인하고, 이 상태를 내보내거나 다시 불러와요.</p>
+    <div class="ds-section-title">
+      <h2>내보내기</h2>
+    </div>
+    <div class="ds-card ds-stack">
+      <div class="hp-file-row">
+        <button id="export-button" class="ds-btn ds-btn-primary" type="button">내보내기</button>
+        <button id="reset-button" class="ds-btn ds-btn-danger" type="button">처음으로 되돌리기</button>
+      </div>
+      <div>
+        <label class="ds-btn">가져오기<input id="import-file" type="file" accept=".json" hidden></label>
+        <p class="ds-hint">예전에 내보낸 heicpack-state.json 파일을 다시 불러와요.</p>
+      </div>
+    </div>
+    <div class="ds-section-title">
+      <h2>결과</h2>
+      <p>진단 결과를 그대로 보여 줍니다.</p>
+    </div>
+    <div class="ds-card">
+      <pre id="result-json" class="hp-json"></pre>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="src/main.js"></script>
+
+</body>
+</html>

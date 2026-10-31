@@ -10,11 +10,9 @@
 <body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 정부 혜택 찾기 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
 <header class="ds-band">
   <h1>정부 혜택 찾기</h1>
-  <p>최근 등록·수정된 정부 지원금·혜택에서 내게 맞는 것과 마감이 임박한 걸 먼저 보여 드려요.</p>
+  <p>관공서에 없는 <b>내 대상별 건수</b>와 <b>이번 주 마감</b>을 한눈에 — 최근 등록·수정된 혜택에서 나부터 골라 마감 급한 것부터 보여 드려요.</p>
   <div class="ds-band-meta">
     <span class="ds-badge" id="total-line"></span>
-    <span id="data-time"></span>
-    <span id="source-line"></span>
   </div>
 </header>
 
@@ -31,8 +29,8 @@
   </section>
 
   <div class="ds-section-title">
-    <h2 id="target-label">누구를 위한 혜택인가요?</h2>
-    <p>내 대상을 고르면 아래 목록이 바로 좁혀져요.</p>
+    <h2 id="target-label">나는 누구? 고르면 마감 급한 것부터</h2>
+    <p>대상마다 건수를 모아서 보여 드려요. 누르면 바로 좁혀져요.</p>
   </div>
   <div class="ds-card">
     <div class="ds-chip-row" id="target-chips" role="group" aria-labelledby="target-label">
@@ -43,44 +41,59 @@
       <button class="ds-chip" type="button" data-target="lowincome" aria-pressed="false">저소득</button>
       <button class="ds-chip" type="button" data-target="senior" aria-pressed="false">노인</button>
     </div>
-    <div class="ds-filter-row">
-      <div class="ds-filter">
-        <label class="ds-label" for="field-select">분야</label>
-        <select class="ds-select" id="field-select"></select>
+  </div>
+
+  <div class="ds-card" id="filter-card">
+    <button class="ds-filter-toggle" id="filter-toggle" type="button" aria-expanded="false" aria-controls="filter-body">
+      <span class="ds-filter-toggle-label">조건 조절</span>
+      <span class="ds-filter-toggle-count" id="filter-count" hidden></span>
+      <span class="ds-filter-toggle-icon" aria-hidden="true">▾</span>
+    </button>
+    <div class="ds-filter-body" id="filter-body" hidden>
+      <div class="ds-row" id="controls-titles-row">
+        <span class="ds-badge ds-badge-accent" id="sample-badge-controls" hidden>예시 화면</span>
+        <p>조건을 바꾸면 목록이 바로 바뀌어요. '내 조건 링크 복사'으로 공유하세요.</p>
       </div>
-      <div class="ds-filter">
-        <label class="ds-label" for="target-select">대상</label>
-        <select class="ds-select" id="target-select">
-          <option value="all">전체 대상</option>
-          <option value="youth">청년</option>
-          <option value="childcare">출산·육아</option>
-          <option value="selfemployed">자영업</option>
-          <option value="lowincome">저소득</option>
-          <option value="senior">노인</option>
-        </select>
+      <div class="ds-filter-row">
+        <div class="ds-filter">
+          <label class="ds-label" for="field-select">분야</label>
+          <select class="ds-select" id="field-select"></select>
+        </div>
+        <div class="ds-filter">
+          <label class="ds-label" for="target-select">대상</label>
+          <select class="ds-select" id="target-select">
+            <option value="all">전체 대상</option>
+            <option value="youth">청년</option>
+            <option value="childcare">출산·육아</option>
+            <option value="selfemployed">자영업</option>
+            <option value="lowincome">저소득</option>
+            <option value="senior">노인</option>
+          </select>
+        </div>
+        <div class="ds-filter">
+          <label class="ds-label" for="sort-select">정렬</label>
+          <select class="ds-select" id="sort-select">
+            <option value="deadline" selected>마감 임박순</option>
+            <option value="name">이름순</option>
+            <option value="input">최근 등록순</option>
+          </select>
+        </div>
       </div>
-      <div class="ds-filter">
-        <label class="ds-label" for="sort-select">정렬</label>
-        <select class="ds-select" id="sort-select">
-          <option value="deadline" selected>마감 임박순</option>
-          <option value="name">이름순</option>
-          <option value="input">최근 등록순</option>
-        </select>
+      <div class="ds-row ds-actions">
+        <button class="ds-btn ds-btn-primary" id="example-button" type="button">예시로 해 보기</button>
+        <button class="ds-btn" id="reset-button" type="button">처음으로</button>
+        <button class="ds-btn" id="copy-link-button" type="button">내 조건 링크 복사</button>
+        <span class="ds-hint">실제 목록은 그대로예요. '처음으로'를 누르면 돌아와요.</span>
       </div>
     </div>
   </div>
 
-  <div class="ds-row ds-actions">
-    <button class="ds-btn ds-btn-primary" id="example-button" type="button">예시로 해 보기</button>
-    <button class="ds-btn" id="reset-button" type="button">처음으로</button>
-    <span class="ds-hint">예시 3건으로 결과가 어떻게 보이는지 확인해요. 목록은 '처음으로'로 다시 나와요.</span>
-  </div>
-
-  <p id="app-status" class="ds-status" role="status"></p>
-
   <div class="ds-section-title">
     <h2>혜택 목록</h2>
-    <p>마감 날짜가 가까운 순서로, 마감과 신청 방법을 함께 보여 드려요.</p>
+    <div class="ds-row" id="list-titles-row">
+      <span class="ds-badge ds-badge-accent" id="sample-badge-list" hidden>예시 화면</span>
+      <p>마감 날짜가 가까운 순서로, 마감과 신청 방법을 함께 보여 드려요.</p>
+    </div>
   </div>
   <div class="ds-card">
     <p id="summary-line" class="ds-label"></p>
@@ -91,12 +104,15 @@
     </div>
   </div>
 
+  <p id="app-status" class="ds-status" role="status"></p>
+
   <div class="ds-card-tint">
     <h2>신청 안내</h2>
     <p>신청은 공식 사이트(정부24)에서 하세요.</p>
   </div>
 
-  <p class="ds-footer" id="footer-line"></p>
+  <p class="ds-footer" id="data-time"></p>
+  <p class="ds-footer" id="source-line"></p>
 </main>
 
 <script type="module" src="src/app.js"></script>

@@ -1,0 +1,183 @@
+/* heicpack — studio.css 위에 얹는 앱 전용 스타일 (토큰만) */
+body { padding-top: 0; }
+
+/* 상단 이동 버튼 */
+.hp-nav {
+  display: flex;
+  gap: var(--ds-s2);
+  max-width: var(--ds-max);
+  margin: 0 auto;
+  padding: var(--ds-s3) var(--ds-s4) 0;
+}
+.hp-nav-btn {
+  appearance: none;
+  border: 1px solid var(--ds-line);
+  background: var(--ds-surface);
+  color: var(--ds-ink-2);
+  font: 600 14px/1.2 var(--ds-font);
+  padding: 10px 14px;
+  min-height: 44px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background var(--ds-fast) var(--ds-ease), color var(--ds-fast) var(--ds-ease), border-color var(--ds-fast) var(--ds-ease);
+}
+.hp-nav-btn:hover { border-color: var(--ds-accent-line); color: var(--ds-ink); }
+.hp-nav-btn:active { transform: scale(0.97); }
+.hp-nav-btn[aria-current="page"] {
+  background: var(--ds-accent-soft);
+  border-color: var(--ds-accent-text);
+  color: var(--ds-accent-text);
+}
+.hp-nav-btn:focus-visible { outline: 2px solid var(--ds-accent-text); outline-offset: 2px; }
+
+/* 상태(오류) 영역: 본문 밖, 화면 위. 본문 13px 미만 글자를 없애기 위해 14px. */
+#app-status {
+  max-width: var(--ds-max);
+  margin: var(--ds-s3) auto 0;
+  padding: var(--ds-s3) var(--ds-s4);
+  font-size: 14px;
+  color: var(--ds-bad);
+}
+#app-status:empty { display: none; }
+
+/* studio.css 기본값(13px)이 노안 사용자 기준 미달이라 앱 전용 안내 문구는 14px으로. */
+.ds-card-tint .ds-hint,
+.hp-privacy,
+#csv-hint { font-size: 14px; }
+
+/* 화면 제목·서브 */
+.hp-h { font-size: 20px; margin: var(--ds-s4) 0 var(--ds-s1); letter-spacing: -.01em; }
+.hp-sub { margin: 0 0 var(--ds-s4); color: var(--ds-ink-2); font-size: 15px; }
+
+/* 상단 띠 설명 */
+.ds-band-thin p { max-width: 56ch; font-size: 15px; line-height: 1.6; color: var(--ds-ink-2); }
+
+/* 답 카드 */
+.ds-answer { padding: var(--ds-s4); margin-bottom: var(--ds-s5); }
+#sample-label { font-size: 14px; color: var(--ds-ink-2); }
+#headline { margin: 4px 0 8px; }
+#savings { margin: 0 0 8px; font-size: 15px; font-weight: 600; color: var(--ds-ink-2); }
+#savings:empty { display: none; }
+
+/* 용량 막대: #bar 안의 4개 세그먼트 */
+#bar {
+  display: flex;
+  width: 100%;
+  max-width: none;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--ds-surface-2);
+  margin-top: var(--ds-s3);
+}
+.hp-seg { display: inline-block; height: 100%; box-shadow: inset -1px 0 0 var(--ds-surface); }
+#seg-liveVideo { background: var(--ds-c2); }
+#seg-copy { background: var(--ds-c3); }
+#seg-editedOriginal { background: var(--ds-c4); }
+#seg-keep { background: var(--ds-accent); }
+
+/* 막대 색 → 범주 범례: 막대 아래에 각 색의 뜻(라벨 + 용량 비율) 한 줄. */
+#bar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--ds-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+#bar-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+#bar-legend .lg-liveVideo::before { background: var(--ds-c2); }
+#bar-legend .lg-copy::before { background: var(--ds-c3); }
+#bar-legend .lg-editedOriginal::before { background: var(--ds-c4); }
+#bar-legend .lg-keep::before { background: var(--ds-accent); }
+
+/* 범주 목록 줄 */
+#category-list { list-style: none; margin: 0; padding: 0; }
+#category-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-s3);
+  min-height: 56px;
+  padding: var(--ds-s2) 0;
+  border-bottom: 1px solid var(--ds-line);
+}
+#category-list li:last-child { border-bottom: 0; }
+.cat-name { flex: 0 0 auto; font-weight: 600; }
+.cat-desc { flex: 1 1 auto; min-width: 0; color: var(--ds-ink-3); font-size: 13px; }
+.cat-name::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: 1px;
+  background: var(--ds-ink-3);
+}
+#category-list li[data-category="liveVideo"] .cat-name::before { background: var(--ds-c2); }
+#category-list li[data-category="copy"] .cat-name::before { background: var(--ds-c3); }
+#category-list li[data-category="editedOriginal"] .cat-name::before { background: var(--ds-c4); }
+#category-list li[data-category="keep"] .cat-name::before { background: var(--ds-accent); }
+.cat-meta { min-width: 96px; text-align: right; color: var(--ds-ink-2); font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cat-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 var(--ds-s2); font-size: 15px; color: var(--ds-ink); cursor: pointer; white-space: nowrap; }
+.cat-toggle input { accent-color: var(--ds-accent); width: 24px; height: 24px; margin: 0; }
+
+/* 파일 입력 칸 */
+.ds-card + .ds-card-tint { margin-top: var(--ds-s4); }
+.hp-file-row { display: flex; flex-wrap: wrap; gap: var(--ds-s2); margin-top: var(--ds-s3); }
+.hp-privacy {
+  margin: var(--ds-s4) 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--ds-line);
+  border-radius: 12px;
+  color: var(--ds-ink-2);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  #headline { font-size: clamp(32px, 9vw, 44px); white-space: nowrap; }
+  #category-list li { gap: var(--ds-s2); }
+  .hp-nav-btn { flex: 1 1 0; padding: 10px 4px; }
+  .hp-file-row { flex-direction: column; }
+  .hp-file-row .ds-btn { width: 100%; min-height: 48px; justify-content: center; }
+}
+
+.ds-btn-danger { border-color: var(--ds-bad); color: var(--ds-bad); background: none; }
+.ds-btn-danger:hover { background: var(--ds-bad-soft); }
+
+/* 폴더 목록 줄 */
+#tree-list { list-style: none; margin: 0; padding: 0; }
+#tree-list li {
+  padding: var(--ds-s3) 0;
+  border-bottom: 1px solid var(--ds-line);
+  font-variant-numeric: tabular-nums;
+}
+#tree-list li:last-child { border-bottom: 0; }
+.hp-tree-summary {
+  margin: 0 0 var(--ds-s3);
+  font-size: 15px;
+  color: var(--ds-ink-2);
+}
+
+/* 결과 JSON: 13px 미만 글자가 기준 미달이라 13px. */
+.hp-json {
+  margin: 0;
+  font: 13px/1.6 var(--ds-mono);
+  color: var(--ds-ink-2);
+  background: var(--ds-surface-2);
+  border-radius: var(--ds-radius-s);
+  padding: var(--ds-s3);
+  overflow: auto;
+  max-height: 420px;
+}

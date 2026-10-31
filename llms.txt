@@ -20,6 +20,9 @@
 
 ## 최근 글
 
+- [Lightpanda, 크롬 대신 쓰는 AI용 헤드리스 브라우저](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-31-browser.html)
+- [Claude Code·Codex, 폰에서 원격으로 돌리는 오픈소스 T3 Code](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-30-t3code.html)
+- [DeepTutor: AI 개인 튜터 오픈소스, 설치 없이 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-30-deeptutor.html)
 - [117,803개 스타 거래 에이전트 TradingAgents를 설치 없이 뜯어봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-29-tradingagents.html)
 - [repo-proof: 오픈소스 README 주장을 코드 판정으로 검증하는 도구, 직접 받아 돌려 본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-29-repo-proof.html)
 - [AI 글의 지어 낸 숫자를 잡는 numguard, 설치 없이 직접 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-29-numguard.html)
@@ -29,12 +32,11 @@
 - [로컬 Qwen 27B를 5개 협업시켜 코딩 대회 문제 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-26-gvs5h.html)
 - [promptfoo, 설치 없이 받아서 직접 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-25-promptfoo.html)
 - [NVIDIA 오픈쉘, 설치 없이 코드부터 읽어본 결과](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-24-openshell.html)
-- [freehire 실측 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-23-freehire.html)
-- [같은 27B 모델을 세 프로그램으로 돌려서 속도 2.4배 차이를 본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-22-mac-llm-engines-qwen3-8-27b-4bit.html)
-- [애플 맥에서 안드로이드 앱을 에뮬레이터 없이 돌리는 오픈소스 Mac.apk, 받아서 직접 살펴봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-22-mac-apk.html)
 
 ## 앱 실험실
 
+- [제출 사진 규격 변환기](https://songyonggyu4006.github.io/commit-sip/apps/submission-photo-resizer/): 제출처(토익·큐넷·공무원 원서·정부24·이력서)의 사진 규격(용량·픽셀·JPG)에 맞춰, 사진 파일만 브라우저 안에서 변환하고 통과 여부를 체크리스트로 알려 주는 도구입니다.
+- [아이클라우드 사진 정리](https://songyonggyu4006.github.io/commit-sip/apps/icloud-photo-organizer/): 아이클라우드에서 통째로 내려받은 사진 묶음을 넣으면, 라이브포토 영상·사본·편집 전 원본이 각각 몇 GB인지 바로 보여 주고 버릴 항목을 체크하면 촬영일 폴더 구조까지 미리 보여 주는 앱이에요.
 - [우리동네 기름값 30일](https://songyonggyu4006.github.io/commit-sip/apps/neighborhood-gas-price-30days/): 오늘 시도별 기름값 평균과 최저가 주유소 20곳, 그리고 30일 가격 추이를 한눈에 보여줍니다.
 - [정부 혜택 찾기](https://songyonggyu4006.github.io/commit-sip/apps/government-benefits-finder/): 최근 등록·수정된 정부 지원금·혜택을 분야와 대상(청년·출산육아·자영업·저소득·노인)으로 골라, 마감이 임박한 순서로 카드로 보여 주는 앱입니다.
 - [구독 요금 계산기](https://songyonggyu4006.github.io/commit-sip/apps/subscription-cost-calculator/): 오늘의 달러-원 환율과 비트코인·이더리움 시세로 Netflix·ChatGPT Plus 등 해외 구독 6종의 원화 월액·연액과 기준 환율(7일 평균) 대비 증감액을 즉시 계산합니다.

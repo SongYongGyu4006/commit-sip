@@ -1,5 +1,6 @@
 /* AI 모델 시장 판 — Hermes Studio 디자인 시스템(vendor/studio.css) 위에 덧씌우는 앱 스타일.
-   색·간격·모서리는 전부 ds- 토큰만 쓰고, 직접 쓴 색은 없다 → html[data-theme="auto"] 로 다크 모드 자동 전환. */
+   색·간격·모서리는 전부 ds- 토큰만 쓰고, 직접 쓴 색은 없다 → html[data-theme="auto"] 로 다크 모드 자동 전환.
+   화면 구조(DESIGN.md 생활 앱): .ds-band(띠) → .ds-answer(답 카드) → 조건 입력 → .ds-list(모델) → 차트·안내. */
 :root {
   /* studio.css ds- 토큰을 그대로 재사용(앱의 --bg/--card/... 이름으로 별칭) */
   --bg: var(--ds-bg);
@@ -12,12 +13,16 @@
   --brand-ink: var(--ds-accent-ink);
   --good: var(--ds-good);
   --bad: var(--ds-bad);
-  --muted: var(--ds-ink-3); /* #5f6777 — 흰 배경 대비 4.5:1 이상 */
+  --muted: var(--ds-ink-3);
   --star: #b45309; /* 즐겨찾기 ☆ ★ (다크 블록에서 var(--ds-warn)으로 덮어씀) */
+  --good-soft: var(--ds-good-soft);
+  --bad-soft: var(--ds-bad-soft);
+  /* 예시 모드 배너: 주황 계열, 라이트·다크 모두 본문 대비 4.5:1 이상 */
+  --warn-soft: var(--ds-warn-soft);
+  --warn-ink: #8a5a00; /* #fff3dd 배경 대비 6.0 */
   --radius: var(--ds-radius);
   --radius-s: var(--ds-radius-s);
   --radius-l: var(--ds-radius-l);
-  --shadow: var(--ds-shadow);
 }
 
 *,
@@ -34,188 +39,138 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- 기본 표·버튼·입력: ds- 클래스가 붙어 있는 요소는 studio.css가 지배 ---------- */
+/* ---------- 띠(.ds-band) ----------
+   studio.css가 띠 전체 폭 + 가운데 여백을 처리. 기준 정보(데이터 기준·출처)는 띠 메타 안에. */
+#data-meta { margin: 0; }
 
-/* ---------- 헤더 ---------- */
-.header h1 {
-  font-size: 26px;
-  letter-spacing: -0.02em;
-  margin: 0 0 8px;
-  line-height: 1.2;
+/* ---------- 답 카드(.ds-answer): 스크롤 전 첫 화면의 주인공 ----------
+   띠 바로 아래에서 겹치는 구조(studio.css .ds-band:has(...) 규칙) 그대로.
+   보조 숫자는 3칸: 모델 전체 / 클라우드 API 가격 / 추세 1위. */
+#answer-top {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* 헤더 카드(p) 안에 있는 태그라인: ds-hero p(17px)보다 우선해 16px 유지
-   (읽기 순서: 제목 26px → 태그라인 16px → 컨트롤 → 14px 보조) */
-.ds-card p.tagline {
-  font-size: 16px;
-  color: var(--ink);
-  margin: 0;
-  max-width: 62ch;
-}
+/* 답 카드: 스크롤 전 첫 화면(800px)에 띠·답·조건·차트가 들어가도록 패딩·높이를 줄인다. */
+.ds-answer { padding: 16px 20px; }
+.ds-answer-num { font-size: clamp(34px, 8vw, 48px); }
 
-/* 한 줄 사용법 안내: 컨트롤 아래에서 줄 길이만 제한(의미는 그대로) */
-.usage-hint {
+/* ---------- 예시 모드 배너 ----------
+   hidden 속성은 display:flex 때문에 무시되어 빈 노란 띠로 남던 회귀를 막는다. */
+.sample-banner {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  background: var(--warn-soft);
+  color: var(--warn-ink);
   font-size: 14px;
-  max-width: 60ch;
-  margin-top: 16px;
-  color: var(--ink-soft);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sample-banner[hidden] { display: none; }
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="auto"] {
+    --warn-ink: #f7c463; /* #2c2414 배경 대비 8.0 */
+    --star: var(--ds-warn); /* 다크에서는 어두운 배경에 밝은 주황 ☆ ★ */
+  }
 }
 
-/* 접히는 사용법 설명: 테두리·여백을 낮춰 주 버튼과 경쟁하지 않게 */
-.help-fold {
-  margin-top: 8px;
-}
-.help-fold summary {
-  cursor: pointer;
-  font-weight: 500;
-  color: var(--ink-soft);
-}
-.help-fold p {
-  margin: 8px 0 0;
-  color: var(--ink-soft);
-  font-size: 14px;
-}
+/* ---------- 조건 고르기 카드(RAM·양자·검색 + 버튼) ----------
+   답 카드 바로 아래에 두어, 바꾸면 답 카드 숫자가 즉각 바뀐다(3초 원칙).
+   첫 화면에 차트가 들어오도록 한 줄(인라인)으로 모은다. */
+.board-controls { margin-top: 8px; }
 
-/* 컨트롤: RAM·양자 입력 + 주 버튼(예시로 해 보기) + 보조 버튼(새로고침·초기화) */
 .controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
+  flex-wrap: nowrap;
+  gap: 12px;
   align-items: flex-end;
-  margin: 16px 0;
+  margin: 8px 0 0;
 }
 
 .control {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1 1 120px;
+  min-width: 0;
 }
 
-/* ds- 클래스가 붙은 input/select/button은 studio.css가 지배.
-   직접 쓴 색은 쓰지 않으니 다크 모드 자동 전환에 방해되지 않는다. */
-.control input,
-.control select,
-#search-input,
-.controls button {
-  min-height: 40px;
+/* ds- 클래스가 붙은 input/select은 studio.css가 지배(44px+ 터치 영역).
+   첫 화면(스케이드)에서는 높이만 40px으로 줄이고, 모바일에서는 44px을 회복한다. */
+@media (max-width: 640px) {
+  .control .ds-input,
+  .control .ds-select { height: 44px; }
+}
+@media (min-width: 641px) {
+  .control .ds-input,
+  .control .ds-select { height: 40px; }
 }
 
-/* 주 버튼(예시로 해 보기) / 보조 버튼(새로고침·초기화) — 색은 ds- 토큰 */
-button,
-#example-button,
-#refresh-button,
-#reset-button {
-  font: inherit;
-  min-height: 40px;
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--ink-soft);
-  cursor: pointer;
-}
-
-button.primary,
-#example-button {
-  background: var(--brand);
-  border-color: var(--brand);
-  color: var(--brand-ink);
-  font-weight: 600;
-}
-
-button.link {
-  padding: 0 8px;
-  min-height: 0;
-  border: none;
-  background: none;
-  color: var(--brand);
-  cursor: pointer;
-}
-
-button:hover { filter: brightness(0.95); }
-button:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-}
-
-/* ---------- 보드 ---------- */
-.board-top {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+.board-actions {
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
+  margin-top: 8px;
 }
 
-.board-top h2 { margin: 0; }
+#search-input { width: 100%; max-width: 280px; flex: 1 1 160px; }
 
-.board-head { display: flex; flex-direction: column; gap: 2px; }
-.board-caption { margin: 0; }
+/* ---------- 모델 목록(.ds-list) ----------
+   표 대신 '아바타 + 이름 + 보조 정보 + 오른쪽 값' 구조로 바꾸어 휴대폰에서도
+   모델 이름이 한눈에 보인다(SPEC 고정 id·기능: 행 클릭으로 ☆ 토글). */
+#board-table { display: none; } /* 화면에는 ds-list만. SPEC id는 유지한다. */
 
-#search-input { width: 224px; max-width: 100%; }
+.model-list { margin: 0; }
 
-/* 표 상자: 표가 폭을 넘을 때 .table-wrap 안에서만 가로 스크롤.
-   ds-table 의 th가 white-space:nowrap 이라 표 본연 폭이 카드보다 넓어지면,
-   overflow:auto 의 박스 안에서 스크롤되고 박스 밖으로 새어 나오지 않는다.
-   표 아래 안내(개수)·범례는 박스 밖(인덱스.html 일반 흐름)이라 셀과 겹치지 않는다. */
-.table-wrap {
-  overflow: auto;
-  max-width: 100%;
-  max-height: 480px;
-}
+.model-list .ds-list-item { border-top: 1px solid var(--line); }
+.model-list .ds-list-item:first-child { border-top: none; }
 
-#board-table {
-  /* 고정 배치(데스크톱): 컬럼이 가용 폭에 나눠지도록. '모두 표시'로 559행이
-     펼쳐도 폭은 변하지 않아 표 아래 안내·범례와 겹치지 않는다. */
-  table-layout: fixed;
-  width: 100%;
-  border-collapse: collapse;
-}
+.model-list .ds-avatar { width: 36px; height: 36px; font-size: 15px; }
 
-/* 고정 배치에서 컬럼 폭 배분: 이름 열은 남는 폭, 나머지 열은 최소폭 */
-#board-table .th-family,
-#board-table td:nth-child(1) { width: 52px; }
-#board-table .th-trend,
-#board-table td:nth-child(4) { width: 132px; }
-#board-table .th-nums,
-#board-table td:nth-child(3),
-#board-table td:nth-child(5),
-#board-table td:nth-child(7),
-#board-table td:nth-child(8) { width: 112px; }
-#board-table .th-can,
-#board-table td:nth-child(6) { width: 96px; }
-
-/* 숫자 열(파라미터·로컬 메모리·API 가격·컨텍스트): 오른쪽 정렬 + 등폭 숫자 */
-#board-table .th-nums,
-#board-table td:nth-child(3),
-#board-table td:nth-child(5),
-#board-table td:nth-child(7),
-#board-table td:nth-child(8) {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-/* 로컬 가능 열: 가운데 정렬 */
-#board-table .th-can,
-#board-table td:nth-child(6) {
-  text-align: center;
-}
-
-/* 모델 열: 남는 폭을 다 차지하지 않게 제한(컨텍스트 열이 카드 안에 보이도록) */
-#board-table .th-model,
-#board-table td:nth-child(2) {
-  max-width: 280px;
+.model-name {
+  max-width: 210px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: bottom;
 }
 
-/* 로컬 가능 여부: 알약(필)으로 가능(초록)·불가(빨강)·알 수 없음(테두리)을 구분.
-   같은 알약 클래스를 보드 td·안쪽 span·범례·비교 표 셀에 함께 씌운다(td 접두가 없으니
-   span 알약도 동일 스타일). 셀(td)은 정렬만 담당하고 색은 알약이 지니므로,
-   행 호버 배경이 달라져도 알약과 글자의 대비는 그대로 유지된다. */
-/* 고정 배치의 '로컬 가능' 열: 4자(알 수 없음) 알약이 넘치지 않게 여백 줄임 */
-td.can-cell { padding-left: 4px; padding-right: 4px; }
+/* 행: ☆토글은 가족 칸(첫 번째) 클릭, 열기 토글은 그 외 클릭 */
+.model-list [data-role="family"] {
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  width: auto;
+  min-height: 0;
+  cursor: pointer;
+  display: inline-flex;
+  color: inherit;
+}
+.model-list [data-role="family"] .ds-avatar { margin-right: 4px; }
+.model-list [data-role="open"] {
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  width: auto;
+  min-height: 0;
+  cursor: pointer;
+  display: inline-flex;
+  color: inherit;
+}
+
+.star { color: var(--star); margin-right: 8px; }
+
+/* 값(오른쪽): 로컬 메모리 + 가능 여부(알약) */
+.model-list .ds-list-amount { font-size: 16px; }
+
+/* 로컬 가능 여부: 알약(필)로 가능(초록)·불가(빨강)·알 수 없음(테두리)을 구분 */
 .can-yes { background: var(--good-soft); color: var(--good); }
 .can-no { background: var(--bad-soft); color: var(--bad); }
 .can-unknown { background: transparent; border: 1px solid var(--line); color: var(--ink-soft); }
@@ -223,47 +178,127 @@ td.can-cell { padding-left: 4px; padding-right: 4px; }
 .can-no,
 .can-unknown {
   display: inline-block;
-  padding: 2px 10px;
+  padding: 1px 8px;
   border-radius: 999px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.5;
 }
-/* 보드 셀: 알약이 span 으로 감싸고 td 는 정렬만 */
-td.can-cell { text-align: center; }
 
-.star { color: var(--star); margin-right: 8px; }
+/* ---------- 비교 패널(즐겨찾기 3개 나란히) ---------- */
+#compare-panel { margin-top: 16px; }
 
-/* 추세 막대: ds-bar 트랙 + 브랜드 색 채움 (점수 값은 넣지 않음) */
-.cell-trend { min-width: 128px; }
-.bar {
-  height: 8px;
-  border-radius: 999px;
-  background: var(--surface);
-  overflow: hidden;
-  max-width: 120px;
-  margin-top: 6px;
-}
-.bar::after {
-  content: "";
-  display: block;
-  height: 100%;
-  width: inherit;
-  background: var(--brand);
-  border-radius: inherit;
-}
-
-.summary { margin-top: 16px; }
-
-/* 로컬 가능 셀 색 범례 */
-.can-legend {
-  margin-top: 16px;
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 14px;
+}
+
+.compare-table th,
+.compare-table td {
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.compare-table thead th { background: var(--surface); }
+
+/* ---------- 즐겨찾기 ---------- */
+.fav-section { margin-bottom: 8px; }
+
+#fav-empty[hidden] { display: none; }
+
+.fav-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fav-list li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 14px;
+  max-width: 100%;
+}
+
+.fav-list li > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.compare-lead { margin: 8px 0 0; font-size: 14px; color: var(--ink-soft); }
+.compare-lead[hidden] { display: none; }
+.compare-picks { margin-bottom: 0; }
+
+/* ---------- 공용: 알약·가족 수·표의 ☆ ---------- */
+.pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.family-count {
+  display: inline-block;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 0 6px;
+  margin-left: 4px;
   color: var(--ink-soft);
 }
+.star { color: var(--star); }
 
-/* 표 아래 안내 문구: <table> 밖의 독립 블록 */
+/* ---------- 표(숨김: ds-list가 화면 역할을 대신) — SPEC id·구조는 유지 ---------- */
+.table-wrap {
+  position: relative;
+  contain: paint;
+  overflow: auto;
+  max-width: 100%;
+  max-height: 260px;
+}
+
+.table-wrap[hidden] { display: none; }
+
+/* ---------- 모델 목록 구역(스크롤 전 화면에 들어올 때까지만 목록을 접는다) ----------
+   차트가 화면 순서에서 목록 위로 왔으므로, 열면 125개 행이 차트를 밀어내지 않도록
+   접힌 상태: 제목 + 요약 + 펼쳐 보기만 보이며(최대 360px), 펼쳐야 800px까지 열린다.
+   검색으로 결과가 12개 이하가 되면 자동으로 펼친다. */
+.board-list { position: relative; }
+.board-list.fold { max-height: 360px; overflow: hidden; }
+.board-list:not(.fold) { max-height: 800px; overflow: auto; }
+
+.list-toggle {
+  margin: 8px 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.list-toggle:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* ---------- 표 아래 안내·범례 ----------
+   스크롤 영역 밖의 독립 블록. 배경·배치로 표 행과 겹침을 막는다. */
+.summary { margin-top: 16px; position: relative; background: var(--card); }
+
 .table-note {
+  position: relative;
+  background: var(--card);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -273,26 +308,54 @@ td.can-cell { text-align: center; }
 .table-note .note-text {
   font-size: 14px;
   color: var(--ink-soft);
-  white-space: nowrap;
+  white-space: normal;
 }
 .table-note button.link { margin-left: 4px; }
 
-/* ---------- 차트 ---------- */
+.can-legend {
+  position: relative;
+  background: var(--card);
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+/* ---------- 차트 ----------
+   가격×컨텍스트가 먼저(사용자 질문이므로), 휴대폰에서도 price-box가 위로.
+   화면 순서: 차트가 모델 목록보다 위라 앱이 열리자마자(스크롤 전) 보인다. */
+.chart-first { margin-top: 16px; }
+.chart-title:not(.chart-first) { margin-top: 24px; }
+
 .chart-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  margin-top: 24px;
+  margin-top: 8px;
 }
 
 .chart-box {
   border: 1px solid var(--line);
   border-radius: var(--radius-s);
+  background: var(--card);
   padding: 16px;
   min-width: 0;
 }
 
+.chart-box h3 { margin: 0 0 4px; font-size: 16px; }
+
 .chart-note { margin: 0 0 8px; }
+
+/* 범례: 로컬 가능 여부로 점 색을 나누기(색만, 칩·타일 없이) */
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin: 0 2px 0 8px;
+  vertical-align: baseline;
+}
+.legend-cloud { background: var(--muted); }
+.legend-local { background: var(--brand); }
 
 /* Chart.js는 리사이즈 루프에서 캔버스 자체 높이로 CSS를 계속 밀어올려
    프레임 높이를 유지하지 못하는 회귀가 있어, 상대 배치 프레임 안에
@@ -315,144 +378,89 @@ td.can-cell { text-align: center; }
 }
 .chart-box canvas { flex-shrink: 1; min-width: 0; }
 
-/* ---------- 즐겨찾기 ---------- */
-.fav-list {
-  list-style: none;
-  margin: 0 0 16px;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.fav-list li {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 4px 12px;
-  font-size: 14px;
-}
-
-#compare-panel { margin-top: 16px; }
-
-.compare-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.compare-table th,
-.compare-table td {
-  border: 1px solid var(--line);
-  padding: 8px 12px;
-  text-align: left;
-}
-
-.compare-table thead th { background: var(--surface); }
-
 /* ---------- 푸터 ---------- */
 .footer { text-align: left; }
-.footer p {
-  margin: 0;
-  font-size: 14px;
-  color: var(--ink-soft);
-}
 
 #app-status {
-  margin-top: 8px;
+  margin: 16px 0 0;
   min-height: 1.5em;
   color: var(--bad);
+  background: none;
+  padding: 0;
+}
+#app-status:empty { display: none; }
+
+.help-fold { margin-top: 8px; }
+.help-fold summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.help-fold p {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
   font-size: 14px;
 }
 
-.empty { color: var(--muted); }
-
-.empty-row td { color: var(--ink-soft); text-align: center; }
-
-/* 예시 모드 배너: ds-status 계열(색은 ds- 토큰)
-   --warn-ink: 본문 대비 4.5:1을 라이트·다크 모두 만족하는 주황(밝은 배경 #8a5a00 / 어두운 배경 #f7c463) */
-.sample-banner {
-  padding: 12px 16px;
-  border-radius: var(--radius);
-  background: var(--ds-warn-soft);
-  color: var(--warn-ink);
-  font-size: 14px;
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+button.link {
+  padding: 0 8px;
+  min-height: 0;
+  border: none;
+  background: none;
+  color: var(--brand);
+  cursor: pointer;
+  font: inherit;
 }
-:root {
-  --warn-ink: #8a5a00; /* #fff3dd 배경 대비 6.0 */
-}
-@media (prefers-color-scheme: dark) {
-  html[data-theme="auto"] {
-    --warn-ink: #f7c463; /* #2c2414 배경 대비 8.0 */
-  }
-}
-
-/* ---------- 다크 모드 ----------
-   앱의 색은 전부 var(--ds-*) 토큰(상단 --* 별칭 포함)이라 studio.css의
-   :root[data-theme="auto"] 다크 블록이 자동으로 적용된다.
-   알약 배경만 스튜디오 토큰으로 덮어 쓰고, ☆ ★ 은 var(--ds-warn)으로 덮어 쓴다. */
-:root {
-  --good-soft: var(--ds-good-soft);
-  --bad-soft: var(--ds-bad-soft);
-}
-
-@media (prefers-color-scheme: dark) {
-  html[data-theme="auto"] {
-    --star: var(--ds-warn); /* 다크에서는 어두운 배경에 밝은 주황 ☆ ★ */
-  }
+button.link:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
 
 /* ---------- 휴대폰 (390px / ≤640px) ---------- */
 @media (max-width: 640px) {
-  .page { padding: 16px 8px 32px; }
-  .card { padding: 16px; }
+  .page { padding: 16px 16px 32px; }
 
-  /* 컨트롤: RAM·양자가 첫 줄, 주 버튼(예시로 해 보기)은 전체 폭, 보조 버튼 둘은 다음 줄 반반 */
+  /* 조건: RAM·양자가 한 줄, 검색은 전체 폭, 버튼은 전체 폭(44px 터치) */
   .controls {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
     align-items: stretch;
   }
-  .control { flex: 1 1 auto; }
   .control input,
   .control select { width: 100%; height: 44px; font-size: 16px; }
+  #search-input { grid-column: 1 / -1; height: 44px; }
+  .board-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
   #example-button { grid-column: 1 / -1; height: 44px; }
   #refresh-button,
   #reset-button { height: 44px; }
-  #search-input { width: 100%; height: 44px; }
+
+  /* 값(오른쪽)이 길어도 한 줄: 줄바꿈 없이 줄임표 */
+  .model-list .ds-list-sub { flex-wrap: nowrap; }
+  .model-list .ds-list-amount,
+  .model-list .ds-list-end .ds-list-sub {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 보조 숫자 3칸: 390px에서 3칸이 꽉 차면 2행으로 */
+  .ds-answer-meta { flex-wrap: wrap; }
+  .ds-answer-meta > div { flex: 1 1 30%; }
+  .ds-answer-meta > div + div { border-left: none; }
 
   .chart-grid { grid-template-columns: 1fr; }
-
-  /* 표: 고정 배치 + min-width 560px → 컬럼 최소폭이 확보된 채 .table-wrap 안에서만
-     가로 스크롤. '모두 표시'(559행)로 높아져도 폭이 고정이라 안내·범례와 겹치지 않는다. */
-  #board-table { table-layout: fixed; width: 560px; min-width: 560px; max-width: none; }
-  /* 모델 열: 폭을 더 좁혀(140px) 긴 이름도 줄임표로 옆 열과 겹치지 않게 */
-  #board-table td:nth-child(2) { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
-  /* 가족 열: 폭을 좁게(40px) + 가운데 정렬 */
-  #board-table th:first-child,
-  #board-table td:first-child { width: 40px; text-align: center; }
-  #board-table th,
-  #board-table td { padding: 8px 8px; }
-  /* '추세' 머리글·막대가 잘리지 않게 최소 폭 확보 */
-  .cell-trend { min-width: 72px; }
-  .table-wrap .cell-trend,
-  .table-wrap th.th-trend { min-width: 72px; }
-  .bar { max-width: 80px; }
-  /* 가로 스크롤이 있다는 것을 가장자리에 그림자로 암시 */
-  .table-wrap { box-shadow: inset -12px 0 8px -8px rgba(0, 0, 0, 0.12); }
-  /* 설명을 또 반복하는 캡션은 휴대폰에서 가려 표를 위로 */
-  .board-caption { display: none; }
-  .table-note { flex-wrap: wrap; row-gap: 4px; }
-  /* 차트: 좁은 폭에 맞춰 높이를 확보 */
+  /* 차트: 좁은 폭에 맞춰 높이를 확보. 가격×컨텍스트가 먼저 */
   .chart-frame { height: 220px; }
+
+  /* 좁은 화면에서는 접는 대신 목록 전체를 보여 준다. */
+  .board-list,
+  .board-list.fold,
+  .board-list:not(.fold) { max-height: none; overflow: visible; }
 }
 
 @media (prefers-reduced-motion: reduce) {

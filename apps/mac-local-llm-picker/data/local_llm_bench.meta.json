@@ -2,7 +2,7 @@
  "id": "local_llm_bench",
  "name": "로컬 LLM 실측(우리 맥에서 직접 잰 모델별 속도·메모리·점수)",
  "url": "local-data",
- "fetched_at": "2026-10-30T04:04:51",
+ "fetched_at": "2026-10-31T04:02:08",
  "terms": "이 맥(Mac Studio M5 Max 48GB, mlx-lm)에서 우리가 직접 측정한 값. 모델 13개 안팎, 측정 창마다 늘어남.",
  "cors": true,
  "items": 13,

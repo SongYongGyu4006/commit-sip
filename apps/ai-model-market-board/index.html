@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="auto">
+<html lang="ko" data-accent="blue" data-theme="auto">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,12 +8,50 @@
 <link rel="stylesheet" href="styles.css">
 <script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="매일 갱신되는 Hugging Face 인기 모델과 OpenRouter API 가격을 모델 계열로 짝지어 한 표로 보여 주며, 내 RAM(GB)과 양자(4/8/16비트)를 고르면 로컬 실행에 필요한 메모리와 가능 여부를 함께 알려 주는 앱입니다."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/ai-model-market-board/"></head>
 <body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: AI 모델 시장 판 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
-<div class="page ds-page">
-  <header class="card header ds-card">
-    <div class="ds-hero">
-      <h1>AI 모델 시장 판</h1>
-      <p class="tagline">내 RAM으로 돌릴 수 있는 모델과 클라우드 API 가격을 한 표에서 비교합니다.</p>
+<header class="ds-band">
+  <h1>AI 모델 시장 판</h1>
+  <p>내 컴퓨터 메모리로 AI를 직접 돌릴 수 있는지, 인터넷으로 쓰면 100만 글자당 얼마인지 알려 드려요.</p>
+  <p class="band-steps">
+    <ol class="steps">
+      <li>내 컴퓨터 메모리 양을 넣고</li>
+      <li>돌려 보고 싶은 AI 이름을 검색해 보세요. 바로 답이 나와요.</li>
+    </ol>
+  </p>
+  <div class="ds-band-meta">
+    <span id="data-meta" class="ds-band-meta-line"></span>
+  </div>
+</header>
+
+<main class="page ds-page">
+  <div id="sample-banner" class="sample-banner" hidden></div>
+
+  <section class="ds-answer" aria-label="지금 바로 알아야 할 수">
+    <p class="ds-answer-label"><span id="answer-label">내 컴퓨터로 직접 돌릴 수 있는 AI</span></p>
+    <p class="ds-answer-num"><span id="answer-num">—</span><small id="answer-unit">개</small></p>
+    <p class="ds-answer-text" id="answer-text">데이터를 불러오는 중이에요.</p>
+    <dl class="ds-answer-meta">
+      <div><dt>전체</dt><dd id="answer-total">—</dd></div>
+      <div id="answer-priced-box" hidden><dt>가격 확인</dt><dd id="answer-priced">—</dd></div>
+      <div id="answer-top-box" hidden><dt>요즘 인기 1위</dt><dd id="answer-top" title="최근 인기 모델 1위">—</dd></div>
+    </dl>
+  </section>
+
+  <section class="quick-results" aria-label="바로 보기">
+    <div class="ds-section-title quick-results-title">
+      <h2 id="quick-results-title">바로 보기</h2>
+      <a class="board-quick" href="#chart-anchor">그래프로 보기</a>
+      <a class="board-quick" href="#board-list">목록 전체 보기</a>
     </div>
+    <ul id="quick-list" class="quick-list"></ul>
+  </section>
+
+
+  <div class="ds-section-title board-section">
+    <h2 id="board-title" tabindex="-1">조건 고르기</h2>
+    <a class="board-quick" href="#chart-anchor">그래프로 보기 ↓</a>
+    <p>RAM과 양자를 고르면 답 카드와 그래프가 바로 바뀝니다.</p>
+  </div>
+  <div class="ds-card board-controls ds-card">
     <div class="controls ds-row">
       <div class="control">
         <label class="ds-label" for="memory-input">내 RAM (GB)</label>
@@ -27,26 +65,42 @@
           <option value="16">16비트</option>
         </select>
       </div>
+      <div class="control">
+        <span class="ds-label">모델 검색</span>
+        <input id="search-input" class="ds-input" type="text" placeholder="모델 검색">
+      </div>
+    </div>
+    <div class="controls ds-row board-actions">
       <button id="example-button" class="ds-btn ds-btn-primary" type="button">예시로 해 보기</button>
       <button id="refresh-button" class="ds-btn" type="button">새로고침</button>
       <button id="reset-button" class="ds-btn" type="button">초기화</button>
     </div>
-    <p class="usage-hint ds-hint">RAM 용량과 양자를 고르면, 각 모델이 내 장비에서 돌릴 수 있는지 메모리 사용량과 실행 가능 여부를, 클라우드 API 가격과 함께 한 표에서 바로 확인하세요. 양자를 낮추면 로컬 메모리 사용이 줄고 더 큰 모델을 돌릴 수 있습니다.</p>
-    <details class="help-fold">
-      <summary>사용법 자세히 보기: 가족·즐겨찾기·비교 표 안내</summary>
-      <p>가족은 같은 이름의 여러 모델 버전을 하나로 묶은 그룹입니다. ☆를 눌러 즐겨찾기에 추가하면, 아래 비교 표에서 메모리·가능 여부·API 가격·컨텍스트를 나란히 확인하세요. 양자가 낮을수록 로컬 메모리 사용이 줄어듭니다. API 가격과 컨텍스트가 없는 행은 OpenRouter에 아직 목록에 없는 모델이니, 로컬 실행 여부를 중심으로 보세요.</p>
-    </details>
-  </header>
+  </div>
 
-  <div id="sample-banner" class="sample-banner" hidden></div>
-
-  <section id="board" class="card ds-card">
-    <div class="board-top">
-      <div class="board-head">
-        <h2>모델 보드</h2>
-        <p class="board-caption ds-hint">내 장비에서 돌릴 수 있는지, 클라우드 API 가격과 컨텍스트는 얼마인지 한눈에 비교하세요.</p>
+  <section id="board">
+    <div class="ds-section-title chart-title chart-first">
+      <h2 id="chart-anchor" tabindex="-1">그래프로 보기</h2>
+      <a class="board-quick" href="#board-table">모델 목록 ↓</a>
+      <p>점 하나 = 모델 하나 · 오른쪽 = 한 번에 읽을 수 있는 글자 수(컨텍스트) · 위 = API가 비싸다(100만 토큰당 가격)</p>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-box" id="price-chart-box">
+        <h3>가격 × 컨텍스트</h3>
+        <p class="chart-note ds-hint">점 하나 = 모델 하나. <span class="legend-dot legend-cloud" aria-hidden="true"></span>클라우드 API 모델, <span class="legend-dot legend-local" aria-hidden="true"></span>내 장비에서 돌 수 있는 모델. 눈금 사이는 10배(로그 스케일).</p>
+        <div class="chart-frame"><canvas id="price-chart"></canvas></div>
       </div>
-      <input id="search-input" class="ds-input" type="text" placeholder="모델 검색">
+      <div class="chart-box" id="trend-chart-box">
+        <h3>추세 상위 모델</h3>
+        <p class="chart-note ds-hint">최근 인기 모델 상위 10개를 막대 길이로 비교합니다.</p>
+        <div class="chart-frame"><canvas id="trend-chart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="board-list" class="board-list">
+    <div class="ds-section-title">
+      <h2>모델 목록</h2>
+      <p>☆를 눌러 즐겨찾기, 행을 눌러 상세가 열립니다. 같은 이름의 모델 묶음이 '가족'이에요.</p>
     </div>
     <div class="table-wrap ds-table-wrap">
       <table id="board-table" class="ds-table">
@@ -66,36 +120,31 @@
       </table>
     </div>
     <div id="summary-line" class="summary ds-hint ds-num"></div>
-    <!-- 표 아래 안내(개수)·범례: 표 스크롤 상자 밖에서 일반 흐름으로 배치
-         (박스 안에 두면 표가 넓어질 때 안내 글자가 표 셀과 겹쳐 읽기 불가해진다) -->
     <div id="table-note" class="table-note"></div>
     <p class="can-legend ds-hint">로컬 가능: <b class="can-yes">가능</b> = 내 RAM으로 실행, <b class="can-no">불가</b> = 메모리 부족, <b class="can-unknown">알 수 없음</b> = 파라미터 정보 없음</p>
-    <div class="chart-grid">
-      <div class="chart-box">
-        <h3>추세 상위 모델</h3>
-        <p class="chart-note ds-hint">최근 인기 모델 상위 10개를 막대 길이로 비교합니다.</p>
-        <div class="chart-frame"><canvas id="trend-chart"></canvas></div>
-      </div>
-      <div class="chart-box">
-        <h3>가격 × 컨텍스트</h3>
-        <p class="chart-note ds-hint">컨텍스트 길이와 클라우드 API 가격을 그래프로 보여 줍니다.</p>
-        <div class="chart-frame"><canvas id="price-chart"></canvas></div>
-      </div>
-    </div>
+    <button id="list-toggle" class="list-toggle" type="button" hidden>전체 보기</button>
   </section>
 
-  <section id="favorites" class="card ds-card">
-    <h2>즐겨찾기 <span id="fav-count" class="count ds-badge">0</span></h2>
+  <section id="favorites" class="ds-card">
+    <div class="ds-section-title fav-section">
+      <h2>즐겨찾기 <span id="fav-count" class="count ds-badge">0</span></h2>
+      <p>☆를 누른 모델 최대 3개를 골라 나란히 비교합니다.</p>
+    </div>
+    <div id="fav-empty" class="ds-empty">아직 즐겨찾기가 없어요. 모델 목록에서 ☆를 눌러 추가하세요.</div>
     <ul id="fav-list" class="fav-list"></ul>
-    <ul id="compare-list" class="fav-list"></ul>
+    <p class="compare-lead" id="compare-lead" hidden>비교할 모델 <b id="compare-lead-count">3</b>개</p>
+    <ul id="compare-list" class="fav-list compare-picks"></ul>
     <div id="compare-panel"></div>
   </section>
 
   <footer class="footer ds-footer">
-    <p id="data-meta"></p>
-    <div id="app-status" class="ds-hint" role="status"></div>
+    <div id="app-status" class="ds-status" role="status"></div>
+    <details class="help-fold">
+      <summary>사용법 자세히 보기</summary>
+      <p><b>가족</b>은 같은 이름의 여러 모델 버전을 하나로 묶은 그룹입니다. ☆를 눌러 즐겨찾기에 추가하면, 비교 표에서 메모리·가능 여부·API 가격·컨텍스트를 나란히 확인하세요. 양자가 낮을수록 로컬 메모리 사용이 줄어듭니다. API 가격과 컨텍스트가 없는 모델은 OpenRouter 목록에 아직 없는 모델이니, 로컬 실행 여부를 중심으로 보세요.</p>
+    </details>
   </footer>
-</div>
+</main>
 <script src="vendor/chart.umd.min.js"></script>
 <script type="module" src="src/ui.js"></script>
 
