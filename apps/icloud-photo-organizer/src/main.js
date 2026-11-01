@@ -29,6 +29,7 @@ export async function init() {
     diagnoseScreen.querySelector('#category-list').textContent = '';
     diagnoseScreen.querySelector('#savings').textContent = '';
     diagnoseScreen.querySelector('#bar-legend').textContent = '';
+    diagnoseScreen.querySelector('#pick-result').textContent = '';
     diagnoseScreen.querySelector('#csv-hint').textContent = '';
     treeScreen.querySelector('#tree-list').textContent = '';
     treeScreen.querySelector('#tree-summary').textContent = '';
@@ -83,26 +84,33 @@ export async function init() {
     }
   });
 
-  // 파일 고르기(폴더·개별): 상태 교체, discard 전부 true.
+  // 파일 고르기(폴더·개별): 상태 교체, discard 전부 true. 읽은 결과를 #pick-result 로 바로 알려 준다.
+  const pickResult = diagnoseScreen.querySelector('#pick-result');
   const onPicked = async (input) => {
     if (!input.files || input.files.length === 0) return;
     try {
       const picked = await readPickedFiles(input.files);
       if (picked.entries.length === 0) {
-        showError('사진 파일이 하나도 없어요. HEIC·JPG 같은 사진 파일을 골라 주세요.');
-        return;
+        pickResult.textContent = '파일 ' + input.files.length + '개를 읽었어요 · 사진·영상 0장' +
+          (picked.csvText.trim() !== '' ? ' · 날짜 CSV 있음' : ' · 날짜 CSV 없음') +
+          ' — 사진·영상이 없어요. 폴더 안의 HEIC·JPG·MOV 파일을 함께 골라 주세요.';
+        showError('사진 파일이 하나도 없어요. 폴더 안의 HEIC·JPG·MOV 같은 사진·영상 파일을 함께 골라 주세요.');
+      } else {
+        pickResult.textContent = '파일 ' + input.files.length + '개를 읽었어요 · 사진·영상 ' +
+          picked.entries.length + '장' + (picked.csvText.trim() !== '' ? ' · 날짜 CSV 있음' : ' · 날짜 CSV 없음');
+        state = {
+          entries: picked.entries,
+          csvText: picked.csvText,
+          discard: { liveVideo: true, copy: true, editedOriginal: true },
+        };
+        isSample = false;
+        renderAll();
       }
-      state = {
-        entries: picked.entries,
-        csvText: picked.csvText,
-        discard: { liveVideo: true, copy: true, editedOriginal: true },
-      };
-      isSample = false;
-      renderAll();
-      input.value = '';
     } catch (err) {
+      pickResult.textContent = '';
       showError('파일을 읽지 못했어요. 다시 골라 주세요. (' + err.message + ')');
     }
+    input.value = '';
   };
   diagnoseScreen.querySelector('#folder-input').addEventListener('change', (e) => onPicked(e.target));
   diagnoseScreen.querySelector('#files-input').addEventListener('change', (e) => onPicked(e.target));
@@ -129,8 +137,9 @@ export async function init() {
   });
   dataScreen.querySelector('#import-file').addEventListener('change', async (e) => {
     const file = e.target.files && e.target.files[0];
-    e.target.value = '';
     if (!file) return;
+    e.target.value = '';
+    if (!window.confirm('지금 목록을 불러온 목록으로 바꿀까요? 사진 파일은 바뀌지 않아요.')) return;
     try {
       const imported = await readImportFile(file);
       if (!imported) {
@@ -146,7 +155,7 @@ export async function init() {
   });
   dataScreen.querySelector('#reset-button').addEventListener('click', () => {
     const ok = window.confirm(
-      '지금 고른 항목과 사진 목록이 모두 지워지고 예시로 돌아갑니다. 이 동작은 되돌릴 수 없어요. 지울까요?'
+      '저장된 목록만 지워져요. 사진 파일은 그대로예요. 처음 예시로 돌아가면 되돌릴 수 없어요. 그래도 되돌리겠어요?'
     );
     if (!ok) return;
     try {

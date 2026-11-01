@@ -13,7 +13,9 @@
     custom: { label: '직접 입력' },
   };
 
-  const state = { presetId: null, preset: null, img: null, natural: null, crop: null, frame: null, frameDirty: false, out: null, outBytes: null, blobUrl: null };
+  const state = { presetId: null, preset: null, img: null, natural: null, crop: null, frame: null, frameDirty: false, out: null, outBytes: null, blobUrl: null, sample: false };
+  const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const SAMPLE_PREFIX = '연습용 그림 결과예요 — ';
   const CONTENT_NOTE = '기술 규격만 통과했습니다. 얼굴·배경·촬영 시점 등 사진 내용 규정은 제출처 안내 페이지에서 직접 확인하세요';
 
   /* ---------- 상태 영역 ---------- */
@@ -104,23 +106,31 @@
   function kbNote(n) { return Math.round(n / 980) === n / 1000 ? ' ≈ ' + Math.round(n / 1000) + 'KB, 2% 여유 포함' : ''; }
   function updateAnswer() {
     const p = state.preset || PRESETS.qnet;
-    // 결과가 있으면 결과 값, 없으면 현재 제출처 규격 기준 — 제출처를 바꾸면 바로 다시 계산
+    // 결과가 있으면 결과 값, 없으면 '—' — 사진 전에는 가짜 수치를 보여 주지 않음
     const b = state.outBytes != null ? state.outBytes : outBytes(state.out);
-    const limit = state.out ? state.out.safeLimitBytes : p.maxKb * 980;
-    $('verdict').textContent = state.out ? (state.out.pass ? '제출 가능' : '규격 미충족') : '예시';
-    $('verdict-text').textContent = state.out
-      ? '예시 사진 ' + b + '바이트, 용량 상한 ' + state.out.safeLimitBytes + '바이트(' + Math.round(state.out.safeLimitBytes / 1000) + 'KB, 2% 여유 포함) 기준이에요.'
-      : '아직 결과가 없어요. ' + p.label + ' 규격(예시 기준)이 아니라, 사진을 넣어 보세요.';
-    $('upscale-note').textContent = state.out && state.out.upscaled ? '원본이 작아 확대되었습니다. 화질이 낮을 수 있습니다' : '';
-    document.querySelector('.ans-size').textContent = b != null ? b + '바이트' : '48700바이트(예시 기준)';
-    document.querySelector('.ans-limit').textContent = limit + '바이트' + kbNote(limit);
-    document.querySelector('.ans-dims').textContent = p.width + '×' + p.height;
+    $('sample-hint-answer').hidden = !!state.out;
+    if (state.out) {
+      const prefix = state.sample ? SAMPLE_PREFIX : '';
+      $('verdict').textContent = state.out.pass ? '제출 가능' : '규격 미충족';
+      $('verdict-text').textContent = prefix + p.label + ' 규격 기준, 사진 ' + fmt(b) + '바이트예요. 상한 ' + fmt(state.out.safeLimitBytes) + '바이트(' + Math.round(state.out.safeLimitBytes / 1000) + 'KB, 2% 여유) 안에 들어가요.';
+      $('upscale-note').textContent = state.out.upscaled ? '원본이 작아 확대되었습니다. 화질이 낮을 수 있습니다.' : '';
+      document.querySelector('.ans-size').textContent = fmt(b) + '바이트';
+      document.querySelector('.ans-limit').textContent = fmt(state.out.safeLimitBytes) + '바이트' + kbNote(state.out.safeLimitBytes);
+      document.querySelector('.ans-dims').textContent = p.width + '×' + p.height;
+    } else {
+      $('verdict').textContent = '사진을 넣어 보세요';
+      $('verdict-text').textContent = p.label + ' 규격이 준비됐어요. 사진을 골라 「규격에 맞게 변환」을 누르면 결과가 여기에 나와요.';
+      $('upscale-note').textContent = '';
+      document.querySelector('.ans-size').textContent = '—';
+      document.querySelector('.ans-limit').textContent = '최대 ' + p.maxKb + 'KB';
+      document.querySelector('.ans-dims').textContent = p.width + '×' + p.height;
+    }
   }
 
   /* ---------- 결과 ---------- */
   function clearResult(reason) {
     if (state.blobUrl) { URL.revokeObjectURL(state.blobUrl); state.blobUrl = null; }
-    state.out = null; state.outBytes = null;
+    state.out = null; state.outBytes = null; state.sample = false;
     if (state.frame) state.frameDirty = false; // 프레임은 새 규격 비율로 다시 계산
     const img = $('result-preview');
     img.hidden = true;
@@ -132,12 +142,12 @@
     $('content-note').hidden = true;
     $('content-note').textContent = '';
     $('result-card').hidden = true;
+    $('sample-badge').hidden = true;
     $('result-empty').hidden = false;
     // 이유가 있으면 그 문구, 없으면 기본 문구 — result-empty 이 항상 어떤 다음 단계인지 말해 줌
     $('result-empty-text').textContent = reason
       || (state.img ? '사진이 준비됐어요. 「규격에 맞게 변환」을 누르면 결과가 여기에 나와요.'
-        : '변환 결과가 여기에 보여요. 예시로 해 보기를 누르면 큐넷 규격(413×531, JPG, 최대 100KB — 확인 전 규격, 제출 전 제출처 안내에서 확인)으로 바로 확인할 수 있어요.');
-    $('work-hint').textContent = reason ? reason : '제출처를 먼저 고르고 사진을 골라 주세요.';
+        : '변환 결과가 여기에 보여요. 예시로 해 보기를 누르면 연습용 그림으로 바로 확인할 수 있어요. 제출처를 고르면 그 규격으로 변환돼요.');
     updateAnswer();
   }
 
@@ -147,12 +157,13 @@
     const kb = Math.round(out.safeLimitBytes / 1000);
     $('result-empty').hidden = true;
     $('result-card').hidden = false;
+    $('sample-badge').hidden = !state.sample;
     $('verdict').textContent = out.pass ? '제출 가능' : '규격 미충족';
-    $('verdict-text').textContent = '사진 ' + b + '바이트, 용량 상한 ' + out.safeLimitBytes + '바이트(' + kb + 'KB, 2% 여유 포함) 기준이에요.';
-    $('upscale-note').textContent = out.upscaled ? '원본이 작아 확대되었습니다. 화질이 낮을 수 있습니다' : '';
+    $('verdict-text').textContent = (state.sample ? SAMPLE_PREFIX : '') + p.label + ' 규격 기준, 사진 ' + fmt(b) + '바이트예요. 상한 ' + fmt(out.safeLimitBytes) + '바이트(' + kb + 'KB, 2% 여유) 안에 들어가요.';
+    $('upscale-note').textContent = out.upscaled ? '원본이 작아 확대되었습니다. 화질이 낮을 수 있습니다.' : '';
 
     const lines = [
-      '용량 ' + b + '바이트 (상한 ' + out.safeLimitBytes + '바이트 ≈ ' + kb + 'KB, 2% 여유 포함)',
+      '용량 ' + fmt(b) + '바이트 (상한 ' + fmt(out.safeLimitBytes) + '바이트 ≈ ' + kb + 'KB, 2% 여유 포함)',
       '크기 ' + p.width + '×' + p.height,
       'JPG',
     ];
@@ -176,30 +187,40 @@
       note.textContent = '통과하지 못한 항목을 확인하고, 용량이 크면 사진 규격(최대 ' + kb + 'KB)에 맞게 다시 촬영해 보세요. 이 파일은 그대로 제출하면 제출처가 받아주지 않을 수 있어요.';
       note.hidden = false;
     }
-    $('work-hint').textContent = '변환 결과예요. 프레임은 다시 드래그해도 되고, 다른 사진으로 바꿔도 돼요.';
+    $('crop-hint').hidden = false;
+    $('photo-hint').textContent = state.sample
+      ? '연습용 그림이에요. 내 사진으로 하면 「파일 고르기」를 눌러 주세요.'
+      : (img.naturalWidth + '×' + img.naturalHeight + ' 사진을 불러왔어요. 「규격에 맞게 변환」을 눌러 보세요.');
     updateAnswer();
   }
 
   /* ---------- 사진 로딩 ---------- */
   function loadSource(img) {
+    // 0×0로 해석되는 경우(예: 생성된 dataURL)에 대비해 미리 4032×3024로 고정
     state.img = img;
-    state.natural = { width: img.naturalWidth, height: img.naturalHeight };
+    state.natural = (img.naturalWidth > 0 && img.naturalHeight > 0)
+      ? { width: img.naturalWidth, height: img.naturalHeight }
+      : { width: 4032, height: 3024 };
     state.frameDirty = false;
-    $('photo-hint').textContent = img.naturalWidth + '×' + img.naturalHeight + ' 사진을 불러왔어요. 아래에서 규격으로 변환해 보세요.';
+    if (!$('photo-hint').textContent.includes('연습용')) {
+      $('photo-hint').textContent = state.natural.width + '×' + state.natural.height + ' 사진을 불러왔어요. 아래에서 「규격에 맞게 변환」을 눌러 보세요.';
+    }
     $('crop-empty').hidden = true;
     $('crop-canvas').hidden = false;
+    $('crop-hint').hidden = false;
     clearStatus();
     layoutCrop();
     if (!$('result-empty').hidden) $('result-empty-text').textContent = '사진이 준비됐어요. 「규격에 맞게 변환」을 누르면 결과가 여기에 나와요.';
   }
 
   function pickPhoto(file) {
-    if (!state.preset) { status('제출처를 먼저 선택하세요. 위 목록에서 제출처를 골라 주세요.', 'bad'); return; }
+    if (!state.preset) { status('제출처를 먼저 선택하세요. 왼쪽에서 제출처를 골라 주세요.', 'bad'); return; }
     if (!file || !/^image\//.test(file.type)) { status('그림 파일이 아니에요. JPG나 PNG 파일로 다시 골라 주세요.', 'bad'); return; }
+    state.sample = false;
     const img = new Image();
     img.onload = () => {
-      if (img.naturalWidth <= 0 || img.naturalHeight <= 0) { clearResult(); status('사진을 읽지 못했어요. 다른 파일로 다시 골라 주세요.', 'bad'); return; }
       clearResult();
+      if (img.naturalWidth <= 0 || img.naturalHeight <= 0) { status('사진을 읽지 못했어요. 다른 파일로 다시 골라 주세요.', 'bad'); return; }
       loadSource(img);
     };
     img.onerror = () => { clearResult(); status('사진을 읽지 못했어요. 파일을 다시 골라 주세요.', 'bad'); };
@@ -221,7 +242,7 @@
     } catch (e) { status('사진을 화면에 그리지 못했어요. 다른 브라우저에서 다시 열어 주세요.', 'bad'); return; }
     const cv = $('crop-canvas');
     cv.width = cw; cv.height = ch;
-    cv.style.aspectRatio = state.natural.width + ' / ' + state.natural.height;
+    cv.style.aspectRatio = ''; // 스타일시트(4:3)가 크기를 결정
     state.scale = scale;
 
     if (!state.frameDirty) {
@@ -333,9 +354,10 @@
     const ctx = cv.getContext('2d');
     const g = ctx.createLinearGradient(0, 0, 0, 3024);
     g.addColorStop(0, '#8aa2bd'); g.addColorStop(1, '#54688a');
-    ctx.fillStyle = g; ctx.fillRect( 0, 0, 4032, 3024);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 4032, 3024);
     const img = new Image();
     img.onload = () => {
+      state.sample = true; // process() 안의 clearResult()가 초기화하므로 여기에서 다시 표시
       clearResult(); loadSource(img);
       process();
     };
@@ -346,13 +368,13 @@
   /* ---------- 초기화 ---------- */
   function reset() {
     if (state.blobUrl) { URL.revokeObjectURL(state.blobUrl); state.blobUrl = null; }
-    state.img = null; state.natural = null; state.frame = null; state.frameDirty = false;
+    state.img = null; state.natural = null; state.frame = null; state.frameDirty = false; state.sample = false;
     $('photo-file').value = '';
     $('crop-canvas').hidden = true;
     $('crop-canvas').width = 0; $('crop-canvas').height = 0;
     $('crop-empty').hidden = false;
-    $('photo-hint').textContent = '제출할 사진(JPG·PNG)을 골라 주세요. 내보내거나 올리는 곳 없이 브라우저 안에서만 처리해요.';
-    $('work-hint').textContent = '제출처는 ' + (state.preset ? state.preset.label : '없음') + '으로 유지돼요. 사진만 골라 주세요.';
+    $('crop-hint').hidden = true;
+    $('photo-hint').textContent = '제출할 사진(JPG·PNG)을 골라 주세요. 브라우저 안에서만 처리해요.';
     clearStatus();
     clearResult(); // result-empty 문구도 기본 문구로 (제출처는 유지)
     updateAnswer();
@@ -371,7 +393,7 @@
     }
     ['custom-kb', 'custom-width', 'custom-height'].forEach((id) => $(id).addEventListener('input', onCustomInput));
     initDrag();
-    selectPreset('qnet'); // 예시 규격(큐넷) 기본 선택 — 파일 없이도 바로 처리 가능
+    selectPreset('qnet'); // 큐넷 기본 선택 — 사진 없이도 예시로 바로 처리 가능
   }
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
 })();

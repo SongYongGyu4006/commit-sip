@@ -1,12 +1,27 @@
 /* Submission Photo Fit — 앱 전용 스타일 (색·간격·모서리는 studio.css 토큰만 사용) */
-.app-status{margin-top:var(--ds-s4)}
+
+/* 첫 화면: 제목·설명·예시 버튼이 한 줄로 (휴대폰에서 두 줄) */
+.band-flex{display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--ds-s3) var(--ds-s5)}
+.band-copy{flex:1 1 auto;min-width:0}
+.band-actions{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:var(--ds-s1)}
+.band-actions .ds-hint{max-width:22ch;text-align:right}
+.band-copy .ds-hint{display:block;margin-top:var(--ds-s1)}
+
+/* 상태 영역 (ds-band 안: 띠 색 위) */
+.app-status{margin-top:var(--ds-s3)}
 .app-status:empty{margin-top:0}
 .app-status:empty{display:none}
+.ds-band .app-status{background:rgba(0,0,0,.22);color:var(--ds-band-ink);padding:var(--ds-s3) var(--ds-s4);border-radius:var(--ds-radius);font-size:14px}
+.ds-band .app-status.ds-status-bad{background:rgba(0,0,0,.32);color:var(--ds-band-ink)}
 
-/* 제출처 버튼: ds-chip 의 스타일을 .preset-button 으로도 적용 */
+/* 제출처 버튼: ds-chip 의 스타일이 .preset-button 으로도 적용 */
 .preset-button{border:1px solid var(--ds-line)}
 .preset-button[aria-pressed="true"]{background:var(--ds-accent-soft);border-color:var(--ds-accent-line);color:var(--ds-accent-text);font-weight:600}
 .preset-button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
+
+#where-title{font-size:20px}
+#where-hint{flex-basis:auto;margin:0}
+#where-title~.ds-sub{margin-bottom:var(--ds-s2)}
 
 .spec-line{margin:var(--ds-s4) 0 0;font-size:16px;font-weight:600;color:var(--ds-ink);min-height:1.6em;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 .spec-line:empty{font-weight:400}
@@ -14,31 +29,58 @@
 #spec-checked{font-size:14px;font-weight:400;color:var(--ds-ink-3);white-space:normal}
 
 .custom-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--ds-s3);margin-top:var(--ds-s4)}
-@media (max-width:560px){.custom-fields{grid-template-columns:1fr}}
 .custom-fields .ds-input{min-height:44px}
+@media (max-width:560px){.custom-fields{grid-template-columns:1fr}}
 
-.photo-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--ds-s3);margin-top:var(--ds-s5)}
-.photo-row .ds-hint{flex:1 1 220px}
-
+/* 2단: 왼쪽(제출처·사진) / 오른쪽(결과). 첫 화면에서 한 흐름으로 보이게 */
 .work-grid{display:grid;gap:var(--ds-s4);align-items:start}
-@media (min-width:860px){.work-grid{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:var(--ds-s5)}}
+@media (min-width:860px){.work-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:var(--ds-s5)}}
+.work-left{display:grid;gap:var(--ds-s4);align-items:start}
 .work-grid .ds-card{margin-top:0}
-
-.crop-card{padding:var(--ds-s3)}
-#crop-canvas{display:block;width:100%;height:auto;border-radius:var(--ds-radius);cursor:grab;touch-action:none}
-#crop-canvas:active{cursor:grabbing}
-.crop-card .ds-empty{margin:var(--ds-s3);border-radius:var(--ds-radius)}
 .result-col{display:grid;gap:var(--ds-s4)}
 
-#result-preview{display:block;width:100%;max-width:100%;border-radius:var(--ds-radius);border:1px solid var(--ds-line);margin-bottom:var(--ds-s4)}
+/* 사진 칸: 사진 없을 때 끌어 놓는 칸만, 사진 있을 때만 캔버스가 자름 (측면 비율로 크기 결정) */
+.crop-card{padding:var(--ds-s3)}
+#crop-canvas{display:none;width:100%;height:auto;aspect-ratio:4/3;object-fit:contain;border-radius:var(--ds-radius);cursor:grab;touch-action:none}
+#crop-canvas:not([hidden]){display:block}
+#crop-canvas:active{cursor:grabbing}
+#crop-empty{margin:0;padding:14px var(--ds-s3);text-align:center;font-size:14px;line-height:1.7;color:var(--ds-ink-3);border:1px dashed var(--ds-line);border-radius:var(--ds-radius-l);background:var(--ds-surface-2)}
+#crop-hint{margin:var(--ds-s2) 0 0}
+
+#result-preview{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:var(--ds-radius);border:1px solid var(--ds-line);margin-bottom:var(--ds-s4)}
 #checklist{list-style:none;margin:0 0 var(--ds-s4);padding:0}
 #checklist li{padding:var(--ds-s2) 0;border-bottom:1px solid var(--ds-line);font-size:15px;font-variant-numeric:tabular-nums}
 #checklist li:last-child{border-bottom:0}
+#checklist li.fail{color:var(--ds-bad)}
 .result-actions{justify-content:flex-start}
 #content-note{margin:var(--ds-s4) 0 0;font-size:14px;line-height:1.6;color:var(--ds-ink-2)}
-#result-empty .ds-empty{border:none;padding:var(--ds-s5)}
+#result-empty .ds-empty{border:none;background:none;padding:var(--ds-s5) var(--ds-s3)}
 
-.ans-size,.ans-limit,.ans-dims{white-space:nowrap}
+/* 답 카드: 첫 화면에 들어가게 간결하게 (studio.css 기본 보다는 조금 더 조임) */
+.ds-answer{padding:var(--ds-s4);margin-bottom:var(--ds-s4)}
+.ds-answer-num{font-size:clamp(30px,5.5vw,36px);margin-top:var(--ds-s1)}
+.ds-answer-text{font-size:15px;line-height:1.5;max-width:48ch}
+.ans-size,.ans-limit,.ans-dims{white-space:normal;overflow-wrap:anywhere}
+.ds-answer-meta{margin-top:var(--ds-s3);padding:var(--ds-s2) 0}
+.ds-answer-meta>div{padding:0 var(--ds-s3)}
+.ds-answer-meta dd{font-size:16px;white-space:normal}
+.ds-answer-meta dt{font-size:12px}
+
+/* 결과 카드: 연습용 결과 표시 뱃지 (검증 문구도 함께) */
+.sample-badge{margin-bottom:var(--ds-s2)}
+
+/* 휴대폰: 답 카드 보조 칸은 한 줄씩 쌓아 겹침·넘침 방지 */
+@media (max-width:560px){
+  .band-flex{align-items:flex-start}
+  .band-actions{flex:1 1 100%;flex-direction:row;align-items:center;justify-content:space-between}
+  .band-actions .ds-hint{text-align:left}
+  .ds-answer-meta{display:grid;grid-template-columns:1fr}
+  .ds-answer-meta>div{padding:0}
+  .ds-answer-meta>div+div{border-left:0;border-top:1px solid var(--ds-line);margin-top:var(--ds-s2);padding-top:var(--ds-s2)}
+}
+
 .ds-link{background:none;border:0;padding:0;margin:0;color:var(--ds-accent-text);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .ds-link:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px;border-radius:var(--ds-radius-s)}
-#where-title{font-size:20px}
+
+/* 휴대폰: 사진 칸이 결과보다 먼저 보이도록(순서: 제출처 → 사진 → 결과) */
+@media (max-width:859px){.result-col{order:3}}

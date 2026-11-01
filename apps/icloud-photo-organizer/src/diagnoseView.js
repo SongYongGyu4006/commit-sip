@@ -25,7 +25,7 @@ function renderLegend(el, result) {
 // 버린 만큼의 절감량을 말로(0이면 비워 두어 빈 칸이 안 보이게).
 function renderSavings(el, result) {
   const saved = result.totalBytes - result.afterBytes;
-  el.textContent = saved > 0 ? '지금 고른 항목을 버리면 ' + fmt(saved) + '가 줄어요' : '';
+  el.textContent = saved > 0 ? '고른 항목을 뺀 폴더로 정리하면 ' + fmt(saved) + '가 줄어요. 이 앱은 사진을 지우거나 옮기지 않아요' : '';
 }
 
 // 날짜 CSV(Photos Details.csv) 유무에 따라 폴더가 어떻게 생기는지 안내.
@@ -51,6 +51,9 @@ export function renderDiagnose(screen, state, result, isSample) {
   renderLegend($('bar-legend'), result);
   renderSavings($('savings'), result);
   renderCsvHint($('csv-hint'), state);
+
+  const labelEl = $('sample-label');
+  labelEl.textContent = (isSample ? '예시 묶음' : '내 사진 묶음') + (isSample ? ' · 예시 데이터라 내 사진과 무관해요' : '');
 
   const list = $('category-list');
   list.textContent = '';

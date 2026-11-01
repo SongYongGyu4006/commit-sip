@@ -11,6 +11,10 @@
 <header class="ds-band ds-band-thin">
   <h1>아이클라우드 사진 정리</h1>
   <p>아이클라우드에서 통째로 내려받은 사진 묶음을 넣으면 라이브포토 영상·사본·편집 전 원본이 각각 몇 GB인지 보여 주고, 버릴 것을 골라 촬영일 폴더 구조를 미리 보여 줘요.</p>
+  <div class="ds-band-meta">
+    <span class="ds-badge">기기에서 계산</span>
+    <span>사진을 지우거나 옮기지 않아요</span>
+  </div>
 </header>
 
 <nav class="hp-nav" aria-label="화면 이동">
@@ -35,28 +39,35 @@
       <p id="bar-legend" class="hp-legend"></p>
     </section>
     <div class="ds-section-title">
-      <h2>범주별 용량</h2>
-      <p>체크하면 해당 범주를 폴더 미리보기에서 뺍니다.</p>
+      <h2>사진은 어디에도 지워지지 않아요</h2>
+      <p>이 앱은 파일을 읽기만 하고 복사·삭제·수정을 하지 않아요. '버리기' 체크는 아래 폴더 미리보기에서만 빼는 표시일 뿐, 사진 그 자체는 그대로예요. 용량 제한 없음 · 업로드 없음 · 사진이 기기 밖으로 나가지 않음.</p>
     </div>
-    <div class="ds-card">
+    <div class="ds-card ds-card-tint">
       <ul id="category-list" class="ds-list"></ul>
     </div>
-    <div class="ds-card-tint">
-      <h2>사진을 여기에 올리세요</h2>
-      <p class="ds-hint">아이클라우드에서 내려받은 폴더를 통째로 골라 주세요. iPhone에서는 '사진' 앱에서 사진을 전부 선택한 뒤 '내보내기 → 복사/내보내기'로 내려받을 수 있어요. 사진은 기기에서 바로 계산돼 외부로 전송되지 않아요.</p>
+    <div class="ds-section-title">
+      <h2>내 사진 묶음으로 바꿔 보기</h2>
+      <p>아이클라우드에서 받은 사진 폴더와 Photos Details.csv를 함께 고르세요. 고르면 지금 내용이 바뀌어요. 휴대폰은 폴더 대신 '파일 고르기'를 쓰세요.</p>
+    </div>
+    <div class="ds-card ds-card-tint">
       <div class="hp-file-row">
-        <label class="ds-btn ds-btn-primary">폴더 고르기<input id="folder-input" type="file" webkitdirectory multiple hidden></label>
-        <label class="ds-btn">파일 고르기<input id="files-input" type="file" multiple accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.mov,.mp4,.csv" hidden></label>
+        <label class="ds-btn ds-btn-primary">폴더 고르기<input id="folder-input" type="file" webkitdirectory multiple class="hp-hidden-input"></label>
+        <label class="ds-btn">파일 고르기<input id="files-input" type="file" multiple class="hp-hidden-input"></label>
         <button id="sample-button" class="ds-btn" type="button">예시로 해 보기</button>
       </div>
-      <p id="csv-hint" class="hp-csv-hint"></p>
+      <p id="pick-result" role="status"></p>
+      <p id="csv-hint" class="ds-hint"></p>
+      <details class="hp-details">
+        <summary>내려받는 방법</summary>
+        <p>iPhone에서는 '사진' 앱에서 사진을 전부 선택한 뒤 '내보내기 → 복사/내보내기'로 내려받을 수 있어요. 아이클라우드 웹(icloud.com)에서도 사진 전체를 선택한 뒤 '내보내기'를 누르면 사진과 Photos Details.csv가 함께 와요.</p>
+      </details>
+      <p id="privacy-badge" class="hp-privacy">용량 제한 없음 · 업로드 없음 · 사진이 기기 밖으로 나가지 않음</p>
     </div>
-    <p id="privacy-badge" class="ds-hint hp-privacy">용량 제한 없음 · 업로드 없음 · 사진이 기기 밖으로 나가지 않음</p>
   </section>
 
   <section id="screen-tree" hidden>
     <h2 class="hp-h">폴더 미리보기</h2>
-    <p class="hp-sub">버릴 것을 뺀 뒤 촬영일 폴더로 정리하면 이렇게 생겼어요.</p>
+    <p class="hp-sub">버릴 것을 뺀 뒤 촬영일 폴더로 정리하면 이렇게 생겼어요. 이 화면은 미리 보기예요. 실제 폴더와 파일은 바뀌지 않아요.</p>
     <p id="tree-summary" class="hp-tree-summary"></p>
     <div class="ds-card">
       <h2>촬영일 폴더</h2>
@@ -76,8 +87,8 @@
         <button id="reset-button" class="ds-btn ds-btn-danger" type="button">처음으로 되돌리기</button>
       </div>
       <div>
-        <label class="ds-btn">가져오기<input id="import-file" type="file" accept=".json" hidden></label>
-        <p class="ds-hint">예전에 내보낸 heicpack-state.json 파일을 다시 불러와요.</p>
+        <label class="ds-btn">가져오기<input id="import-file" type="file" accept=".json" class="hp-hidden-input"></label>
+        <p class="ds-hint">예전에 내보낸 heicpack-state.json 파일을 다시 불러와요. 지워지는 것은 이 앱에 저장된 목록뿐이고, 사진 파일은 그대로예요.</p>
       </div>
     </div>
     <div class="ds-section-title">

@@ -12,9 +12,29 @@
   max-width: 38em;
 }
 
-/* 띠에 걸친 답 카드 */
-.ds-page > .ds-answer:first-child {
-  margin-top: -64px;
+/* 띠 안: 답 카드, 선택 카드 — 본문과 같은 폭 */
+.ds-band-answer,
+.ds-band-controls,
+.ds-band-section {
+  margin-top: var(--ds-s5);
+  max-width: 680px;
+}
+/* 띠 안 문장: 폭 제한은 줄이지만 한두 글자씩 세로 줄바꿈(모바일)은 막는다 */
+.ds-band .ds-band-in p,
+.ds-band .ds-band-section p {
+  max-width: none;
+}
+
+/* vendor 에 없는 ds-grid-3: 기본 1열, 넓은 화면부터 3열 */
+.ds-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ds-s3);
+}
+@media (min-width: 600px) {
+  .ds-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 /* 2단: 좌측(입력·예시) / 우측(최저가 목록) */
@@ -38,11 +58,20 @@
 /* 컨트롤 카드 */
 .app-controls {
   display: grid;
-  gap: var(--ds-s4);
+  gap: var(--ds-s3);
 }
 .app-controls .ds-select {
   min-height: 44px;
   font-size: 16px;
+}
+/* 띠 안 선택 카드: 선택 3칸이 좁은 폭에 맞춰도 한 줄에 들어오게 */
+.ds-band-controls.app-controls {
+  max-width: 600px;
+}
+@media (max-width: 700px) {
+  .ds-band-controls.app-controls {
+    max-width: none;
+  }
 }
 .app-controls .ds-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -56,9 +85,14 @@
   width: auto;
 }
 
-/* 예시 버튼(보조) */
+/* 예시 버튼(보조): vendor 의 ghost 는 테두리 없이 글자 링크처럼 보였음 → 테두리를 넣어 버튼임을 알린다 */
 #example-button {
   margin-top: 2px;
+  border-color: var(--ds-line);
+}
+#example-button:hover {
+  background: var(--ds-accent-soft);
+  border-color: var(--ds-accent-line);
 }
 
 /* 답 카드 보조 숫자 */
@@ -85,6 +119,21 @@
   .ds-answer-meta > div:last-child {
     padding-right: 0;
   }
+}
+
+/* 최저가 1·2·3위 배지: 아바타를 순위로 쓴다(1위만 액센트 색, 나머지는 회색) */
+.ds-avatar-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--ds-ink-1);
+  font-size: 13px;
+  font-weight: 800;
+}
+.ds-avatar-rank[data-hue="0"] {
+  background: var(--ds-accent);
+  color: #fff;
 }
 
 /* 시군구/지역 목록: 긴 주소가 휴대폰에서 넘치지 않게 */
@@ -118,11 +167,9 @@
 .ds-details {
   margin-top: var(--ds-s5);
 }
+/* 접기 요약: 한 줄(제목) + 설명 한 줄. 지금처럼 '+' 와 제목이 양 끝으로 갈리거나 내용이 비어 보이는 것을 막는다 */
 .ds-details-sum {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
+  display: block;
   gap: 2px var(--ds-s3);
   margin: 0 0 var(--ds-s3);
   cursor: pointer;
@@ -165,9 +212,14 @@
   white-space: nowrap;
 }
 
-/* 푸터 */
+/* 푸터: 목록과 겹치지 않게 static + clear, 여백 넉넉히 */
+main.ds-page {
+  padding-bottom: 48px;
+}
 #data-footer {
-  margin-top: var(--ds-s6);
+  position: static;
+  clear: both;
+  margin-top: 32px;
   color: var(--ds-ink-3);
   font-size: 13px;
   text-align: center;
@@ -182,16 +234,22 @@
 /* 휴대폰 (390px) */
 @media (max-width: 520px) {
   .ds-band {
-    padding-block: 24px 72px;
+    padding-block: 20px 28px;
   }
-  .ds-page > .ds-answer:first-child {
-    margin-top: -56px;
+  .ds-band-answer,
+  .ds-band-controls {
+    max-width: none;
+  }
+  .ds-band-section,
+  .ds-band-controls {
+    margin-top: var(--ds-s4);
   }
   .history-chart-wrap {
     height: 220px;
   }
+  /* 선택 칸 3개: 휴대폰에서 1열로만. 세 칸을 나란히 하면 label·option 글자가 잘린다. */
   .app-controls .ds-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--ds-s2);
+    grid-template-columns: 1fr;
+    gap: var(--ds-s3);
   }
 }

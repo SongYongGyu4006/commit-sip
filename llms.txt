@@ -20,6 +20,7 @@
 
 ## 최근 글
 
+- [NES CPU를 LLM 가중치에 컴파일한 nesformer, 설치 없이 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-01-nesformer.html)
 - [Lightpanda, 크롬 대신 쓰는 AI용 헤드리스 브라우저](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-31-browser.html)
 - [Claude Code·Codex, 폰에서 원격으로 돌리는 오픈소스 T3 Code](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-30-t3code.html)
 - [DeepTutor: AI 개인 튜터 오픈소스, 설치 없이 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-30-deeptutor.html)
@@ -31,7 +32,6 @@
 - [8KB 파일 하나로 에이전트에 역공학 스킬을 심었다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-26-leanrea.html)
 - [로컬 Qwen 27B를 5개 협업시켜 코딩 대회 문제 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-26-gvs5h.html)
 - [promptfoo, 설치 없이 받아서 직접 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-25-promptfoo.html)
-- [NVIDIA 오픈쉘, 설치 없이 코드부터 읽어본 결과](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-24-openshell.html)
 
 ## 앱 실험실
 
