@@ -1,173 +1,168 @@
-/* AI 기업 속도계 — 스타일. vendor/studio.css 토큰(var(--ds-...))만 사용. */
+/* aiwatchkr — app overrides. vendor/studio.css loads first; this file only
+   tweaks layout + adds ds-* classes the base file does not define.
+   No purple gradients, no emoji, no repeated card stacks, no shadow+border. */
+:root { --content-max: 860px; --app-pad: clamp(12px, 3vw, 24px); --app-gap: 18px; }
 
-/* --- 레이아웃 --- */
-#app { max-width: 860px; }
-#app > * + *, #velocity-board > * + * { margin-top: var(--ds-s4); }
-#velocity-board { display: block; }
+.ds-page { max-width: var(--content-max); margin-inline: auto; padding-inline: var(--app-pad); }
+.ds-page .ds-card { margin-bottom: var(--app-gap); }
+.ds-page .ds-card:last-child { margin-bottom: 0; }
+.ds-page .ds-answer { margin-bottom: var(--app-gap); }
+#summary-bar { max-width: var(--content-max); margin-inline: auto; }
+#summary-bar .ds-band { padding-top: clamp(10px, 2vw, 16px); padding-bottom: clamp(10px, 2vw, 16px); }
+#summary-bar .ds-band-meta { margin-top: 8px; }
+#summary-bar h1 { font-size: clamp(1.45rem, 1.1rem + 1.5vw, 1.85rem); letter-spacing: -0.022em; }
+#summary-bar p { margin-top: 6px; }
+.ds-band-meta { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: .82rem; color: var(--ds-text-secondary); align-items: center; }
+.ds-band-meta b { color: var(--ds-text-primary); font-size: 1rem; }
 
-/* 상태/오류 영역(내부 div 가 studio.css 의 .ds-status 스타일을 담당) */
-#app-status { display: flex; flex-direction: column; gap: var(--ds-s3); }
+/* --- 답: 이 앱이 답하는 것(가장 활발한 기업) --- */
+#answer-card .ds-answer-num { margin-top: 10px; }
+#answer-card .ds-answer-num span, #answer-card .ds-answer-num b { font-size: clamp(1.8rem, 1.4rem + 2vw, 2.3rem); font-weight: 700; letter-spacing: -0.02em; color: var(--ds-accent-700, var(--ds-text-primary)); }
+#answer-card .ds-answer-num small { font-size: 13px; margin-left: 10px; font-weight: 500; color: var(--ds-text-secondary); letter-spacing: 0; }
+#answer-card .ds-answer-meta { margin-top: 10px; }
+
+#app-status { width: 100%; max-width: var(--content-max); margin: 0 auto var(--ds-s3); font-size: .82rem; color: var(--ds-text-secondary); }
 #app-status:empty { display: none; }
+#app-status .ds-status { display: block; }
+#app-status .ds-status-bad { color: var(--ds-danger-700); }
 
-/* --- 행동 안내 카드(첫 화면 1번) --- */
-#action-card { border-color: var(--ds-accent-line); }
-#action-lines { list-style: none; counter-reset: act; margin: 0; padding: 0; display: flex; flex-direction: column; }
-#action-lines li { display: flex; gap: var(--ds-s3); align-items: flex-start; padding: var(--ds-s3) 0; font-size: 15px; line-height: 1.6; counter-increment: act; border-top: 1px solid var(--ds-line); }
-#action-lines li:first-child { border-top: none; }
-#action-lines li::before { content: counter(act); flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--ds-accent-soft); color: var(--ds-accent-text); font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; margin-top: 2px; }
-#action-lines .act-tag { flex: none; font-size: 13px; font-weight: 700; color: var(--ds-accent-text); background: var(--ds-accent-soft); border-radius: 999px; padding: 2px 10px; margin-top: 3px; }
-#action-lines .act-who { flex: none; font-size: 13px; color: var(--ds-ink-3); margin-top: 3px; }
-#action-lines .act-body { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
-#action-lines .act-body a { color: var(--ds-accent-text); font-weight: 600; text-decoration: none; }
-#action-lines .act-body a:hover { text-decoration: underline; }
-#action-lines li.act-empty .act-body { color: var(--ds-ink-3); }
+#summary-bar .band-sub { font-weight: 700; color: inherit; margin: 6px 0 2px; }
+#summary-bar > p:not(.band-sub) { margin-top: 0; }
 
-/* --- 기업 선택 칩 + 버튼 --- */
-.controls-row { justify-content: space-between; gap: var(--ds-s2); margin-bottom: var(--ds-s2); }
-.controls-row .ds-label { margin: 0; }
-.btn-row { display: flex; flex-wrap: wrap; gap: var(--ds-s2); }
-.toggle-row { display: flex; flex-wrap: wrap; gap: var(--ds-s2); }
-.toggle {
-  display: inline-flex; align-items: center; gap: var(--ds-s2);
-  min-height: 44px; padding: 0 16px; border-radius: 999px;
-  border: 1px solid var(--ds-line); background: var(--ds-surface); color: var(--ds-ink);
-  font: 500 14px/1 var(--ds-font); cursor: pointer; user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform var(--ds-fast) var(--ds-ease), background-color var(--ds-fast) var(--ds-ease), border-color var(--ds-fast) var(--ds-ease), color var(--ds-fast) var(--ds-ease);
-}
-.toggle:hover { border-color: var(--ds-ink-3); }
-.toggle:active { transform: scale(.97); }
-.toggle:has(input:checked) { background: var(--ds-accent-soft); border-color: var(--ds-accent-line); color: var(--ds-accent-text); font-weight: 600; }
-.toggle input { margin: 0; position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-.toggle:focus-within { outline: 2px solid var(--ds-focus); outline-offset: 2px; }
-
-/* --- 신호 등(점 + 이름 + 7일 건수) --- */
-.signal {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 600; white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
+/* --- 기업별 신호등(보드) --- */
+#velocity-board { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--ds-s4); }
+#velocity-board .ds-card, #velocity-board > * { min-width: 0; }
+#app .ds-card, #app .ds-card * { min-width: 0; }
+.board-title { margin: 0; font-size: 1.15rem; letter-spacing: -0.015em; }
+.board-legend { margin: 6px 0 var(--ds-s3); font-size: .8rem; color: var(--ds-text-secondary); }
+.table-wrap { overflow-x: auto; margin-inline: calc(var(--ds-s3) * -1); padding-inline: var(--ds-s3); }
+#velocity-matrix { min-width: 640px; }
+#velocity-matrix th { font-weight: 600; font-size: .78rem; letter-spacing: .01em; color: var(--ds-text-secondary); white-space: nowrap; }
+#velocity-matrix td { white-space: nowrap; vertical-align: middle; }
+.score-col { text-align: right !important; }
+#velocity-matrix td.score { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+.signal { display: inline-flex; align-items: center; gap: 8px; }
 .signal .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-.signal .count { color: inherit; opacity: .8; font-weight: 500; margin-left: 4px; }
-.signal.GREEN { color: var(--ds-good); }
-.signal.GREEN .dot { background: var(--ds-good); }
-.signal.AMBER { color: var(--ds-warn); }
-.signal.AMBER .dot { background: var(--ds-warn); }
-.signal.RED { color: var(--ds-bad); }
-.signal.RED .dot { background: var(--ds-bad); }
+.signal .status-label { font-size: .85rem; }
+.signal .status-count { font-variant-numeric: tabular-nums; color: var(--ds-text-secondary); font-size: .78rem; }
+.dot-green { background: var(--ds-ok-500); }
+.dot-amber { background: var(--ds-warn-500); }
+.dot-red { background: var(--ds-danger-500); }
 
-/* --- 속도 매트릭스 표 --- */
-.table-wrap { overflow-x: auto; border: 1px solid var(--ds-line); border-radius: var(--ds-radius-l); background: var(--ds-surface); }
-#velocity-matrix { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 520px; }
-#velocity-matrix th {
-  position: static; text-align: left; font-size: 13px; font-weight: 600;
-  color: var(--ds-ink-3); padding: 10px 12px; white-space: nowrap;
-  border-bottom: 1px solid var(--ds-line);
-}
-#velocity-matrix td { padding: 12px; border-top: 1px solid var(--ds-line); vertical-align: middle; white-space: nowrap; }
-#velocity-matrix td:first-child, #velocity-matrix th:first-child { padding-left: 16px; }
-#velocity-matrix td:last-child, #velocity-matrix th:last-child { padding-right: 16px; }
-#velocity-matrix tbody tr { transition: background-color var(--ds-fast) var(--ds-ease); }
-#velocity-matrix tbody tr:hover { background: var(--ds-surface-2); }
-#velocity-matrix td.company-cell { font-weight: 700; }
-#velocity-matrix td.score-cell, #velocity-matrix th.score-col {
-  text-align: right; font-weight: 700; font-variant-numeric: tabular-nums;
-}
-#velocity-matrix td.score-cell { font-size: 16px; }
+/* --- 쓰임새 안내 카드 — 첫 화면 맨 위 --- */
+#howto-card #howto-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: step; }
+#howto-card #howto-steps li { display: flex; gap: 10px; align-items: flex-start; }
+#howto-card #howto-steps li::before { content: counter(step, decimal); counter-increment: step; width: 24px; height: 24px; flex: none; display: grid; place-items: center; background: var(--ds-accent-soft); color: var(--ds-accent-700); border-radius: var(--ds-r-xs); font-size: .78rem; font-weight: 700; }
+#howto-card #howto-steps .howto-body { min-width: 0; }
+#howto-card #howto-steps b { font-weight: 600; }
+#howto-card #howto-steps .howto-desc { display: block; font-size: .86rem; color: var(--ds-text-secondary); line-height: 1.45; margin-top: 2px; }
+#howto-card #howto-details > summary { cursor: pointer; font-weight: 600; font-size: .95rem; }
+#howto-card #howto-details[open] > summary { margin-bottom: var(--ds-s2); }
+/* 닫힌 details: summary만 남기고 나머지는 숨긴다. (자식에 display:grid/flex을 쓰면
+   닫힌 콘텐츠가 카드 밖으로 새어 나와 아래 카드와 겹친다) */
+#howto-card #howto-details:not([open]) > :not(summary), #notes details:not([open]) > :not(summary) { display: none; }
 
-/* 표 위 한 줄 범례 (신호등 색 뜻) */
-.board-legend { margin: 0 0 var(--ds-s3); font-size: 13px; color: var(--ds-ink-3); }
+/* --- 이번 주 액션 카드 --- */
+#action-card #action-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+#action-card .action-line { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; background: var(--ds-surface-2); border: 1px solid var(--ds-border); border-radius: var(--ds-r-sm); }
+#action-card .action-num { width: 24px; height: 24px; flex: none; display: grid; place-items: center; background: var(--ds-accent-soft); color: var(--ds-accent-700); border-radius: var(--ds-r-xs); font-size: .78rem; font-weight: 700; }
+#action-card .action-text { font-size: .9rem; line-height: 1.5; min-width: 0; }
+#action-card .action-link { color: var(--ds-accent-700); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--ds-accent-soft); }
+#action-card .action-link:hover { border-bottom-color: var(--ds-accent-700); }
+#action-card .action-link, #action-card .action-tag { overflow-wrap: anywhere; word-break: break-all; }
+#action-card .action-tag { flex: none; font-size: .72rem; font-weight: 700; letter-spacing: .02em; color: var(--ds-accent-700); background: var(--ds-accent-soft); padding: 2px 8px; border-radius: 999px; max-width: 100%; line-height: 1.4; }
 
-/* --- 휴대폰: 회사별 세로 카드(가로 스크롤 없음) --- */
+/* --- 기업 선택(컨트롤) --- */
+.controls-card { padding-top: var(--ds-s3); }
+.controls-row { margin-bottom: var(--ds-s3); }
+.toggle-row { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--ds-text-secondary); cursor: pointer; user-select: none; }
+.toggle:has(input:checked) { color: var(--ds-text-primary); }
+.toggle input { accent-color: var(--ds-accent-600); width: 15px; height: 15px; margin: 0; }
+
+/* --- 휴대폰: 표 대신 세로 카드 --- */
 .matrix-cards { display: none; }
-.matrix-card {
-  background: var(--ds-surface); border: 1px solid var(--ds-line);
-  border-radius: var(--ds-radius); padding: var(--ds-s3) var(--ds-s4); min-width: 0;
-}
-.matrix-cards .matrix-card + .matrix-card { margin-top: var(--ds-s2); }
-.matrix-card-head { display: flex; align-items: baseline; gap: var(--ds-s3); flex-wrap: wrap; margin-bottom: 6px; }
-.matrix-card-name { font-weight: 700; font-size: 15px; }
-.matrix-card-score { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--ds-ink-3); font-variant-numeric: tabular-nums; }
-.matrix-card-rows { display: flex; flex-direction: column; gap: 4px; }
-.matrix-card-rows .signal { white-space: normal; flex-wrap: wrap; }
-.matrix-card-rows .signal .count { display: inline !important; }
-
-/* --- 표 카드 안 문구들(겹침 방지) --- */
-#velocity-board .ds-card .legend { margin: var(--ds-s3) 0 0; font-size: 13px; color: var(--ds-ink-3); line-height: 1.55; }
-#velocity-board .ds-card .ds-empty { margin: var(--ds-s3) 0 0; font-size: 14px; color: var(--ds-ink-3); text-align: center; padding: var(--ds-s4) var(--ds-s3); border: 1px dashed var(--ds-line); border-radius: var(--ds-radius); }
-.hint-details { margin: var(--ds-s3) 0 0; }
-.hint-details summary { cursor: pointer; font-size: 13px; color: var(--ds-accent-text); font-weight: 600; padding: var(--ds-s2) 0; user-select: none; }
-.hint-details[open] summary { margin-bottom: var(--ds-s1); }
-.hint-details p { margin: 0; font-size: 13px; color: var(--ds-ink-3); line-height: 1.6; }
-
-/* --- 한 줄 결론 --- */
-#result-summary { margin: var(--ds-s3) 0 0; font-size: 15px; font-weight: 600; color: var(--ds-ink); line-height: 1.55; }
-
-/* --- 기업 카드(3중 뷰) --- */
-.company-sections { display: flex; flex-direction: column; gap: var(--ds-s4); }
-.company-card {
-  background: var(--ds-surface); border: 1px solid var(--ds-line);
-  border-radius: var(--ds-radius-l); padding: var(--ds-s5);
-}
-.company-card .company-head {
-  display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-s2) var(--ds-s3);
-  margin-bottom: var(--ds-s4);
-}
-.company-card .company-head h3 { margin: 0; font-size: 20px; letter-spacing: -.01em; }
-.company-card .company-head .score-chip {
-  margin-left: auto; font-size: 13px; color: var(--ds-ink-3); font-variant-numeric: tabular-nums;
-}
-.three-view { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--ds-s4); }
-.three-view h4 { margin: 0 0 var(--ds-s2); font-size: 14px; color: var(--ds-ink-3); font-weight: 600; line-height: 1.5; }
-.three-view .seven-note { margin: 0 0 var(--ds-s2); font-size: 15px; color: var(--ds-ink-2); line-height: 1.5; }
-.three-view ul {
-  list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--ds-s2);
-  min-height: 24px;
-}
-.three-view li {
-  border: 1px solid var(--ds-line); border-radius: var(--ds-radius);
-  padding: var(--ds-s2) var(--ds-s3); font-size: 14px; min-width: 0;
-}
-.three-view li.empty-note { color: var(--ds-ink-3); border-style: dashed; text-align: center; }
-.item-main { font-weight: 600; display: block; overflow-wrap: anywhere; }
-.item-sub {
-  color: var(--ds-ink-3); font-size: 13px; display: flex; flex-wrap: wrap;
-  gap: 2px 8px; margin-top: 2px; font-variant-numeric: tabular-nums;
-}
-a.item-main { color: var(--ds-accent-text); text-decoration: none; }
-a.item-main:hover { text-decoration: underline; }
-
-/* --- 출처·이용 조건(맨 아래) --- */
-.ds-footer { text-align: left; max-width: none; margin-top: var(--ds-s5); }
-#source-terms { display: flex; flex-direction: column; gap: 4px; color: var(--ds-ink-3); font-size: 13px; line-height: 1.55; }
-#source-terms > div { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; }
-#source-terms > div > span { display: block; min-width: 0; overflow-wrap: anywhere; }
-
-/* --- JSON 미리보기(접기) --- */
-#notes > * + * { margin-top: var(--ds-s4); }
-.json-details { margin-top: 0; }
-.json-summary { cursor: pointer; font-size: 14px; color: var(--ds-accent-text); font-weight: 600; padding: var(--ds-s2) 0; user-select: none; }
-.matrix-json {
-  margin: var(--ds-s3) 0 0; position: static;
-  background: var(--ds-surface-2); border: 1px solid var(--ds-line);
-  border-radius: var(--ds-radius); padding: var(--ds-s4);
-  font-size: 12px; line-height: 1.5; overflow: auto; max-height: 240px;
-  font-family: var(--ds-mono);
-}
-
-/* --- 휴대폰(390px) --- */
-@media (max-width: 600px) {
-  #summary-bar { padding-bottom: var(--ds-s5); }
-  .toggle-row { gap: 6px; }
-  .toggle { min-height: 34px; padding: 0 11px; font-size: 13px; }
-  .ds-btn { min-height: 40px; }
-  .controls-row { flex-direction: column; align-items: stretch; }
-  .controls-row .ds-btn { width: 100%; }
-  .controls-row .ds-label { width: 100%; }
-}
-@media (max-width: 480px) {
-  /* 휴대폰: 표(모델·코드·뉴스 열이 잘림) 대신 회사마다 세로 카드로 */
+.matrix-card { padding: 10px var(--ds-s3); border-top: 1px solid var(--ds-border); }
+.matrix-card:first-child { border-top: none; }
+.matrix-card-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.matrix-card-name { font-weight: 600; }
+.matrix-card-score { margin-top: 2px; font-variant-numeric: tabular-nums; color: var(--ds-text-secondary); font-size: .8rem; }
+.matrix-card-dots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.matrix-card-dots .signal { flex-direction: column; align-items: center; text-align: center; }
+.matrix-card-dots .signal .dot { width: 11px; height: 11px; }
+.matrix-card-dots .signal .status-label { font-size: .74rem; }
+.matrix-card-dots .signal .status-count { font-size: .72rem; }
+@media (max-width: 700px) {
   .table-wrap { display: none; }
-  .matrix-cards { display: block; }
-  .board-legend { margin-top: var(--ds-s2); }
+  #board-legend { flex-wrap: wrap; }
+  .matrix-cards { display: block; background: var(--ds-surface-2); border: 1px solid var(--ds-border); border-radius: var(--ds-r-sm); overflow: hidden; margin: 0 calc(var(--ds-s3) * -1) var(--ds-s3); }
+  #action-card .action-text { font-size: .85rem; }
+  #action-card .action-line { padding: 9px 12px; }
+  .item-sub, .item-title { white-space: normal; line-height: 1.45; }
+
+  /* 첫 화면에 쓰임새 + 액션 + 기업 선택(예시 버튼)까지 보여 주기: 여백 줄이기 */
+  .ds-page .ds-card, .ds-page .ds-answer { margin-bottom: 12px; }
+  .ds-card { padding: 12px 14px; }
+  #summary-bar .ds-band { padding: 14px 16px; }
+  #summary-bar h1 { font-size: 1.35rem; }
+  #summary-bar .ds-band-meta { margin-top: 8px; }
+  #howto-card #howto-steps { gap: 7px; }
+  #howto-card #howto-steps li { gap: 8px; }
+  #howto-card #howto-steps .howto-desc { font-size: .8rem; }
+  .controls-card { padding-top: var(--ds-s2); }
+  .controls-row { margin-bottom: var(--ds-s2); }
+  .ds-section-title { margin-bottom: var(--ds-s2); }
+  #answer-card .ds-answer-num { margin-top: 8px; }
+  #answer-card .ds-answer-num span, #answer-card .ds-answer-num b { font-size: 1.65rem; }
+  #answer-card .ds-answer-text { margin-top: 6px; }
+  #answer-card .ds-answer-meta { margin-top: 8px; }
+  .ds-section-title p, #action-card .ds-sub { display: none; }
+  /* 가로 줄을 두 줄로 쌓는다: 태그+번호(위) / 본문+링크(아래) */
+  #action-card .action-line { flex-wrap: wrap; }
+  #action-card .action-tag { order: -1; }
+  #action-card .action-num { display: none; }
+  .controls-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .toggle { font-size: .8rem; }
+  .matrix-card { padding: 8px 14px; }
+  .matrix-card-dots { margin-top: 8px; }
+}
+
+/* --- 기업별 상세 --- */
+.company-sections { display: grid; gap: var(--ds-s4); }
+.company-card .company-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: var(--ds-s2); }
+.company-card h3 { margin: 0; font-size: 1.02rem; letter-spacing: -0.01em; }
+.company-card .score-chip { font-size: .78rem; color: var(--ds-text-secondary); font-variant-numeric: tabular-nums; margin-left: auto; }
+.company-card h4 { margin: var(--ds-s2) 0 4px; font-size: .85rem; font-weight: 600; color: var(--ds-text-secondary); letter-spacing: .01em; }
+.item-list { list-style: none; margin: 0; padding: 0; }
+.item { display: flex; gap: 12px; align-items: flex-start; padding: 8px var(--ds-s3); border-top: 1px solid var(--ds-border); }
+.item-list .item:first-child { border-top: none; }
+.item-main { flex: 1; min-width: 0; }
+.item-title { display: inline-block; max-width: 100%; font-size: .88rem; font-weight: 600; text-decoration: none; color: var(--ds-accent-700); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-title:hover { text-decoration: underline; }
+.item-sub { display: block; margin-top: 3px; font-size: .78rem; color: var(--ds-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-value { flex: none; font-variant-numeric: tabular-nums; font-size: .85rem; font-weight: 600; padding-top: 1px; }
+.item-empty { border-top: 1px solid var(--ds-border); font-size: .8rem; color: var(--ds-text-secondary); }
+
+/* --- 안내(색 의미)·데이터 --- */
+#notes { display: grid; gap: var(--ds-s2); }
+#notes .hint-details, #notes .json-details { background: var(--ds-surface-2); border: 1px solid var(--ds-border); border-radius: var(--ds-r-sm); padding: 10px 14px; }
+#notes summary { cursor: pointer; font-size: .85rem; color: var(--ds-text-secondary); }
+#notes summary:hover { color: var(--ds-text-primary); }
+#notes .ds-hint { margin: 10px 0 0; font-size: .8rem; line-height: 1.6; color: var(--ds-text-secondary); }
+.ds-card .hint-details { margin-top: var(--ds-s2); }
+.ds-card .hint-details summary { cursor: pointer; font-size: .8rem; color: var(--ds-text-secondary); }
+.ds-card .ds-hint { margin: 8px 0 0; font-size: .78rem; line-height: 1.6; color: var(--ds-text-secondary); }
+.matrix-json { display: block; max-height: 300px; overflow: auto; background: var(--ds-surface-2); border: 1px solid var(--ds-border); border-radius: var(--ds-r-sm); padding: 12px; margin: 12px 0 0; font-size: .72rem; line-height: 1.5; color: var(--ds-text-secondary); white-space: pre; }
+
+/* --- 출처 표시(푸터) --- */
+.ds-footer { max-width: var(--content-max); margin-inline: auto; margin-top: 28px; padding-bottom: 32px; font-size: .72rem; color: var(--ds-text-secondary); line-height: 1.7; }
+/* VISUAL.md [RED] 1~3: 출처별 스파인이 inline으로 이어붙어 첫 줄(기술 레이더 — …)이
+   뒤 스파인(Hugging Face 모델 —, Hacker News 1면 —)의 글자 위로 겹쳐 보임.
+   스파인마다 줄을 바꿔 각 출처가 자기 줄 안에서만 줄바꿈하게 한다. */
+#source-terms { display: block; }
+#source-terms > span { display: inline-block; margin: 0 6px; }
+#source-terms > span + span { margin-left: 1.5em; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
 }

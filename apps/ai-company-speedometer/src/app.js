@@ -289,12 +289,13 @@ export function buildCompanyVelocityMatrix(selectedCompanies, rawData, nowIso) {
 if (typeof document !== 'undefined' && typeof window !== 'undefined') {
   const $ = (id) => document.getElementById(id);
   const statusEl = $('app-status');
+
   const matrixBody = $('matrix-body');
   const matrixCards = $('matrix-cards');
   const matrixEmpty = $('matrix-empty');
   const sectionsEl = $('company-sections');
   const jsonEl = $('matrix-json');
-  const resultSummaryEl = $('result-summary');
+  const resultSummaryEl = $('result-summary'); // 없으면 null(화면에 없는 경우) — 아래 쓰기만 가드
   const toggles = [...document.querySelectorAll('input.company-toggle')];
   const fetchedAtEl = $('fetched-at-kst');
   const summary24El = $('summary-24h-count');
@@ -337,7 +338,7 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     matrixEmpty.hidden = true;
     const actionLines = $('action-lines');
     if (actionLines) actionLines.innerHTML = '';
-    resultSummaryEl.textContent = DEFAULT_SUMMARY;
+    if (resultSummaryEl) resultSummaryEl.textContent = DEFAULT_SUMMARY;
   }
 
   function selectedCompanies() {
@@ -373,12 +374,12 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     dot.className = 'dot';
     // UX-REVIEW E: 색 이름(활발/보통/조용)을 칸 안에 실제 글자로 보여 준다.
     const text = document.createElement('span');
-    text.className = 'label-text';
+    text.className = 'status-label';
     text.textContent = `${label} ${SIGNAL_NAME[kind] || ''}`.replace(/^ +| +$/g, '');
     span.append(dot, text);
     if (count !== null) {
       const c = document.createElement('span');
-      c.className = 'count';
+      c.className = 'status-count';
       c.textContent = `7일 ${count}건`;
       span.append(c);
     }
@@ -403,7 +404,7 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
       tdCo.className = 'company-cell';
       tdCo.textContent = row.company;
       const tdScore = document.createElement('td');
-      tdScore.className = 'score-cell';
+      tdScore.className = 'score';
       tdScore.textContent = String(row.velocityScore);
       const tdOverall = document.createElement('td');
       tdOverall.appendChild(makeSignal(row.overallSignal, '종합', null));
@@ -421,24 +422,26 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
         const card = document.createElement('div');
         card.className = 'matrix-card';
         card.dataset.company = row.company;
-        const head = document.createElement('div');
-        head.className = 'matrix-card-head';
+        const top = document.createElement('div');
+        top.className = 'matrix-card-top';
         const name = document.createElement('span');
         name.className = 'matrix-card-name';
         name.textContent = row.company;
-        const sc = document.createElement('span');
-        sc.className = 'matrix-card-score';
-        sc.textContent = `활동 점수 ${row.velocityScore}`;
-        head.append(name, sc);
-        card.appendChild(head);
-        const rows = document.createElement('div');
-        rows.className = 'matrix-card-rows';
-        rows.append(
+        const overall = makeSignal(row.overallSignal, '종합', null);
+        top.append(name, overall);
+        card.appendChild(top);
+        const scoreLine = document.createElement('div');
+        scoreLine.className = 'matrix-card-score';
+        scoreLine.textContent = `활동 점수 ${row.velocityScore} (모델×3 + 코드×2 + 뉴스×1)`;
+        card.appendChild(scoreLine);
+        const dots = document.createElement('div');
+        dots.className = 'matrix-card-dots';
+        dots.append(
           makeSignal(row.signals.modelSignal, '새 AI 모델', row.counts.modelCount),
           makeSignal(row.signals.repoSignal, '개발자 코드 공개', row.counts.repoCount),
           makeSignal(row.signals.hnSignal, '관련 뉴스', row.counts.newsCount),
         );
-        card.appendChild(rows);
+        card.appendChild(dots);
         matrixCards.appendChild(card);
       }
     }
@@ -457,34 +460,30 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     const top = [...rows].sort((a, b) => b.velocityScore - a.velocityScore)[0];
     const lines = [];
 
-    // ① 모델(제목 = 모델 ID, 그 뒤에는 한 줄 설명)
+    // ① 모델(AI 프로그램)(제목 = 모델 ID, 그 뒤에는 쉬운 말로 설명)
     const model = top.topModels[0] || null;
     lines.push({
-      tag: '모형을 먼저 써 보기',
+      tag: '써 볼 모델 (AI 프로그램)',
       body: model
-        ? [
-          `${top.company} · 가중 파일 ${model.weightSizeGB === null ? '정보 없음' : model.weightSizeGB + ' GB'}`,
-          `다운로드 ${num(model.downloads)}회`,
-          `트렌드 ${num(model.trendingScore)}`,
-        ].join(' · ')
-        : `${top.company}에서 이번 주 새로 나온 AI 모델은 없어요. 아래 목록에서 최근 등록된 모델을 골라 보세요.`,
+        ? `${top.company} · 인기 AI 프로그램 · ${num(model.downloads)}명이 내려받음`
+        : `${top.company}에서 이번 주 새로 나온 AI 프로그램은 없어요. 아래 목록에서 최근 등록된 모델을 골라 보세요.`,
       href: model ? `https://huggingface.co/${model.id}` : null,
       linkText: model ? model.id : null,
     });
 
-    // ② 코드(제목 = 저장소 이름, 그 뒤에는 한 줄 설명)
+    // ② 코드(개발자용 공개 자료)(제목 = 저장소 이름, 그 뒤에는 쉬운 말로 설명)
     const repo = top.topRepos[0] || null;
     lines.push(
       repo
         ? {
-            tag: '코드를 참고해 보기',
-            body: `${top.company} · 개발자 추천 ${num(repo.stars)}개`,
+            tag: '참고할 코드 (개발자용 공개 자료)',
+            body: `${top.company} · 개발자 ${num(repo.stars)}명이 추천`,
             href: repo.url || null,
             linkText: repo.url ? repo.fullName : null,
           }
         : {
-            tag: '코드를 참고해 보기',
-            body: `${top.company}에서 이번 주 신규 저장소는 없어요. 아래 목록에서 최근 등록된 저장소를 골라 보세요.`,
+            tag: '참고할 코드 (개발자용 공개 자료)',
+            body: `${top.company}에서 이번 주 새로 공개한 개발 자료는 없어요. 아래 목록에서 최근 등록된 저장소를 골라 보세요.`,
             href: null,
             linkText: null,
           }
@@ -495,31 +494,38 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     lines.push(
       story
         ? {
-            tag: '소식을 읽기',
-            body: `${story.sourceType === 'RADAR' ? '해외 IT 뉴스' : story.sourceType === 'HN' ? '해외 IT 커뮤니티' : '해외 IT 뉴스'} · 인기 ${story.score}${story.ageH === null ? '' : ` · ${story.ageH}시간 전`}`,
+            tag: '지켜볼 회사 소식',
+            body: `${story.sourceType === 'RADAR' ? '해외 IT 뉴스' : story.sourceType === 'HN' ? '해외 IT 커뮤니티' : '해외 IT 뉴스'} · ${story.score}명이 주목${story.ageH === null ? '' : ` · ${story.ageH}시간 전`}`,
             href: story.url || null,
             linkText: story.title ? `(${story.title.slice(0, 30)}…)(영문)` : '(영문)',
           }
         : {
-            tag: '소식을 읽기',
+            tag: '지켜볼 회사 소식',
             body: `${top.company}에서 최근 7일 기술 소식은 없어요. 아래 목록을 참고해 주세요.`,
             href: null,
             linkText: null,
           }
     );
 
-    for (const l of lines) {
+    lines.forEach((l, i) => {
       const li = document.createElement('li');
+      li.className = 'action-line';
       const tag = document.createElement('span');
-      tag.className = 'act-tag';
+      tag.className = 'action-tag';
       tag.textContent = l.tag;
       li.appendChild(tag);
+      const num = document.createElement('span');
+      num.className = 'action-num';
+      num.textContent = String(i + 1);
+      num.setAttribute('aria-hidden', 'true');
+      li.appendChild(num);
       const body = document.createElement('span');
-      body.className = 'act-body';
+      body.className = 'action-text';
       if (l.href && l.linkText) {
         const a = document.createElement('a');
         a.href = l.href;
         a.textContent = l.linkText;
+        a.className = 'action-link';
         a.target = '_blank';
         a.rel = 'noopener';
         body.appendChild(a);
@@ -531,39 +537,56 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
       }
       li.appendChild(body);
       ol.appendChild(li);
-    }
+    });
   }
 
   function makeList(items, renderItem, emptyText, cls) {
     const ul = document.createElement('ul');
-    if (cls) ul.className = cls;
+    ul.className = 'item-list' + (cls ? ' ' + cls : '');
     if (!items.length) {
       const li = document.createElement('li');
-      li.className = 'empty-note';
+      li.className = 'item item-empty';
       li.textContent = emptyText;
       ul.appendChild(li);
       return ul;
     }
     for (const it of items) {
-      const li = document.createElement('li');
-      li.append(...renderItem(it));
-      ul.appendChild(li);
+      const [mainNode, valueText] = renderItem(it);
+      ul.appendChild(itemNode(mainNode, valueText));
     }
     return ul;
   }
 
   function linkNode(text, cls) {
     const a = document.createElement('a');
-    a.className = 'item-main';
-    if (cls) a.className += ' ' + cls;
+    a.className = 'item-title' + (cls ? ' ' + cls : '');
     a.textContent = text; // 원문 그대로(번역 금지)
     return a;
   }
   const spanNode = (text, cls) => Object.assign(document.createElement('span'), { className: cls, textContent: text });
+  // 목록 아이템: 제목+보조(좌, 줄바꿈) + 값(우, 정렬) — 휴대폰에서 넘치지 않게
+  function itemNode(mainNode, valueText) {
+    const li = document.createElement('li');
+    li.className = 'item';
+    const main = document.createElement('div');
+    main.className = 'item-main';
+    main.appendChild(mainNode);
+    let n = mainNode.nextSibling;
+    while (n) {
+      const nxt = n.nextSibling;
+      main.appendChild(n); // item-sub 스파른
+      n = nxt;
+    }
+    const val = document.createElement('span');
+    val.className = 'item-value';
+    val.textContent = valueText;
+    li.append(main, val);
+    return li;
+  }
 
   function renderCompanyCard(row) {
     const section = document.createElement('section');
-    section.className = 'company-card';
+    section.className = 'company-card ds-card';
     section.id = 'section-' + row.company;
 
     const head = document.createElement('div');
@@ -577,23 +600,22 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     head.append(h3, overall, scoreChip);
     section.appendChild(head);
 
-    const view = document.createElement('div');
-    view.className = 'three-view';
-
     // 모델: 소제목에 "7일 건수"와 "목록 개수"를 같은 줄에 나란히(혼합 방지)
-    const modelBlock = document.createElement('div');
     const mh = document.createElement('h4');
     mh.textContent = `급상승 모델 — 최근 7일 ${row.counts.modelCount}건 · 아래는 전체 수집 상위 ${row.topModels.length}개`;
-    modelBlock.appendChild(mh);
-    modelBlock.appendChild(makeList(
+    section.appendChild(mh);
+    section.appendChild(makeList(
       row.topModels,
-      (m) => [
-        linkNode(m.id),
-        spanNode(
+      (m) => {
+        const a = linkNode(m.id);
+        a.href = 'https://huggingface.co/' + m.id;
+        const sub = spanNode(
           `가중 파일 ${m.weightSizeGB === null ? '정보 없음' : m.weightSizeGB + ' GB'} · 다운로드 ${num(m.downloads)} · 트렌드 ${num(m.trendingScore)}`,
           'item-sub',
-        ),
-      ],
+        );
+        a.appendChild(sub); // 보조 정보를 제목 아래로(오른쪽 값은 비워 둠)
+        return [a, ''];
+      },
       row.counts.modelCount > 0
         ? '최근 7일 창에 급상승 모델은 없습니다(아래 목록은 전체 수집 범위).'
         : '데이터에 급상승 모델이 없습니다.',
@@ -601,11 +623,10 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     ));
 
     // 레포
-    const repoBlock = document.createElement('div');
     const rh = document.createElement('h4');
     rh.textContent = `신규 저장소 — 최근 7일 ${row.counts.repoCount}건 · 아래는 전체 수집 상위 ${row.topRepos.length}개`;
-    repoBlock.appendChild(rh);
-    repoBlock.appendChild(makeList(
+    section.appendChild(rh);
+    section.appendChild(makeList(
       row.topRepos,
       (r) => [
         (() => { const a = linkNode(r.fullName); if (r.url) a.href = r.url; return a; })(),
@@ -616,27 +637,28 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     ));
 
     // 소식(목록은 전체 수집 범위이므로 "전체 수집" 표기)
-    const storyBlock = document.createElement('div');
     const sh = document.createElement('h4');
     sh.textContent = `기술 소식 — 최근 7일 ${row.counts.newsCount}건 · 아래는 전체 수집 상위 ${row.topStories.length}개`;
-    storyBlock.appendChild(sh);
-    storyBlock.appendChild(makeList(
+    section.appendChild(sh);
+    section.appendChild(makeList(
       row.topStories,
-      (s) => [
-        (() => { const a = linkNode(s.title, 'story-title'); a.textContent = `(${a.textContent.slice(0, 30)}…)(영문)`; if (s.url) a.href = s.url; return a; })(),
-        spanNode(
-          [s.sourceType === 'RADAR' ? '해외 IT 뉴스' : s.sourceType === 'HN' ? '해외 IT 커뮤니티' : '해외 IT 뉴스', `인기 ${s.score}`, s.ageH === null ? null : `${s.ageH}시간 전`].filter(Boolean).join(' · '),
+      (s) => {
+        const a = linkNode(s.title, 'story-title');
+        a.textContent = `(${a.textContent.slice(0, 30)}…)(영문)`;
+        if (s.url) a.href = s.url;
+        const sub = spanNode(
+          [s.sourceType === 'RADAR' ? '해외 IT 뉴스' : s.sourceType === 'HN' ? '해외 IT 커뮤니티' : '해외 IT 뉴스', s.ageH === null ? null : `${s.ageH}시간 전`].filter(Boolean).join(' · '),
           'item-sub',
-        ),
-      ],
+        );
+        a.appendChild(sub);
+        return [a, `인기 ${s.score}`];
+      },
       row.counts.newsCount > 0
         ? '최근 7일 창에 기술 소식은 없습니다(아래 목록은 전체 수집 범위).'
         : '데이터에 기술 소식이 없습니다.',
       'story-list',
     ));
 
-    view.append(modelBlock, repoBlock, storyBlock);
-    section.appendChild(view);
     return section;
   }
 
@@ -653,8 +675,8 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     }
     state.result = result;
     summary24El.textContent = String(result.summary24hCount);
-    // 표 바로 위의 "한 줄 결론": 7일 속도 점수가 가장 큰(동점이면 표 순서상 앞) 기업을 씀. 순수 함수는 건드리지 않는다.
-    resultSummaryEl.textContent = selectedCompanies().length ? renderResultSummary(result) : DEFAULT_SUMMARY;
+    // 표 위의 한 줄 결론(동점이면 표 순서상 앞) — 순수 함수는 건드리지 않는다.
+    if (resultSummaryEl) resultSummaryEl.textContent = selectedCompanies().length ? renderResultSummary(result) : DEFAULT_SUMMARY;
     renderMatrix(result);
     renderActionCard(result);
     sectionsEl.innerHTML = '';

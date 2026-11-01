@@ -1,27 +1,48 @@
 /* Submission Photo Fit — 앱 전용 스타일 (색·간격·모서리는 studio.css 토큰만 사용) */
 
-/* 첫 화면: 제목·설명·예시 버튼이 한 줄로 (휴대폰에서 두 줄) */
+/* 첫 화면: 제목·설명·예시 버튼이 한 줄로 (휴대폰에서 버튼만 차지) */
 .band-flex{display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--ds-s3) var(--ds-s5)}
 .band-copy{flex:1 1 auto;min-width:0}
-.band-actions{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:var(--ds-s1)}
-.band-actions .ds-hint{max-width:22ch;text-align:right}
-.band-copy .ds-hint{display:block;margin-top:var(--ds-s1)}
+.band-actions{flex:0 0 auto;display:flex;align-items:center}
+.band-actions .ds-btn{min-height:48px}
 
 /* 상태 영역 (ds-band 안: 띠 색 위) */
 .app-status{margin-top:var(--ds-s3)}
-.app-status:empty{margin-top:0}
-.app-status:empty{display:none}
+.app-status:empty{display:none;margin-top:0}
 .ds-band .app-status{background:rgba(0,0,0,.22);color:var(--ds-band-ink);padding:var(--ds-s3) var(--ds-s4);border-radius:var(--ds-radius);font-size:14px}
-.ds-band .app-status.ds-status-bad{background:rgba(0,0,0,.32);color:var(--ds-band-ink)}
+.ds-band .app-status.ds-status-bad{background:rgba(0,0,0,.35);color:var(--ds-band-ink)}
+.ds-band .app-status.ds-status-good{background:rgba(0,0,0,.22);color:var(--ds-band-ink)}
 
 /* 제출처 버튼: ds-chip 의 스타일이 .preset-button 으로도 적용 */
-.preset-button{border:1px solid var(--ds-line)}
+.preset-button{border:1px solid var(--ds-line);min-height:44px;padding:0 var(--ds-s4);font-size:15px}
+#preset-card{min-height:0;box-shadow:none}
+#preset-buttons{display:flex;flex-wrap:wrap;gap:var(--ds-s2)}
+#spec-line:empty{display:none}
 .preset-button[aria-pressed="true"]{background:var(--ds-accent-soft);border-color:var(--ds-accent-line);color:var(--ds-accent-text);font-weight:600}
 .preset-button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 
 #where-title{font-size:20px}
-#where-hint{flex-basis:auto;margin:0}
-#where-title~.ds-sub{margin-bottom:var(--ds-s2)}
+#where-hint{flex-basis:auto;margin:0 0 var(--ds-s4)}
+
+/* 사진 카드: 제목 → 안내 → 예시/파일 버튼 → 점선 칸 → 변환 버튼 */
+#photo-card{display:flex;flex-direction:column;box-shadow:none}
+#photo-card h2{order:1}
+#photo-hint{order:2}
+#photo-card .photo-row{order:3;margin-top:var(--ds-s4);margin-bottom:var(--ds-s3)}
+#photo-card .crop-card{order:4}
+#photo-card>.ds-row:last-child{order:5;margin-top:var(--ds-s4)}
+#photo-card .photo-row .ds-btn{min-height:44px}
+
+/* studio.css 밴드 패딩(상48/하40 + :has 80px)이 커서 예시·파일 버튼이 800px 첫 화면 밖으로 밀림.
+   이 앱만 위·하 패딩을 줄여 예시 버튼이 첫 화면 안에 들어오게 (CHANGES #1 완료 기준). */
+.ds-band,.ds-band:has(+.ds-page>.ds-answer:first-child),.ds-band:has(.app-status:empty){padding-top:var(--ds-s5);padding-bottom:var(--ds-s5);min-height:0}
+/* 휴대폰: 밴드 하단 패딩이 너무 작아 바로 아래 섹션 제목 상단이 밴드색 띠에 가려 절반만 보이던 문제 — 여유를 벌림 (VISUAL #2) */
+@media (max-width:560px){.ds-band,.ds-band:has(+.ds-page>.ds-answer:first-child),.ds-band:has(.app-status:empty){padding-bottom:var(--ds-s6)}}
+.ds-band+.ds-page>.ds-answer:first-child{margin-top:0}
+.ds-band p{max-width:48ch;font-size:16px;line-height:1.6}
+.ds-band-meta{display:flex;flex-direction:column;align-items:flex-start;gap:var(--ds-s2);margin-top:var(--ds-s3)}
+.ds-band-meta>span:not(.ds-badge){font-size:14px;opacity:1;color:var(--ds-band-ink)}
+.ds-band .ds-badge{font-size:13px;white-space:normal}
 
 .spec-line{margin:var(--ds-s4) 0 0;font-size:16px;font-weight:600;color:var(--ds-ink);min-height:1.6em;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 .spec-line:empty{font-weight:400}
@@ -32,55 +53,70 @@
 .custom-fields .ds-input{min-height:44px}
 @media (max-width:560px){.custom-fields{grid-template-columns:1fr}}
 
-/* 2단: 왼쪽(제출처·사진) / 오른쪽(결과). 첫 화면에서 한 흐름으로 보이게 */
+/* 데스크톱: 3열 — 왼쪽(제출처·사진) / 가운데(답 카드+미리보기) / 오른쪽(체크리스트+내리기·다시처음)
+   1200px 폭으로 넓혀 예시 결과(미리보기+체크리스트)가 첫 화면(800px)에 들어오게 — CHANGES #1 */
+main.ds-page{max-width:1200px}
 .work-grid{display:grid;gap:var(--ds-s4);align-items:start}
-@media (min-width:860px){.work-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:var(--ds-s5)}}
 .work-left{display:grid;gap:var(--ds-s4);align-items:start}
-.work-grid .ds-card{margin-top:0}
-.result-col{display:grid;gap:var(--ds-s4)}
+.photo-side{display:grid}
+.answer-col{display:grid;gap:var(--ds-s4);align-items:start}
+.result-col{display:grid;gap:var(--ds-s4);align-items:start}
+@media (min-width:860px){.work-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,.9fr);gap:var(--ds-s5)}}
+#result-empty{box-shadow:none}
+/* 휴대폰: 1열 흐름 — 순서: 제출처 → 사진(예시·파일·끌어놓기) → 결과 */
+@media (max-width:859px){
+  .result-col{order:3}
+  .photo-side .ds-card{min-width:0}
+  .photo-row .ds-btn{flex:1 1 0;min-width:0} /* 예시·파일 고르기 버튼: 390px에서도 44px 이상 확보 (studio.css 520px 룰이 390px에선 안 걸림) */
+  #process-button{width:100%}
+}
 
-/* 사진 칸: 사진 없을 때 끌어 놓는 칸만, 사진 있을 때만 캔버스가 자름 (측면 비율로 크기 결정) */
-.crop-card{padding:var(--ds-s3)}
-#crop-canvas{display:none;width:100%;height:auto;aspect-ratio:4/3;object-fit:contain;border-radius:var(--ds-radius);cursor:grab;touch-action:none}
+/* 사진 칸: 사진 없을 때 끌어 놓는 큰 점선 칸, 사진 있을 때만 캔버스가 보여 (사진 비율 그대로) */
+.crop-card{margin:0;padding:0;border:0;background:none;box-shadow:none;overflow:hidden}
+#process-button{width:100%}
+#process-button:disabled{opacity:.5;cursor:not-allowed}
+#photo-card>.ds-row:last-child .ds-btn{flex:1 1 100%}
+#crop-canvas{display:none;width:100%;height:auto;object-fit:contain;border-radius:var(--ds-radius);cursor:grab;touch-action:none}
 #crop-canvas:not([hidden]){display:block}
+@media (max-width:560px){
+  #crop-canvas:not([hidden]){max-height:200px} /* 휴대폰: 변환 버튼이 첫 화면 안에 보이도록 */
+}
 #crop-canvas:active{cursor:grabbing}
-#crop-empty{margin:0;padding:14px var(--ds-s3);text-align:center;font-size:14px;line-height:1.7;color:var(--ds-ink-3);border:1px dashed var(--ds-line);border-radius:var(--ds-radius-l);background:var(--ds-surface-2)}
+.crop-empty{display:block;width:100%;min-height:160px;padding:var(--ds-s4);text-align:center;font:inherit;font-size:15px;line-height:1.7;color:var(--ds-ink-2);background:var(--ds-surface-2);border:2px dashed var(--ds-line);border-radius:var(--ds-radius-l);cursor:pointer}
+.crop-empty[hidden]{display:none}
 #crop-hint{margin:var(--ds-s2) 0 0}
 
-#result-preview{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:var(--ds-radius);border:1px solid var(--ds-line);margin-bottom:var(--ds-s4)}
-#checklist{list-style:none;margin:0 0 var(--ds-s4);padding:0}
+#result-preview{display:block;width:100%;height:auto;aspect-ratio:auto;object-fit:contain;max-height:320px;border-radius:var(--ds-radius);border:1px solid var(--ds-line);margin-bottom:var(--ds-s4)}
+#checklist{list-style:none;margin:0 0 var(--ds-s3);padding:0}
 #checklist li{padding:var(--ds-s2) 0;border-bottom:1px solid var(--ds-line);font-size:15px;font-variant-numeric:tabular-nums}
 #checklist li:last-child{border-bottom:0}
 #checklist li.fail{color:var(--ds-bad)}
 .result-actions{justify-content:flex-start}
 #content-note{margin:var(--ds-s4) 0 0;font-size:14px;line-height:1.6;color:var(--ds-ink-2)}
-#result-empty .ds-empty{border:none;background:none;padding:var(--ds-s5) var(--ds-s3)}
+#result-empty .ds-empty{border:none;background:none;text-align:left;font-size:14px;line-height:1.7;color:var(--ds-ink-2);padding:var(--ds-s4)}
 
-/* 답 카드: 첫 화면에 들어가게 간결하게 (studio.css 기본 보다는 조금 더 조임) */
-.ds-answer{padding:var(--ds-s4);margin-bottom:var(--ds-s4)}
-.ds-answer-num{font-size:clamp(30px,5.5vw,36px);margin-top:var(--ds-s1)}
-.ds-answer-text{font-size:15px;line-height:1.5;max-width:48ch}
+/* 답 카드: 결과 요약 (예시로 해 보기 결과·실제 결과 시에만 표시) */
+.ds-answer{padding:var(--ds-s4) var(--ds-s5);margin-bottom:var(--ds-s4)}
+.ds-answer-num{font-size:clamp(30px,5vw,34px);margin-top:var(--ds-s1)}
+.ds-answer-text{font-size:15px;line-height:1.45;max-width:52ch}
+#sample-hint-answer[hidden],#upscale-note[hidden]{display:none}
 .ans-size,.ans-limit,.ans-dims{white-space:normal;overflow-wrap:anywhere}
 .ds-answer-meta{margin-top:var(--ds-s3);padding:var(--ds-s2) 0}
 .ds-answer-meta>div{padding:0 var(--ds-s3)}
-.ds-answer-meta dd{font-size:16px;white-space:normal}
+.ds-answer-meta dd{font-size:15px;white-space:normal}
 .ds-answer-meta dt{font-size:12px}
-
-/* 결과 카드: 연습용 결과 표시 뱃지 (검증 문구도 함께) */
-.sample-badge{margin-bottom:var(--ds-s2)}
-
-/* 휴대폰: 답 카드 보조 칸은 한 줄씩 쌓아 겹침·넘침 방지 */
 @media (max-width:560px){
-  .band-flex{align-items:flex-start}
-  .band-actions{flex:1 1 100%;flex-direction:row;align-items:center;justify-content:space-between}
-  .band-actions .ds-hint{text-align:left}
+  .ds-answer{padding:var(--ds-s4) 20px}
   .ds-answer-meta{display:grid;grid-template-columns:1fr}
   .ds-answer-meta>div{padding:0}
   .ds-answer-meta>div+div{border-left:0;border-top:1px solid var(--ds-line);margin-top:var(--ds-s2);padding-top:var(--ds-s2)}
 }
 
-.ds-link{background:none;border:0;padding:0;margin:0;color:var(--ds-accent-text);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.ds-link:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px;border-radius:var(--ds-radius-s)}
+/* 연습용 결과: 점선 테두리 + 회색 톤으로 실제 결과와 구분 (data-sample="true") */
+#result-card[data-sample="true"]{border-style:dashed;background:var(--ds-surface);color:var(--ds-ink)}
+#answer-card[data-sample="true"]{background:var(--ds-surface);border-color:var(--ds-line);color:var(--ds-ink)}
+#answer-card[data-sample="true"] .ds-answer-num,#answer-card[data-sample="true"] .ds-answer-label{color:var(--ds-ink-3)}
+#answer-card[data-sample="true"] .ds-answer-text{color:var(--ds-ink-3)}
 
 /* 휴대폰: 사진 칸이 결과보다 먼저 보이도록(순서: 제출처 → 사진 → 결과) */
 @media (max-width:859px){.result-col{order:3}}

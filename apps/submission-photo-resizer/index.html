@@ -13,23 +13,19 @@
     <div class="band-copy">
       <h1>제출 사진 규격 변환기</h1>
       <p>제출처 규격에 맞춰 사진을 브라우저 안에서 변환하고 통과 여부를 확인해 드려요. 어디로도 전송되지 않아요.</p>
-      <span class="ds-hint">토익·큐넷·공무원 원서·정부24·이력서 규격</span>
-    </div>
-    <div class="band-actions">
-      <button type="button" class="ds-btn ds-btn-primary" id="sample-button">예시로 해 보기</button>
-      <span class="ds-hint" id="sample-hint">연습용 그림으로 흐름을 볼 수 있어요.</span>
+      <div class="ds-band-meta"><span class="ds-badge">토익 · 큐넷 · 공무원 · 정부24 · 이력서</span><span>원본은 바꾸거나 지우지 않고, 변환본은 새 파일 photo.jpg로 내려받아요.</span></div>
     </div>
   </div>
   <div id="app-status" class="app-status" role="status" aria-live="polite"></div>
 </header>
 
 <main class="ds-page">
-  <section class="ds-answer" aria-label="결과 요약">
+  <section class="ds-answer" id="answer-card" aria-label="결과 요약" hidden>
     <p class="ds-answer-label">제출 가능 여부</p>
     <p class="ds-answer-num" id="verdict">사진을 넣어 보세요</p>
-    <p class="ds-answer-text" id="verdict-text">아직 사진이 없어요. 아래에서 제출처를 고르고 사진을 골라 주세요.</p>
-    <p class="ds-hint" id="sample-hint-answer">예시로 해 보기는 연습용 그림이에요. 내 사진 결과가 아니에요.</p>
-    <p class="ds-hint" id="upscale-note"></p>
+    <p class="ds-answer-text" id="verdict-text">아직 사진이 없어요. ① 제출처를 고르고 ② 사진을 골라 주세요.</p>
+    <p class="ds-hint" id="sample-hint-answer" hidden>예시로 해 보기는 연습용 그림이에요. 내 사진 결과가 아니에요.</p>
+    <p class="ds-hint" id="upscale-note" hidden></p>
     <dl class="ds-answer-meta">
       <div><dt>사진 용량</dt><dd class="ans-size">—</dd></div>
       <div><dt>용량 상한</dt><dd class="ans-limit">—</dd></div>
@@ -40,8 +36,8 @@
   <div class="work-grid">
     <section class="work-left">
       <div class="ds-card" id="preset-card">
-        <h2 id="where-title">어디에 제출하세요?</h2>
-        <p class="ds-sub" id="where-hint">제출처를 고르면 규격이 이쪽에 나타나요.</p>
+        <h2 id="where-title"><span class="ds-step" aria-hidden="true">1</span>어디에 제출하세요?</h2>
+        <p class="ds-sub" id="where-hint">먼저 제출처를 고르세요. 규격(용량·크기·JPG)이 바로 아래에 나와요.</p>
         <div class="ds-row" id="preset-buttons">
           <button type="button" class="ds-chip preset-button" data-id="toeic" aria-pressed="false">토익</button>
           <button type="button" class="ds-chip preset-button" data-id="qnet" aria-pressed="false">큐넷</button>
@@ -62,20 +58,21 @@
           </div>
         </div>
       </div>
+    </section>
 
+    <section class="photo-side">
       <div class="ds-card" id="photo-card">
-        <h2>사진 고르기</h2>
-        <p class="ds-sub" id="photo-hint">제출할 사진(JPG·PNG)을 골라 주세요. 브라우저 안에서만 처리해요.</p>
         <div class="ds-row photo-row">
-          <button type="button" class="ds-btn ds-btn-primary" id="choose-btn">파일 고르기</button>
+          <button type="button" class="ds-btn ds-btn-primary" id="sample-button">예시로 해 보기</button>
+          <button type="button" class="ds-btn" id="choose-btn">파일 고르기</button>
           <input type="file" id="photo-file" accept="image/*" hidden>
-          <button type="button" class="ds-btn" id="crop-sample">예시로 해 보기</button>
         </div>
-
-        <div class="ds-card crop-card" id="crop-card">
+        <h2><span class="ds-step" aria-hidden="true">2</span>사진 고르기</h2>
+        <p class="ds-sub" id="photo-hint">제출할 사진(JPG·PNG)을 골라 주세요. 브라우저 안에서만 처리해요.</p>
+        <div class="crop-card" id="crop-card">
           <canvas id="crop-canvas" hidden></canvas>
-          <p id="crop-empty" class="ds-empty">사진이 없어요. <button type="button" class="ds-link" id="crop-choose">파일 고르기</button>를 누르거나 <button type="button" class="ds-link" id="crop-sample">예시로 해 보기</button>를 눌러 보세요.</p>
-          <p class="ds-hint" id="crop-hint" hidden>흰 테두리가 제출될 부분이에요. 끌어서 옮겨 보세요.</p>
+          <button type="button" class="crop-empty" id="crop-empty" aria-label="사진을 여기에 끌어 놓거나 파일 고르기를 누르세요">사진을 여기에 끌어 놓거나 「파일 고르기」를 누르세요</button>
+          <p class="ds-hint" id="crop-hint" hidden>밝게 보이는 부분이 제출될 부분이에요. 끌어서 옮겨 보세요.</p>
         </div>
 
         <div class="ds-row">

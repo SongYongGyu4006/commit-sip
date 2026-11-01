@@ -15,7 +15,7 @@
 
   const state = { presetId: null, preset: null, img: null, natural: null, crop: null, frame: null, frameDirty: false, out: null, outBytes: null, blobUrl: null, sample: false };
   const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  const SAMPLE_PREFIX = '연습용 그림 결과예요 — ';
+  const SAMPLE_TAG = '연습용 · ';
   const CONTENT_NOTE = '기술 규격만 통과했습니다. 얼굴·배경·촬영 시점 등 사진 내용 규정은 제출처 안내 페이지에서 직접 확인하세요';
 
   /* ---------- 상태 영역 ---------- */
@@ -33,15 +33,17 @@
   function renderSpec() {
     const line = $('spec-line');
     line.textContent = '';
-    if (!state.preset) return;
+    // #spec-source / #spec-checked 는 SPEC 의 고정 id — 제출처를 아직 안 고른 빈 화면에도 항상 존재
+    // (규격 텍스트·링크·확인 날짜는 제출처를 골라야만 채워지므로 빈 화면에서는 비어 있음)
     const a = document.createElement('a');
     a.id = 'spec-source';
-    a.href = state.preset.sourceUrl;
     a.target = '_blank';
     a.rel = 'noopener';
-    a.textContent = state.presetId === 'custom' ? '직접 입력한 규격' : '출처 확인';
     const span = document.createElement('span');
     span.id = 'spec-checked';
+    if (!state.preset) { line.append(a, ' ', span); return; }
+    a.href = state.preset.sourceUrl;
+    a.textContent = state.presetId === 'custom' ? '직접 입력한 규격' : '출처 확인';
     span.textContent = '확인 날짜: ' + (state.preset.checkedAt === '미확인' ? '미확인 — 제출 전 제출처 안내 페이지에서 직접 확인하세요' : state.preset.checkedAt);
     line.append(specLineText(state.preset), ' ', a, ' ', span);
   }
@@ -110,21 +112,34 @@
     const b = state.outBytes != null ? state.outBytes : outBytes(state.out);
     $('sample-hint-answer').hidden = !!state.out;
     if (state.out) {
-      const prefix = state.sample ? SAMPLE_PREFIX : '';
-      $('verdict').textContent = state.out.pass ? '제출 가능' : '규격 미충족';
+      const prefix = state.sample ? SAMPLE_TAG : '';
+      $('verdict').textContent = prefix + (state.out.pass ? '제출 가능' : '규격 미충족');
       $('verdict-text').textContent = prefix + p.label + ' 규격 기준, 사진 ' + fmt(b) + '바이트예요. 상한 ' + fmt(state.out.safeLimitBytes) + '바이트(' + Math.round(state.out.safeLimitBytes / 1000) + 'KB, 2% 여유) 안에 들어가요.';
       $('upscale-note').textContent = state.out.upscaled ? '원본이 작아 확대되었습니다. 화질이 낮을 수 있습니다.' : '';
       document.querySelector('.ans-size').textContent = fmt(b) + '바이트';
       document.querySelector('.ans-limit').textContent = fmt(state.out.safeLimitBytes) + '바이트' + kbNote(state.out.safeLimitBytes);
       document.querySelector('.ans-dims').textContent = p.width + '×' + p.height;
-    } else {
+    } else if (state.preset) {
       $('verdict').textContent = '사진을 넣어 보세요';
       $('verdict-text').textContent = p.label + ' 규격이 준비됐어요. 사진을 골라 「규격에 맞게 변환」을 누르면 결과가 여기에 나와요.';
       $('upscale-note').textContent = '';
       document.querySelector('.ans-size').textContent = '—';
       document.querySelector('.ans-limit').textContent = '최대 ' + p.maxKb + 'KB';
       document.querySelector('.ans-dims').textContent = p.width + '×' + p.height;
+    } else {
+      // 아무 제출처도 안 고른 초기 상태: 예시 규격으로 미리 채우지 않음
+      $('verdict').textContent = '사진을 넣어 보세요';
+      $('verdict-text').textContent = '아직 사진이 없어요. ① 제출처를 고르고 ② 사진을 골라 주세요.';
+      $('upscale-note').textContent = '';
+      document.querySelector('.ans-size').textContent = '—';
+      document.querySelector('.ans-limit').textContent = '—';
+      document.querySelector('.ans-dims').textContent = '—';
     }
+    toggleSampleMode();
+  }
+  // 연습용 결과: 결과 카드 + 답 카드에 data-sample 로 구분 (점선·회색은 styles.css)
+  function toggleSampleMode() {
+    for (const id of ['result-card', 'answer-card']) $(id).dataset.sample = state.sample ? 'true' : 'false';
   }
 
   /* ---------- 결과 ---------- */
@@ -132,6 +147,7 @@
     if (state.blobUrl) { URL.revokeObjectURL(state.blobUrl); state.blobUrl = null; }
     state.out = null; state.outBytes = null; state.sample = false;
     if (state.frame) state.frameDirty = false; // 프레임은 새 규격 비율로 다시 계산
+    toggleSampleMode();
     const img = $('result-preview');
     img.hidden = true;
     img.removeAttribute('src');
@@ -157,9 +173,11 @@
     const kb = Math.round(out.safeLimitBytes / 1000);
     $('result-empty').hidden = true;
     $('result-card').hidden = false;
+    $('answer-card').hidden = false; // 결과가 나오면 답 카드 표시 (사진 전에는 비어 있어 숨김 — UX-REVIEW RED: 예시가 실제처럼 보이지 않게)
     $('sample-badge').hidden = !state.sample;
-    $('verdict').textContent = out.pass ? '제출 가능' : '규격 미충족';
-    $('verdict-text').textContent = (state.sample ? SAMPLE_PREFIX : '') + p.label + ' 규격 기준, 사진 ' + fmt(b) + '바이트예요. 상한 ' + fmt(out.safeLimitBytes) + '바이트(' + kb + 'KB, 2% 여유) 안에 들어가요.';
+    const prefix = state.sample ? SAMPLE_TAG : '';
+    $('verdict').textContent = prefix + (out.pass ? '제출 가능' : '규격 미충족');
+    $('verdict-text').textContent = prefix + p.label + ' 규격 기준, 사진 ' + fmt(b) + '바이트예요. 상한 ' + fmt(out.safeLimitBytes) + '바이트(' + kb + 'KB, 2% 여유) 안에 들어가요.';
     $('upscale-note').textContent = out.upscaled ? '원본이 작아 확대되었습니다. 화질이 낮을 수 있습니다.' : '';
 
     const lines = [
@@ -190,7 +208,7 @@
     $('crop-hint').hidden = false;
     $('photo-hint').textContent = state.sample
       ? '연습용 그림이에요. 내 사진으로 하면 「파일 고르기」를 눌러 주세요.'
-      : (img.naturalWidth + '×' + img.naturalHeight + ' 사진을 불러왔어요. 「규격에 맞게 변환」을 눌러 보세요.');
+      : (state.natural.width + '×' + state.natural.height + ' 사진을 불러왔어요. 「규격에 맞게 변환」을 눌러 보세요.');
     updateAnswer();
   }
 
@@ -214,7 +232,8 @@
   }
 
   function pickPhoto(file) {
-    if (!state.preset) { status('제출처를 먼저 선택하세요. 왼쪽에서 제출처를 골라 주세요.', 'bad'); return; }
+    sampleTicket++; // 내 파일을 고르면 예시 표시를 정리
+    if (!state.preset) { status('제출처를 먼저 선택하세요. 위에서 제출처를 골라 주세요.', 'bad'); return; }
     if (!file || !/^image\//.test(file.type)) { status('그림 파일이 아니에요. JPG나 PNG 파일로 다시 골라 주세요.', 'bad'); return; }
     state.sample = false;
     const img = new Image();
@@ -242,7 +261,7 @@
     } catch (e) { status('사진을 화면에 그리지 못했어요. 다른 브라우저에서 다시 열어 주세요.', 'bad'); return; }
     const cv = $('crop-canvas');
     cv.width = cw; cv.height = ch;
-    cv.style.aspectRatio = ''; // 스타일시트(4:3)가 크기를 결정
+    cv.style.aspectRatio = state.natural.width + '/' + state.natural.height; // 사진 비율 그대로
     state.scale = scale;
 
     if (!state.frameDirty) {
@@ -265,13 +284,18 @@
     ctx.drawImage(state.img, 0, 0, cv.width, cv.height);
     if (state.frame) {
       const s = state.scale;
-      ctx.fillStyle = 'rgba(0,0,0,.45)';
       const f = state.frame;
+      // 제출 영역 바깥은 밝게 흐리게 (어두운 막대가 깨진 이미지처럼 보이지 않게)
+      ctx.fillStyle = 'rgba(255,255,255,.55)';
       ctx.fillRect(0, 0, cv.width, f.y * s);
       ctx.fillRect(0, (f.y + f.height) * s, cv.width, cv.height - (f.y + f.height) * s);
       ctx.fillRect(0, f.y * s, f.x * s, f.height * s);
       ctx.fillRect((f.x + f.width) * s, f.y * s, cv.width - (f.x + f.width) * s, f.height * s);
-      ctx.lineWidth = Math.max(2, Math.round(2 * s));
+      // 프레임 테두리: 어두운 선(바깥) + 흰 선(안쪽) 두 줄 — 밝은 사진·어두운 사진 어디서든 보임
+      ctx.lineWidth = Math.max(3, Math.round(3 * s));
+      ctx.strokeStyle = 'rgba(0,0,0,.55)';
+      ctx.strokeRect(f.x * s - 1.5, f.y * s - 1.5, f.width * s + 3, f.height * s + 3);
+      ctx.lineWidth = Math.max(1.5, Math.round(1.5 * s));
       ctx.strokeStyle = 'rgba(255,255,255,.9)';
       ctx.strokeRect(f.x * s, f.y * s, f.width * s, f.height * s);
     }
@@ -347,6 +371,7 @@
   }
 
   /* ---------- 예시 ---------- */
+  let sampleTicket = 0;
   function runSample() {
     if (!state.presetId) selectPreset('qnet'); // 무선택 시 큐넷
     const cv = document.createElement('canvas');
@@ -355,11 +380,16 @@
     const g = ctx.createLinearGradient(0, 0, 0, 3024);
     g.addColorStop(0, '#8aa2bd'); g.addColorStop(1, '#54688a');
     ctx.fillStyle = g; ctx.fillRect(0, 0, 4032, 3024);
+    const my = ++sampleTicket; // 다른 동작(파일 고르기 등)에 예시 표시가 지워지지 않게
     const img = new Image();
     img.onload = () => {
-      state.sample = true; // process() 안의 clearResult()가 초기화하므로 여기에서 다시 표시
-      clearResult(); loadSource(img);
-      process();
+      if (my !== sampleTicket) return;
+      clearResult();
+      loadSource(img);
+      process(); // process() 안의 clearResult()가 sample 플래그를 초기화하므로
+      state.sample = true; // 여기에서 다시 표시 (연습용 뱃지·답 카드 숨김·회색 톤)
+      renderResult(state.out);
+      updateAnswer();
     };
     img.onerror = () => { status('예시를 만들지 못했어요. 다시 눌러 주세요.', 'bad'); };
     img.src = cv.toDataURL('image/png');
@@ -384,8 +414,7 @@
     $('sample-button').addEventListener('click', runSample);
     $('process-button').addEventListener('click', process);
     $('choose-btn').addEventListener('click', () => $('photo-file').click());
-    $('crop-choose').addEventListener('click', () => $('photo-file').click());
-    $('crop-sample').addEventListener('click', runSample);
+    $('crop-empty').addEventListener('click', () => $('photo-file').click());
     $('photo-file').addEventListener('change', (e) => { const f = e.target.files && e.target.files[0]; if (f) pickPhoto(f); });
     $('reset-button').addEventListener('click', reset);
     for (const b of document.querySelectorAll('.preset-button')) {
@@ -393,7 +422,7 @@
     }
     ['custom-kb', 'custom-width', 'custom-height'].forEach((id) => $(id).addEventListener('input', onCustomInput));
     initDrag();
-    selectPreset('qnet'); // 큐넷 기본 선택 — 사진 없이도 예시로 바로 처리 가능
+    renderSpec(); // 빈 화면에도 #spec-line(빈)·#spec-source·#spec-checked 고정 id 가 존재하게
   }
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
 })();
