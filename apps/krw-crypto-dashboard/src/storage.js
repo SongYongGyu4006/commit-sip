@@ -1,4 +1,4 @@
-// localStorage "krcoinfx.state" = { coinIds, example } : 선택·예시 상태를 저장/복원
+// localStorage "krcoinfx.state" = { coinIds } : 선택만 저장/복원(예시는 세션 한정)
 const KEY = "krcoinfx.state";
 export const DEFAULT_COIN_IDS = ["bitcoin", "ethereum"];
 const KNOWN = ["bitcoin", "ethereum", "solana"];
@@ -22,22 +22,20 @@ export function loadCoinIds() {
   return validateImport(s) || DEFAULT_COIN_IDS.slice();
 }
 
-// 새로고침하면 항상 실데이터로(SPEC), 따라서 예시는 세션 한정이라 항상 false.
+// 새로고침하면 항상 실데이터로(SPEC: Reloading the page returns to live data), 예시는 세션 한정.
 export function loadExample() {
   return false;
 }
 
-// 선택을 저장하고, 예시 표시는 해제한다(실제 선택을 바꾼 순간부터 다시 실데이터로).
+// 선택을 "krcoinfx.state" 에 저장한다.
 export function saveCoinIds(coinIds) {
-  write({ coinIds: coinIds.slice(), example: false });
+  write({ coinIds: coinIds.slice() });
 }
 
-// "예시로 해 보기"는 세션 한정: 새로고침하면 실데이터로 돌아오도록(SPEC: Reloading the page returns to live data).
-// 예시 플래그는 저장소에 적지 않고, 기존 coinIds만 보존한다.
-export function setExample(on) {
+// "예시로 해 보기"는 세션 한정(새로고침해도 실데이터로): 기존 coinIds 만 보존한다.
+export function setExample() {
   const s = read();
   write({ coinIds: (s && s.coinIds) || DEFAULT_COIN_IDS.slice() });
-  void on;
 }
 
 export function clearCoinIds() {

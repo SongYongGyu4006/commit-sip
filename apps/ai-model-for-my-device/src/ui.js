@@ -34,12 +34,6 @@ export function formatKstDate(iso) {
   return `${g('year')}-${g('month')}-${g('day')}`;
 }
 
-/** 1048576 → '1MB' / 1572864 → '1.5MB' — 모델 파일 크기 표시용 */
-function fmtMb(mb) {
-  const r = Math.round(mb * 10) / 10;
-  return `${r % 1 === 0 ? r.toFixed(0) : r.toFixed(1)}MB`;
-}
-
 /** ds-avatar 의 data-hue(0~7) — 이름에서 항상 같은 색 */
 function hueOf(name) {
   return [...String(name)].reduce((s, c) => s + c.codePointAt(0), 0) % 8;
@@ -53,6 +47,12 @@ function badge(text, cls) {
 }
 
 const fmtNum = (v) => Number(v || 0).toLocaleString('ko-KR');
+
+function textNode(v) {
+  const s = document.createElement('span');
+  s.textContent = String(v);
+  return s;
+}
 
 // --- 예시: 화면의 select 를 특정 값으로 고정 ---
 export function setSelects({ ram, task, quant }) {
@@ -81,21 +81,21 @@ function metaFrom(raw) {
   return { fetchedAt, terms };
 }
 
-/** GPU 선택에 따른 안내(상세 설정 아래 한 줄). */
+/** GPU 선택에 따른 안내(설정 카드 아래 한 줄). */
 function gpuNoteText(gpu) {
   if (gpu === 'none') return 'GPU가 없으면 VRAM 기준이 없어서, 결과는 RAM 기준으로만 추정돼요.';
   if (gpu === 'apple') return 'Apple 실리콘은 통합 메모리를 쓰니, RAM과 같은 메모리를 모델에 써요.';
   return '';
 }
 
-function textNode(v) {
-  const s = document.createElement('span');
-  s.textContent = String(v);
-  return s;
+/** 아키텍처 선택에 따른 안내(설정 카드 아래 한 줄). */
+function archNoteText(arch) {
+  if (arch === 'arm64') return 'ARM64(Apple 실리콘·Snapdragon)를 골라 GPU를 Apple 실리콘으로 맞췄어요.';
+  return '';
 }
 
 /**
- * 결과 렌더링. models = planModels 의 반환 items(과거된 목록), raw = 원본 행, controls = 선택값.
+ * 결과 렌더링. models = planModels 의 반환 items(필터링된 목록), raw = 원본 행, controls = 선택값.
  * 에러 시에는 이전 화면을 유지하고 status 로만 안내.
  */
 export function render(models, raw, controls) {
@@ -104,70 +104,41 @@ export function render(models, raw, controls) {
   const quantKey = quantBit === '4bit' ? 'estimated4bitGb' : 'estimated8bitGb';
   const rawById = new Map(raw.map((r) => [r.id, r]));
 
-  // --- 답 카드: SPEC 고정 문구 한 줄 + 불가 원인 한 줄 + 보조 숫자 3개 ---
+  // --- 답 카드: SPEC 고정 문구 한 줄 + 보조 숫자 3개 ---
   const base = models.filter((x) => x.isBaseModel);
   const n = base.filter((x) => x.runnable).length;
-  const m = base.filter((x) => !x.runnable).length;
   const noParams = base.filter((x) => x.estimatedTotalGb === null).length;
-  const ramShort = m - noParams;
+  const ramShort = base.length - n - noParams;
 
   $('#summary-num').textContent = String(n);
   $('#summary-num').append(Object.assign(document.createElement('small'), { textContent: '개' }));
   $('#summary-label').textContent = `내 RAM ${ramGb}GB · ${quantBit} 기준, 내 컴퓨터에서 쓸 수 있는 AI`;
-  $('#summary-text').textContent = n > 0
-    ? `인기 있는 무료 AI ${models.length}개 중, 내 RAM ${ramGb}GB에서 직접 설치해 쓸 수 있는 것이 ${n}개예요.`
-    : `내 RAM ${ramGb}GB에서는 쓸 수 있는 AI가 없습니다. 4bit로 압축하거나 더 큰 RAM을 선택해 보세요.`;
+  $('#summary-text').textContent = `돌릴 수 있는 모델 ${n}개 / 불가 ${base.length - n}개`;
   $('#count-ram').textContent = `${ramShort}개`;
   $('#count-noparam').textContent = `${noParams}개`;
   $('#count-all').textContent = `${models.length}개`;
 
-  // 화면 맨 아래 푸터: 데이터 기준 시각 + 이용 조건(출처: Hugging Face)
+  // 띠 메타: 데이터 기준 시각 + 이용 조건(출처: Hugging Face)
   const meta = metaFrom(window.__hfMeta);
+  $('#data-time').textContent = meta.fetchedAt
+    ? `데이터: ${meta.fetchedAt}`
+    : '데이터 불러오는 중…';
+  $('#data-terms').textContent = meta.terms;
+
+  // 화면 맨 아래 푸터
   $('#foot-note').textContent =
     [
       meta.fetchedAt ? `데이터 기준: ${meta.fetchedAt}` : '',
       'Hugging Face 공개 API · Hugging Face 이용약관',
     ].filter(Boolean).join(' · ');
 
-  // --- 예시 결과: 쓸 수 있는 AI 상위 3(숫자 바로 아래) ---
-  const topCard = $('#top-card');
-  topCard.innerHTML = '';
-  const tl = $('#top-label');
-  if (tl) tl.textContent = `내 RAM ${ramGb}GB 기준, 쓸 수 있는 AI 상위 3`;
-  const runnable = models.filter((x) => x.runnable);
-  if (runnable.length === 0) {
-    topCard.append(Object.assign(document.createElement('p'), {
-      className: 'ds-hint',
-      textContent: `내 RAM ${ramGb}GB에서는 쓸 수 있는 AI가 없습니다. 4bit나 더 큰 RAM을 선택해 보세요.`,
-    }));
-  } else {
-    const top = rankModels(runnable, 'trending').slice(0, 3);
-    const row = document.createElement('div');
-    row.className = 'top-row';
-    for (const it of top) {
-      const c = document.createElement('div');
-      c.className = 'top-item';
-      const tid = document.createElement('a');
-      tid.className = 'top-id';
-      tid.href = 'https://huggingface.co/' + it.id;
-      tid.target = '_blank';
-      tid.rel = 'noopener';
-      tid.textContent = it.id;
-      tid.addEventListener('click', (e) => e.stopPropagation());
-      const tsub = document.createElement('div');
-      tsub.className = 'top-sub';
-      tsub.textContent = `내 ${ramGb}GB에서 쓸 수 있음 · 크기 ${fmtMb(it[quantKey])}`;
-      c.append(tid, tsub);
-      row.append(c);
-    }
-    topCard.append(row);
-  }
-
-  // --- 모델 목록 ---
+  // --- 모델 목록: 처음 10개, '전체 보기'로 100개 ---
   const ranked = rankModels(models, controls.rank, controls.ramGb);
+  const topDownloads = new Set(ranked.slice(0, 3).map((it) => it.id));
+  const limit = showAll ? ranked.length : Math.min(10, ranked.length);
   list.innerHTML = '';
-  for (const it of ranked) {
-    const raw = rawById.get(it.id);
+  ranked.slice(0, limit).forEach((it) => {
+    const r = rawById.get(it.id);
     const li = document.createElement('li');
     li.className = 'ds-list-item model';
     li.dataset.id = it.id;
@@ -180,67 +151,60 @@ export function render(models, raw, controls) {
 
     const main = document.createElement('div');
     main.className = 'ds-list-main';
-    // 휴대폰에선 이름과 출시일을 한 줄에(긴 이름은 잘림), 나머지는 배지 줄
-    const titleRow = document.createElement('div');
-    titleRow.className = 'ds-list-title-row';
     const title = document.createElement('a');
     title.className = 'ds-list-title';
     title.href = 'https://huggingface.co/' + it.id;
     title.target = '_blank';
     title.rel = 'noopener';
-    title.textContent = it.id;
+    title.textContent = it.id + ' ↗';
     // 새 탭 링크 — 행 클릭(상세 토글)과 분리
     title.addEventListener('click', (e) => e.stopPropagation());
-    const release = textNode(`출시: ${formatKstDate(raw && raw.createdAt) || '출시일 미상'}`);
-    release.className = 'ds-list-release';
-    titleRow.append(title);
+    main.append(title);
 
-    // 배지 순서: [가능(추정)/RAM 부족(추정)] → 양자화 GB → NEW → VRAM
+    const sub = document.createElement('span');
+    sub.className = 'ds-list-sub';
     const badges = [];
     if (!it.isBaseModel) {
       li.classList.add('disabled');
       badges.push(badge('양자화본/어댑터', 'ds-badge-warn'));
     } else if (it.runnable) {
-      badges.push(badge('내 컴퓨터에서 쓸 수 있음', 'ds-badge-good'));
+      badges.push(badge('가능(추정)', 'ds-badge-good'));
     } else {
       li.classList.add('disabled');
-      badges.push(badge('내 컴퓨터엔 무거움', 'ds-badge-bad'));
+      badges.push(badge('RAM 부족(추정)', 'ds-badge-bad'));
     }
-    badges.push(badge(it.parameters === null ? '크기 정보 없음' : `${quantBit}bit ${it[quantKey]}GB`, ''));
+    if (it.isBaseModel && it.runnable && topDownloads.has(it.id)) {
+      badges.push(badge('많이 쓰는 모델', 'ds-badge-accent'));
+    }
+    badges.push(badge(it.parameters === null ? '파라미터 미상' : `${quantBit} 추정 ${it[quantKey]}GB`, ''));
     if (it.isNew) badges.push(badge('NEW', 'ds-badge-accent'));
     if (controls.gpu !== 'none') {
       const vram = fitByVram(it, controls.vramGb);
-      if (it.parameters !== null) {
-        if (vram === 'vram-full') badges.push(badge('VRAM 전량 적재(추정)', 'ds-badge-warn'));
-        else if (vram === 'offload') badges.push(badge('RAM 오프로딩 필요(추정)', 'ds-badge-warn'));
-      } else if (vram === 'unknown') {
-        badges.push(badge('VRAM 미상(추정)', ''));
+      if (it.parameters !== null && vram === 'vram-full') {
+        badges.push(badge('내 GPU에서 빠름(추정)', 'ds-badge-good'));
       }
     }
-
-    const sub = document.createElement('span');
-    sub.className = 'ds-list-sub';
     sub.append(
       textNode(`좋아요 ${fmtNum(it.likes)}`),
       textNode(`다운로드 ${fmtNum(it.downloads)}`),
-      release,
+      textNode(`출시: ${formatKstDate(r && r.createdAt) || '출시일 미상'}`),
       ...badges,
     );
-    main.append(titleRow, sub);
+    main.append(sub);
 
-    // 오른쪽: 총 필요 메모리(한 줄) + likes/downloads
+    // 오른쪽: 총 필요 메모리
     const end = document.createElement('div');
     end.className = 'ds-list-end';
     const amt = document.createElement('span');
     amt.className = 'ds-list-amount';
     amt.textContent = it.estimatedTotalGb === null
-      ? '총 필요 메모리 미상'
-      : `총 필요 메모리 ${it.estimatedTotalGb}GB`;
+      ? '미상'
+      : `${it.estimatedTotalGb}GB`;
     end.append(amt);
 
     li.append(av, main, end);
 
-    // 상세 토글: SPEC — dimmed(흐리게) li 만
+    // 상세 토글: SPEC — 흐리게(dimmed) li 만
     if (li.classList.contains('disabled')) {
       const detail = document.createElement('span');
       detail.className = 'model-detail';
@@ -256,8 +220,24 @@ export function render(models, raw, controls) {
     }
 
     list.append(li);
+  });
+
+  // '전체 100개 보기' 버튼
+  const moreWrap = $('#more-wrap');
+  const moreBtn = $('#more-button');
+  if (ranked.length > 10) {
+    moreWrap.hidden = false;
+    moreBtn.textContent = moreBtn.dataset.on
+      ? '10개로 줄이기'
+      : `전체 ${ranked.length}개 보기`;
+    moreBtn.dataset.on = showAll ? '1' : '0';
+  } else {
+    moreWrap.hidden = true;
   }
 }
+
+// 처음 10개만, '전체 보기' 후엔 100개
+let showAll = false;
 
 // --- 시작 ---
 export async function init() {
@@ -267,16 +247,28 @@ export async function init() {
   const vram = $('#vram-select');
   const rank = $('#rank-select');
   const gpu = $('#gpu-select');
+  const arch = $('#arch-select');
   const applyBtn = $('#apply-button');
   const example = $('#example-button');
+  const moreBtn = $('#more-button');
 
-  // 상세 설정(GPU/VRAM) 변경 시 표시되는 안내
+  // 상세 설정(GPU/VRAM/아키텍처) 변경 시 표시되는 안내
   const syncGpu = () => {
     const note = $('#gpu-note');
     const t = gpuNoteText(gpu.value);
     note.textContent = t;
     note.hidden = !t;
     vram.disabled = gpu.value === 'none';
+  };
+  const syncArch = () => {
+    const note = $('#arch-note');
+    const t = archNoteText(arch.value);
+    note.textContent = t;
+    note.hidden = !t;
+    if (arch.value === 'arm64') {
+      gpu.value = 'apple';
+      syncGpu();
+    }
   };
 
   // planModels + 렌더링. 실패 시 이전 화면 유지 + status
@@ -297,7 +289,7 @@ export async function init() {
         task: task.value,
         quantBit: quant.value,
         vramGb: vram ? Number(vram.value) : null,
-        rank: rank ? rank.value : 'trending',
+        rank: rank ? rank.value : 'optimized',
         gpu: gpu ? gpu.value : 'none',
       });
       setStatus('');
@@ -315,17 +307,29 @@ export async function init() {
     gpu.addEventListener('change', () => { syncGpu(); apply(); });
     syncGpu();
   }
+  if (arch) {
+    arch.addEventListener('change', () => { syncArch(); apply(); });
+    syncArch();
+  }
   if (applyBtn) applyBtn.addEventListener('click', apply);
   if (example) {
     example.addEventListener('click', () => {
       setSelects({ ram: 16, task: 'text', quant: '8bit' });
-      // 예시 상태: 상세 설정도 기본값(GPU 없음, VRAM 없음)으로
+      // 예시 상태: 상세 설정도 기본값(GPU 없음, VRAM 없음, x86_64)으로
       if (gpu) gpu.value = 'none';
       if (vram) vram.value = '0';
+      if (arch) arch.value = 'x86_64';
       syncGpu();
+      syncArch();
       apply();
       setStatus('예시: 16GB RAM 기준 결과입니다', true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+  if (moreBtn) {
+    moreBtn.addEventListener('click', () => {
+      showAll = !showAll;
+      apply();
     });
   }
 

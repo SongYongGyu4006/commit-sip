@@ -1,30 +1,11 @@
 /* 앱 고윳질 — vendor/studio.css 를 먼저 연결해 토큰(var(--ds-...))으로만 색·간격을 다룹니다. */
-:root {
-  --ds-avatar-hues: #2f5bea, #0f7a4f, #c2410c, #c0266d, #6d3fd9, #0b7285, #c8322b, #475569;
-}
 
-/* 띠와 본문이 같은 왼쪽 선·폭을 쓰도록 padding 통일 */
-.ds-page { padding-inline: var(--ds-s4); }
-.ds-band { padding-block: var(--ds-s5) var(--ds-s6); }
-.ds-band:has(+ .ds-page > .ds-answer:first-child) { padding-bottom: var(--ds-s6); }
-.ds-band+.ds-page>.ds-answer:first-child { margin-top: -24px; }
+/* 본문: 가운데 정렬, 최대 960px(SPEC). 띠와 같은 폭·왼쪽 선을 쓰도록 padding 통일 */
+.ds-page { max-width: 960px; margin: 0 auto; padding-inline: var(--ds-s4); }
+.ds-band.ds-band-thin { padding-left: max(var(--ds-s4), calc((100% - 960px) / 2 + var(--ds-s4))); padding-right: max(var(--ds-s4), calc((100% - 960px) / 2 + var(--ds-s4))); padding-block: var(--ds-s5); }
+.ds-band.ds-band-thin + .ds-page > .ds-answer:first-child { margin-top: var(--ds-s4); }
 
-/* 헤더: 이렇게 쓰세요 1·2·3 단계(짧게) */
-.ds-band .howto { margin-top: var(--ds-s3); }
-.ds-band .howto ol { margin: 0; padding: 0; list-style: none; }
-.ds-band .howto li {
-  font-size: 14px;
-  color: var(--ds-band-ink-2, rgba(255, 255, 255, .85));
-  line-height: 1.7;
-  white-space: normal;
-}
-.ds-band .howto li b { margin-right: 6px; }
-@media (max-width: 560px) {
-  .ds-band .howto li { line-height: 1.6; }
-}
-
-/* 답 카드: 평평하게 */
-.ds-answer { border: 1px solid var(--ds-line); }
+/* 답 카드: 평평하게(studio.css 에 토큰 기반 스타일이 있음) */
 .ds-answer-meta {
   background: transparent;
   border-radius: 0;
@@ -37,9 +18,6 @@
 @media (max-width: 520px) {
   .ds-answer-meta dd { font-size: 16px; }
 }
-
-/* 응답 카드를 띠 바로 아래로 붙여(기술 도구 변형은 ds-band-thin 기준) */
-.ds-band-thin + .ds-page > .ds-answer:first-child { margin-top: var(--ds-s4); }
 
 /* 상태(오류/안내) */
 #app-status:empty { display: none; }
@@ -57,68 +35,33 @@
   color: var(--ds-accent-text);
 }
 
-/* 설정: 2열 grid — 셀마다 label + select 를 한 세로 묶음으로 */
+/* 빈 안내(라벨/설명)는 표시하지 않음 — 겹침 방지 */
+.ds-label:empty, .ds-hint:empty { display: none; }
+
+/* 설정: 데스크톱 2열 · 휴대폰 1열 — 라벨·select·안내가 위에서 아래로 쌓여 가로 줄바꿈이 없다 */
 .ctl-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--ds-s3) var(--ds-s4);
 }
-.ctl-grid .ds-select { margin-bottom: var(--ds-s4); }
-.ctl-grid .ds-select:last-child { margin-bottom: 0; }
-.ctl-more .ds-select { margin-bottom: 0; }
-/* 라벨 + 안내 한 줄(안내 없으면 빈 셀) */
-.ctl-cell .ds-label { margin-bottom: 2px; }
-.ctl-cell .ds-hint { margin: 0 0 6px; line-height: 1.45; }
-details.details-more {
-  margin-top: var(--ds-s4);
-  padding-top: var(--ds-s3);
-  border-top: 1px solid var(--ds-line);
+@media (min-width: 680px) {
+  .ctl-grid { grid-template-columns: 1fr 1fr; }
 }
-details.details-more summary {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-s2);
-  min-height: 44px;
-  cursor: pointer;
-  list-style: none;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ds-accent-text);
-}
-details.details-more summary::-webkit-details-marker { display: none; }
-details.details-more summary::before {
-  content: "";
-  width: 10px;
-  height: 10px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(-45deg);
-  transition: transform 150ms ease-out;
-}
-details.details-more[open] summary::before { transform: rotate(45deg); }
-details.details-more summary:focus-visible {
-  outline: 2px solid var(--ds-accent);
-  outline-offset: 2px;
-  border-radius: var(--ds-radius-s);
-}
-details.details-more[open] summary { margin-bottom: var(--ds-s3); }
+.ctl-field { min-width: 0; }
+.ctl-field .ds-label { margin-bottom: var(--ds-s1); }
+.ctl-field .ds-hint { margin: 4px 0 0; line-height: 1.4; }
+.ctl-field .ds-select { width: 100%; min-height: 44px; }
 
-/* 핵심 설정 3줄: 라벨(+안내) + select 를 한 행에 */
-.ctl-core {
-  grid-template-columns: minmax(132px, 176px) minmax(0, 1fr);
-  align-items: center;
-  gap: var(--ds-s3) var(--ds-s4);
-}
-.ctl-core .ds-select { margin-bottom: 0; width: 100%; min-height: 44px; }
-.ctl-core .ctl-cell .ds-label { margin: 0 0 2px; font-size: 14px; font-weight: 600; color: var(--ds-ink); }
-.ctl-more { grid-template-columns: 88px minmax(0, 1fr); align-items: center; }
-.ctl-more .ctl-cell .ds-label { margin: 0; }
+/* GPU/아키텍처 안내: 내용 없을 때 사라짐 */
+#settings-card .ds-hint#arch-note,
+#settings-card .ds-hint#gpu-note { margin-top: var(--ds-s3); }
+#settings-card .ds-hint:empty { display: none; margin: 0; }
 
 .ctl-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--ds-s3);
-  margin-top: var(--ds-s5);
+  margin-top: var(--ds-s3);
 }
 .ctl-actions .ds-btn-primary { min-width: 120px; min-height: 48px; }
 .ctl-actions .ds-btn:not(.ds-btn-primary) {
@@ -127,64 +70,67 @@ details.details-more[open] summary { margin-bottom: var(--ds-s3); }
   color: var(--ds-ink-2);
 }
 @media (max-width: 560px) {
-  .ctl-grid { gap: var(--ds-s3); }
-  .ctl-core, .ctl-more { grid-template-columns: 88px minmax(0, 1fr); }
-  .ctl-core .ctl-cell .ds-hint { font-size: 12px; margin-bottom: 4px; }
   .ctl-actions .ds-btn { flex: 1 1 0; width: auto; }
 }
 
-/* 예시 결과(상위 3): 항목 3개를 1px 선으로 나누는 행 */
-.top-row { display: flex; }
-.top-item {
-  flex: 1 1 0;
-  min-width: 0;
-  padding: var(--ds-s3) var(--ds-s4);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.top-item + .top-item { border-left: 1px solid var(--ds-line); }
-.top-id,
-.top-sub {
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  white-space: normal;
-}
-.top-id {
-  display: block;
+/* 목록 섹션: 제목 + 정렬(같은 줄, 줄바꿈 허용) + 안내 */
+.ds-section-title .rank-label {
+  margin-left: auto;
   font-size: 14px;
-  font-weight: 700;
-  color: var(--ds-accent-text);
-  text-decoration: none;
-  word-break: break-all;
+  font-weight: 600;
+  color: var(--ds-ink-2);
 }
-.top-id:hover { text-decoration: underline; }
-.top-sub {
-  font-size: 13px;
-  color: var(--ds-ink-3);
+.ds-section-title .rank-select {
+  width: auto;
+  min-width: 180px;
+  flex: none;
+  min-height: 44px;
 }
-/* 숫자 아래 예시 결과 카드 끝 → 목록 연결 안내 */
-.see-all { margin: var(--ds-s3) 0 0; }
+/* 카드 내부 제목(설정으로): 카드 위 여백을 줄여 첫 화면에 select이 더 위쪽으로 */
+.ds-section-title.ds-section-title-plain { margin: 0 0 var(--ds-s3); }
+.ds-card .ds-section-title p { flex-basis: 100%; }
+.ds-card .ds-section-title h2 { font-size: 18px; }
 
-/* 모델 목록(ds-list) — 행은 카드 패딩 안에서 카드 너비로 채운다 */
+/* Hugging Face 링크 안내 */
+.list-hint { margin: 0 0 var(--ds-s3); }
+
+/* fit-note: 목록 카드 안, 목록 바로 위 — 약한 박스로 "설명"임을 보여 주고
+   제목/정렬 줄과 겹치지 않도록(제목은 카드 밖, 안내는 카드 안) */
+.ds-card #fit-note {
+  margin: 0;
+  padding: var(--ds-s2) var(--ds-s3);
+  background: var(--ds-fill);
+  border-radius: var(--ds-radius);
+}
+.ds-card #fit-note + .list-hint { margin-top: var(--ds-s3); }
+
+/* 모델 목록(ds-list) — 한 줄에 한 모델. 긴 이름은 '/' 뒤에서 줄바꿈(ellipsize)해
+   잘림·겹침 없이 '이름 … 총 메모리'가 한 줄에 정렬된다. */
 .model-list .ds-list-item {
   width: 100%;
   box-sizing: border-box;
+  align-items: center;
   padding: var(--ds-s3);
   border-radius: var(--ds-radius);
 }
-/* 제목 행: 이름 + 출시일(같은 줄). 폭이 넓으면(태블릿/데스크톱) 출시일이 배지 줄로 내려가 */
-.model-list .ds-list-title-row { display: block; }
-.model-list .ds-list-title { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.model-list .ds-list-release { display: none; font-size: 13px; color: var(--ds-ink-3); white-space: nowrap; }
-@media (max-width: 560px) {
-  .model-list .ds-list-title-row { display: flex; align-items: baseline; gap: 6px; }
-  .model-list .ds-list-title { flex: 0 1 auto; min-width: 0; }
-  .model-list .ds-list-release { display: block; flex: none; overflow: hidden; text-overflow: ellipsis; max-width: 92px; }
+.model-list .ds-list-main { min-width: 0; flex: 1 1 0; }
+.model-list .ds-list-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* '/' 뒤(오rganization/model 경계)에서 자를 수 있어, 잘린 이름이 메모리 값과 겹치지 않는다 */
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
+/* 링크: 밑줄 + 포커스 */
+.model-list .ds-list-title:hover,
+.model-list .ds-list-title:focus-visible { text-decoration: underline; }
 .model-list li.disabled { opacity: 0.55; }
-.model-list li.no-params { opacity: 0.8; }
-/* 보조 줄(좋아요/다운로드 + 배지): 배지는 줄바꿈 허용, 카드 밖으로 넘치지 않게 */
+/* 보조 줄(좋아요/다운로드/출시일 + 배지) */
 .model-list .ds-list-sub {
   display: flex;
   flex: 1 1 auto;
@@ -194,14 +140,34 @@ details.details-more[open] summary { margin-bottom: var(--ds-s3); }
   margin-top: 4px;
   min-width: 0;
 }
-/* 좋아요·다운로드: 한 줄이 너무 길면 카드 밖으로 안 넘게(줄바꿈) */
-.model-list .ds-list-sub > span:not(.ds-badge):not(.ds-list-release) {
-  min-width: max-content;
-  max-width: 100%;
+.model-list .ds-list-sub .ds-badge { font-size: 13px; }
+/* 오른쪽: 총 필요 메모리 — 폭을 고정해 긴 이름이 이 값 위로 겹치지 않는다 */
+.model-list .ds-list-end { flex: none; width: 72px; text-align: right; }
+.model-list .ds-list-amount {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.model-list .ds-list-sub .ds-list-release { flex: none; overflow: hidden; text-overflow: ellipsis; max-width: 92px; }
-.model-list .ds-list-end { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.model-list .ds-list-end .ds-list-sub { display: flex; justify-content: flex-end; }
+@media (max-width: 560px) {
+  /* 메모리를 행 아래로(3번째 줄) 내리고 시작값만 100% — shrink 1 로 줄 수 있어
+     100% 고정 폭에 좌측을 0으로 압축하지 않는다 */
+  .model-list .ds-list-end { flex: 0 1 100%; order: 3; align-items: flex-start; }
+  .model-list .ds-list-main { flex: 0 1 auto; }
+  .model-list .ds-list-sub { gap: 3px 8px; }
+}
+
+/* 전체 보기 버튼 */
+.more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--ds-s4);
+}
+
+/* 상세 토글 문구 */
 .model-list .model-detail {
   display: none;
   flex-basis: 100%;
@@ -214,28 +180,7 @@ details.details-more[open] summary { margin-bottom: var(--ds-s3); }
 }
 .model-list .model-detail.show { display: block; }
 
-/* '모델 목록' 섹션: '자세히' 접히는 기술 설명(항상 보일 문구 그대로) */
-.fit-details { flex-basis: 100%; margin: 0; }
-.fit-details summary {
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ds-accent-text);
-}
-.fit-details summary::-webkit-details-marker { display: none; }
-.fit-details[open] summary { margin-bottom: 4px; }
-.fit-details .fit-note { margin: 0; font-size: 13px; color: var(--ds-ink-3); line-height: 1.5; }
-
-/* '총 필요 메모리 NGB': 긴 숫자가 휴대폰에서 카드 밖으로 안 넘게 */
-.model-list .ds-list-amount { min-width: 0; overflow-wrap: anywhere; }
-
-/* 휴대폰(≤560px) */
+/* 휴대폰(≤560px): 본문 여백 */
 @media (max-width: 560px) {
   .ds-page { padding: var(--ds-s4) var(--ds-s4) var(--ds-s6); }
-  .model-list .ds-list-sub { margin-top: 2px; }
-  .top-row { flex-direction: column; }
-  .top-item + .top-item { border-left: 0; border-top: 1px solid var(--ds-line); }
-  /* 폭이 좁으면 긴 이름/배지 내용이 카드 폭을 키우지 않도록 주 영역 폭을 0 기준 + 줄바꿈 */
-  .model-list .ds-list-main { flex: 1 1 0; }
-  .model-list .ds-list-sub { gap: 3px 8px; }
 }

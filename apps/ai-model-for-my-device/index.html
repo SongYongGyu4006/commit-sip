@@ -9,15 +9,12 @@
 <script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="Hugging Face 인기 텍스트 모델 100개의 파라미터를 4bit·8bit 양자화로 환산해, 내 PC RAM 을 한 번만 선택하면 그 기기에 실행할 수 있는 모델(추정 적합 기준)을 한국어 대시보드로 보여 주는 앱입니다."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/ai-model-for-my-device/"></head>
 <body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 내 기기에 맞는 AI 모델 찾기 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
 
-<header class="ds-band">
+<header class="ds-band ds-band-thin">
   <h1>내 기기에 맞는 AI 모델 찾기</h1>
-  <p>내 컴퓨터 메모리(RAM)만 고르면, 인터넷에서 인기 있는 무료 AI(ChatGPT 같은 프로그램) 중 내 컴퓨터에서 직접 설치해 쓸 수 있는 것을 보여 줘요.</p>
-  <div class="howto">
-    <ol>
-      <li><b>1.</b> 컴퓨터 메모리(RAM) 용량 선택</li>
-      <li><b>2.</b> 바로 결과 확인 (자동 계산)</li>
-      <li><b>3.</b> 더 가벼운 모델을 원하면 압축 정도 조절</li>
-    </ol>
+  <p>내 컴퓨터 메모리(RAM)만 고르면, 인기 있는 무료 AI 중 내 컴퓨터에서 직접 설치해 쓸 수 있는 것을 보여 줘요.</p>
+  <div class="ds-band-meta">
+    <span class="ds-badge" id="data-time">데이터 불러오는 중…</span>
+    <span id="data-terms"></span>
   </div>
 </header>
 
@@ -34,100 +31,99 @@
     </dl>
   </section>
 
-  <div class="ds-section-title" id="top-title">
-    <h2 id="top-label">내 RAM 16GB 기준, 쓸 수 있는 AI 상위 3</h2>
-    <p>실제 계산된 예시 결과예요. 아래 '내 PC 설정'에서 내 RAM을 바꾸면 이 결과도 바뀝니다.</p>
-  </div>
-  <div class="ds-card" id="top-card"></div>
-  <p class="ds-hint see-all">아래 목록에서 전체를 볼 수 있어요 ↓</p>
-
-  <div id="app-status" role="status"></div>
-
-  <div class="ds-section-title">
-    <h2>내 PC 설정</h2>
-    <p>3가지만 고르면 바로 계산돼요. 상세 설정은 아래에 접혀 있어요.</p>
-  </div>
-  <div class="ds-card">
-    <div class="ctl-grid ctl-core">
-      <div class="ctl-cell">
-        <label class="ds-label" for="ram-select">내 RAM</label>
-        <p class="ds-hint">윈도우: 작업 관리자 &gt; 성능 &gt; 메모리에서 확인 / 잘 모르면 16GB를 고르세요</p>
-      </div>
-      <select class="ds-select" id="ram-select">
-        <option value="8">내 RAM: 8GB</option>
-        <option value="16" selected>내 RAM: 16GB</option>
-        <option value="32">내 RAM: 32GB</option>
-        <option value="64">내 RAM: 64GB</option>
-        <option value="128">내 RAM: 128GB</option>
-      </select>
-      <div class="ctl-cell">
-        <label class="ds-label" for="quant-select">압축 정도(양자화)</label>
-        <p class="ds-hint">숫자가 낮을수록 가볍지만 정확도는 조금 떨어져요. 모르면 그대로 두세요.</p>
-      </div>
-      <select class="ds-select" id="quant-select">
-        <option value="8bit" selected>8bit</option>
-        <option value="4bit">4bit</option>
-      </select>
-      <div class="ctl-cell">
-        <label class="ds-label" for="rank-select">정렬</label>
-        <p class="ds-hint">목록을 어떤 순서로 보여 줄지 고르세요.</p>
-      </div>
-      <select class="ds-select" id="rank-select">
-        <option value="trending" selected>요즘 인기순</option>
-        <option value="downloads">많이 사용 (다운로드)</option>
-        <option value="optimized">내 RAM에 맞는 것 먼저</option>
-      </select>
+  <div class="ds-card" id="settings-card">
+    <div class="ds-section-title ds-section-title-plain" id="settings-title">
+      <h2>내 PC 설정</h2>
+      <p>RAM을 고르면 아래 결과가 바로 다시 계산돼요. RAM이 가장 중요합니다.</p>
     </div>
-    <details class="details-more">
-      <summary>내 PC 상세 설정</summary>
-      <div class="ctl-grid ctl-more">
-        <div class="ctl-cell">
-          <label class="ds-label" for="task-select">작업</label>
-        </div>
-        <select class="ds-select" id="task-select">
-          <option value="text" selected>텍스트</option>
-          <option value="image">이미지</option>
+    <div class="ctl-grid">
+      <div class="ctl-field">
+        <label class="ds-label" for="ram-select">내 RAM</label>
+        <select class="ds-select" id="ram-select">
+          <option value="8">8GB</option>
+          <option value="16" selected>16GB</option>
+          <option value="32">32GB</option>
+          <option value="64">64GB</option>
+          <option value="128">128GB</option>
         </select>
-        <div class="ctl-cell">
-          <label class="ds-label" for="gpu-select">GPU</label>
-        </div>
+        <p class="ds-hint">작업 관리자 &gt; 성능 &gt; 메모리</p>
+      </div>
+      <div class="ctl-field">
+        <label class="ds-label" for="arch-select">CPU 아키텍처</label>
+        <select class="ds-select" id="arch-select">
+          <option value="x86_64" selected>x86_64 (Intel/AMD)</option>
+          <option value="arm64">ARM64 (Apple·Snapdragon)</option>
+        </select>
+        <p class="ds-hint">설정 &gt; 시스템 &gt; 정보</p>
+      </div>
+      <div class="ctl-field">
+        <label class="ds-label" for="gpu-select">GPU</label>
         <select class="ds-select" id="gpu-select">
-          <option value="none" selected>GPU 없음 (CPU만)</option>
+          <option value="none" selected>없음 (CPU만)</option>
           <option value="nvidia">NVIDIA</option>
           <option value="amd">AMD</option>
           <option value="apple">Apple 실리콘</option>
         </select>
-        <div class="ctl-cell">
-          <label class="ds-label" for="vram-select">VRAM</label>
-        </div>
+        <p class="ds-hint">작업 관리자 &gt; 성능 &gt; GPU</p>
+      </div>
+      <div class="ctl-field">
+        <label class="ds-label" for="vram-select">VRAM</label>
         <select class="ds-select" id="vram-select">
           <option value="0" selected>VRAM 없음</option>
-          <option value="4">VRAM 4GB</option>
-          <option value="8">VRAM 8GB</option>
-          <option value="12">VRAM 12GB</option>
-          <option value="16">VRAM 16GB</option>
-          <option value="24">VRAM 24GB</option>
+          <option value="4">4GB</option>
+          <option value="8">8GB</option>
+          <option value="12">12GB</option>
+          <option value="16">16GB</option>
+          <option value="24">24GB</option>
         </select>
+        <p class="ds-hint">GPU가 없으면 자동으로 비활성화돼요</p>
       </div>
-      <p class="ds-hint" id="arch-note">CPU 아키텍처는 추정에 영향을 주지 않아서(참고용) 설정에서 빼 두었어요.</p>
-      <p class="ds-hint" id="gpu-note" hidden></p>
-    </details>
+      <div class="ctl-field">
+        <label class="ds-label" for="quant-select">압축(양자화)</label>
+        <select class="ds-select" id="quant-select">
+          <option value="8bit" selected>8bit (정확)</option>
+          <option value="4bit">4bit (가볍)</option>
+        </select>
+        <p class="ds-hint">모르면 그대로 두세요</p>
+      </div>
+      <div class="ctl-field">
+        <label class="ds-label" for="task-select">작업</label>
+        <select class="ds-select" id="task-select">
+          <option value="text" selected>텍스트</option>
+          <option value="image">이미지</option>
+        </select>
+        <p class="ds-hint">현재 데이터는 텍스트 모델 100개예요</p>
+      </div>
+    </div>
+    <p class="ds-hint" id="arch-note"></p>
+    <p class="ds-hint" id="gpu-note"></p>
     <div class="ctl-actions">
       <button class="ds-btn ds-btn-primary ds-btn-lg" id="apply-button" type="button">적용</button>
       <button class="ds-btn ds-btn-lg" id="example-button" type="button">예시로 해 보기</button>
     </div>
   </div>
 
-  <div class="ds-section-title">
+  <div class="ds-section-title" id="list-title">
     <h2>모델 목록</h2>
-    <details class="fit-details"><summary>자세히</summary><p class="fit-note">추정 적합: 가중치 + 런타임 예약 + KV 캐시(컨텍스트 길이·배치)를 더한 총 필요 메모리로 계산된 추정치이며, 실제 실행 엔진의 측정치와 다를 수 있습니다. 실제 실행에는 더 많은 RAM이 필요합니다.</p></details>
+    <label class="rank-label" for="rank-select">정렬</label>
+    <select class="ds-select rank-select" id="rank-select" aria-label="정렬">
+      <option value="optimized" selected>내 사양에 맞는 것 먼저</option>
+      <option value="trending">요즘 인기순</option>
+      <option value="downloads">다운로드 많은 순</option>
+    </select>
   </div>
-  <div class="ds-card">
+  <div class="ds-card" id="list-card">
+    <p class="ds-hint" id="fit-note">추정 적합: 가중치 + 런타임 예약 + KV 캐시(컨텍스트 길이·배치)를 더한 총 필요 메모리로 계산된 추정치이며, 실제 실행 엔진의 측정치와 다를 수 있습니다. 실제 실행에는 더 많은 RAM이 필요합니다.</p>
+    <p class="ds-hint list-hint">모델 이름을 누르면 Hugging Face 모델 페이지가 새 탭으로 열려요.</p>
     <ul id="model-list" class="ds-list model-list"></ul>
+    <div id="more-wrap" class="more-wrap" hidden>
+      <button class="ds-btn" id="more-button" type="button">전체 100개 보기</button>
+    </div>
   </div>
+
+  <div id="app-status" role="status"></div>
 
   <p class="ds-footer" id="foot-note"></p>
-
 </main>
 <script type="module" src="src/ui.js"></script>
 

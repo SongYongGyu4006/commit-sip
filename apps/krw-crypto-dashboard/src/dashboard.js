@@ -1,45 +1,46 @@
 // 대시보드를 매번 처음부터 다시 그린다(누적 상태 없음, li 중복 없음)
-// 구조: 띠(오늘 1$) → 답 카드(24시간 원화 변동) → 코인 목록 → 접힌 구역(흐름·시뮬레이터·차트)
+// 구조: 띠(오늘 1$) → 답 카드(24시간 원화 변동 금액) → 시세 차트 3개(원화·비트코인·통합) → 코인 목록(접음) → 그때 샀더라면(접음) → 출처
 import { formatWon, formatRate, formatSigned, coinName, formatRelativeTime, barWidth } from "./format.js";
 import { round2 } from "./app.js";
-import { renderAllCharts, renderFlowCharts } from "./chart.js";
+import { renderAllCharts } from "./chart.js";
 import { simDefaults, renderSimResult, simCoinChange } from "./simulator.js";
 
 const $ = (sel) => document.querySelector(sel);
 const hueOf = (name) => [...name].reduce((s, c) => s + c.codePointAt(0), 0) % 8;
 const dirClass = (dir) => (dir === "up" ? "ds-up" : dir === "down" ? "ds-down" : "ds-flat");
 
-// 환율 효과 = 24시간 원화 변동 − (24시간 달러 변동 + 24시간 환율 변동).
-// 환율 효과%는 원화 변동의 부호(달러·환율 중 어느 쪽인지가 아니라 "원화로는 이만큼")로 표시한다.
+// 환율 효과: 데이터의 fxEffectPct를 그대로 쓴다(24시간 원화 변동 − 24시간 달러 변동).
 function fxEffectPct(r) {
-  const fxChangePct = r.prevFx ? (r.usdKrw / r.prevFx - 1) * 100 : 0;
-  return round2(r.krwChangePct - r.usdChangePct - fxChangePct);
+  return r.fxEffectPct;
 }
 
-// 24시간 원화 실질 변동(= 달러 + 환율) — 환율 효과는 24시간 전 환율과 비교해 계산
+// 보유 코인 한 단위(가격 기준) 1백만 원어치로 24시간 원화 실질 변동을 "원" 단위로 계산:
+// 각 코인 1백만 원어치 = 1,000,000 / krwPrice 개 → 24시간 변동 = (1,000,000 / krwPrice) × krwChangePct/100 × krwPrice = 1,000,000 × krwChangePct/100
+// → 코인 1백만 원어치당 변동 = krwChangePct% × 10,000원. 총합은 각 코인 1백만 원어치 합.
+function wonDelta(result) {
+  return result.rows.reduce((s, r) => s + 10000 * r.krwChangePct, 0);
+}
+
+// 24시간 원화 실질 변동을 "원" 금액으로 풀어 쓴 답 카드
 function renderAnswerCard(result) {
-  const rows = result.rows;
+  const delta = wonDelta(result);
+  const dir = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
+  const sign = delta > 0 ? "+" : delta < 0 ? "−" : "";
   const num = $("#answer-num");
-  num.className = "ds-answer-num " + dirClass(rows[0].direction);
-  num.textContent = formatSigned(rows[0].krwChangePct) + "%";
+  num.className = "ds-answer-num " + dirClass(dir);
+  num.textContent = sign + formatWon(Math.abs(delta));
   const small = document.createElement("small");
-  small.textContent = "24시간";
+  small.textContent = "원";
   num.appendChild(small);
 
-  let best = rows[0];
-  let worst = rows[0];
-  for (const r of rows) {
-    if (r.krwChangePct > best.krwChangePct) best = r;
-    if (r.krwChangePct < worst.krwChangePct) worst = r;
-  }
-  const same = rows.length < 2 || best.id === worst.id;
+  // 한 문장: 1백만 원어치로 풀어 쓴다
   $("#answer-text").textContent =
-    rows.length + "개 코인 중 " + coinName(best.id) + "이(가) 가장 많이 " +
-    (best.krwChangePct >= 0 ? "올라" : "내려") + "요" +
-    (same ? "" : ", " + coinName(worst.id) + "은(는) " + formatSigned(worst.krwChangePct) + "%로 가장 적게") +
+    "1백만 원어치 들고 있었다면 24시간 동안 " + sign + formatWon(Math.abs(delta)) + "원" +
+    (dir === "up" ? " 더 늘었어요" : dir === "down" ? " 줄었어요" : " 변화가 없어요") +
     ". 원화 변동은 달러 변동과 환율 효과의 합이에요.";
 
-  // 보조 숫자: 오늘 1$ 환율
+  // 보조 숫자: 오늘 1$ 환율 + 24시간 달러 변동(원화 기준) + 24시간 환율 효과(원화 기준)
+  const rows = result.rows;
   const rate = $("#answer-rate");
   rate.textContent = formatRate(result.usdKrw);
   rate.className = "ds-num";
@@ -56,6 +57,7 @@ function renderAnswerCard(result) {
 }
 
 // 코인 목록: 아바타 · 이름(실질 변동 뱃지) · 보조(달러·환율) · 오른쪽(원화 금액) + 실질 변동 막대
+// "24시간 원화 +0.37% (달러 +0.37% · 환율 0%)" 처럼 쉬운 한 문장으로.
 function renderCoinList(result) {
   const list = $("#coin-list");
   list.textContent = "";
@@ -105,8 +107,8 @@ function renderCoinList(result) {
     price.textContent = "₩" + formatWon(row.krwPrice);
     const realAmount = document.createElement("span");
     realAmount.className = "real-amount ds-hint ds-num";
-    const delta = row.krwPrice - row.prevKrwPrice;
-    realAmount.textContent = "24시간 " + (delta > 0 ? "+" : delta < 0 ? "-" : "") + formatWon(Math.abs(delta)) + "원";
+    const delta = Math.round((row.krwPrice * row.krwChangePct) / 100);
+    realAmount.textContent = "24시간 " + (delta > 0 ? "+" : delta < 0 ? "−" : "") + formatWon(Math.abs(delta)) + "원";
     end.append(price, realAmount);
 
     const barWrap = document.createElement("div");
@@ -122,12 +124,10 @@ function renderCoinList(result) {
 }
 
 export function renderDashboard(result, meta, isExample) {
-  // 띠: 환율은 "오늘 1$" 기준 정보(데이터 시각 + 갱신 주기)
+  // 띠: 오늘 1$ 환율 + 기준 정보(데이터 시각)
   const fxTime = isExample ? "" : " (" + formatRelativeTime(meta.fxMeta.fetched_at) + " 갱신)";
-  $("#fx-line").textContent = "오늘 1$ " + formatRate(result.usdKrw) + fxTime;
-  $("#data-time").textContent = isExample
-    ? "예시 데이터"
-    : "시세 " + formatRelativeTime(meta.coinMeta.fetched_at);
+  $("#band-rates").textContent = "오늘 1$" + formatRate(result.usdKrw) + "원";
+  $("#band-sub").textContent = isExample ? "예시 데이터" : "보유 코인 기준 · 1백만 원어치로 계산";
 
   renderAnswerCard(result);
 
@@ -150,21 +150,20 @@ export function renderDashboard(result, meta, isExample) {
   $("#source-line").textContent =
     "출처: CoinGecko, Rates By Exchange Rate API" + (terms ? " (" + terms + ")" : "") + " · 24시간 환율은 하루 1회 갱신";
 
-  // 접힌 구역: 24시간 흐름 차트 + 시뮬레이터
-  renderFlowCharts(result);
-  // 접힌 구역: 원화·비트코인·환율·통합 차트
+  // 24시간 원화 변동 차트(달러 변동 · 환율 효과 · 원화 실질 변동 — 한 축)
   renderAllCharts(result);
 }
 
 export function renderError(message, statusText) {
   $("#app-status").textContent = statusText;
   $("#coin-list").textContent = "";
-  $("#fx-line").textContent = message;
-  $("#data-time").textContent = "";
+  $("#band-rates").textContent = "오늘 1$ — 원";
+  $("#band-sub").textContent = message;
   $("#source-line").textContent = "";
   $("#sim-result").textContent = "";
   $("#answer-num").className = "ds-answer-num ds-flat";
   $("#answer-num").textContent = "—";
+  $("#answer-text").textContent = "시세를 불러오지 못했어요";
   $("#answer-usd").textContent = "—";
   $("#answer-fx").textContent = "—";
   $("#answer-rate").textContent = "—";

@@ -1,45 +1,72 @@
-/* 시니어 역량 점검 — 앱 전용 스타일
+/* 역량 점검 — 앱 전용 스타일
    색·간격·모서리는 vendor/studio.css 의 ds- 토큰(var(--ds-...))만 쓴다.
-   여기서는 레이아웃과 app 클래스의 세부 조정만 한다. */
+   여기서는 레이아웃과 app 클래스의 세부 조정만 한다.
+   (ds- 토큰은 vendor/studio.css 가 styles.css 보다 먼저 로드되므로 이 파일 안에서도 사용할 수 있다.) */
 
-/* 답 카드의 보조 숫자를 띠 메타처럼 정렬 */
+/* 답 카드의 보조 숫자: 아직 값이 없으면 회색 '—' */
 .ds-answer-meta dd.ds-flat {
   color: var(--ds-ink-3);
 }
 
-/* 입력·결과를 데스크톱에서 나란히, 휴대폰에서는 1열로 */
-.ds-check-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--ds-s4);
-}
-
-@media (min-width: 860px) {
-  .ds-check-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-  }
-}
-
-/* 버튼 줄: 주 버튼 1개, 나머지는 보조 */
+/* 버튼 줄: 주 버튼 1개, 나머지는 보조. 모바일에서는 1줄에 2개씩 */
 .btn-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--ds-s2);
-  margin-top: var(--ds-s4);
+  margin-top: var(--ds-s3);
 }
+
+/* 순서: 점검하기(주) · 예시 둘 · 초기화(ghost) */
+#assess-button { order: 1; }
+#example-button { order: 2; }
+#example-career { order: 3; }
+#reset-button { order: 4; margin-left: auto; }
 
 @media (max-width: 520px) {
   .btn-row .ds-btn {
-    flex: 1 1 auto;
+    flex: 1 1 calc(50% - var(--ds-s2));
+    min-width: 0;
+  }
+  #assess-button {
+    flex: 1 1 100%;
+    min-height: 48px;
+  }
+  #reset-button {
+    flex: 1 1 100%;
+    margin-left: 0;
   }
 }
 
-/* 상태 영역 (ds-status 계열 토큰) */
+/* 띠: 설명을 짧은 폭으로, 아래 여백을 줄여 답 카드를 위로 */
+.ds-band p.band-desc {
+  max-width: 56ch;
+}
+.ds-band:has(+ .ds-page > .ds-answer:first-child) {
+  padding-bottom: 56px;
+}
+.ds-band + .ds-page > .ds-answer:first-child {
+  margin-top: -40px;
+}
+@media (max-width: 520px) {
+  .ds-band {
+    padding-top: var(--ds-s5);
+  }
+  .ds-band:has(+ .ds-page > .ds-answer:first-child) {
+    padding-bottom: 48px;
+  }
+  .ds-band + .ds-page > .ds-answer:first-child {
+    margin-top: -32px;
+  }
+  .ds-band-meta {
+    margin-top: var(--ds-s3);
+  }
+}
+
+/* 상태 영역: 오류/성공. 없으면 숨김 */
 .status {
   font-size: 14px;
   border-radius: var(--ds-radius);
-  margin-bottom: var(--ds-s3);
 }
 
 .status:empty {
@@ -51,6 +78,7 @@
   color: var(--ds-bad);
   border: 1px solid var(--ds-bad);
   padding: var(--ds-s3) var(--ds-s4);
+  margin-bottom: var(--ds-s3);
 }
 
 .status.ok {
@@ -58,18 +86,20 @@
   color: var(--ds-good);
   border: 1px solid var(--ds-good);
   padding: var(--ds-s3) var(--ds-s4);
+  margin-bottom: var(--ds-s3);
 }
 
-/* 결과 블록: 카드 안에서 한 단계 밝은 바탕 + 1px 선으로만 구분 */
+/* 결과 블록: 카드 안에서 한 단계 다른 바탕 + 1px 선으로만 구분 (그림자 없음) */
 .result-block {
-  background: var(--ds-surface-2);
-  border: 1px solid var(--ds-line);
-  border-radius: var(--ds-radius);
-  padding: var(--ds-s4);
+  color: var(--ds-ink);
+  margin-top: var(--ds-s4);
 }
 
+.direction-row + .result-block,
 .result-block + .result-block {
-  margin-top: var(--ds-s3);
+  border-top: 1px solid var(--ds-line);
+  padding-top: var(--ds-s4);
+  margin-top: var(--ds-s4);
 }
 
 .result-block h3 {
@@ -77,12 +107,12 @@
   align-items: center;
   gap: var(--ds-s2);
   margin: 0 0 var(--ds-s3);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--ds-ink-2);
+  color: var(--ds-ink);
 }
 
-/* 개수 뱃지: 13px 이상으로 키워요 */
+/* 개수 뱃지: 13px 이상으로 키움 */
 .badge {
   display: inline-block;
   min-width: 20px;
@@ -136,20 +166,30 @@
 
 .empty-note {
   margin: var(--ds-s2) 0 0;
-  color: var(--ds-ink-3);
-  font-size: 13px;
+  color: var(--ds-ink-2);
+  font-size: 14px;
 }
 
-/* 진행 방향: 큰 값 + 한 줄 풀이 */
+.tag-list:not(:empty) ~ .empty-note {
+  display: none;
+}
+
+.empty-note:empty {
+  display: none;
+}
+
+/* 진행 방향: 한 줄. 값은 주 색, 풀이는 보조 */
 .direction-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--ds-s3);
-  margin-top: var(--ds-s4);
-  padding: var(--ds-s4);
-  border: 1px solid var(--ds-line);
-  border-radius: var(--ds-radius);
-  background: var(--ds-surface-2);
+  gap: var(--ds-s2) var(--ds-s3);
+  margin-top: var(--ds-s3);
+  padding: 0;
+}
+
+.direction-row:empty {
+  display: none;
 }
 
 .direction-label {
@@ -173,10 +213,54 @@
   font-size: 14px;
 }
 
-/* 참고 문구: 13px 이상 */
+/* 채용 공고 접기 (선택 입력) */
+.job-details {
+  margin-top: var(--ds-s4);
+}
+
+.job-details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 var(--ds-s3);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  color: var(--ds-accent-text);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  margin-bottom: var(--ds-s2);
+}
+
+.job-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.job-details summary::after {
+  content: "+";
+  font-size: 20px;
+  line-height: 1;
+}
+
+.job-details[open] summary::after {
+  content: "−";
+}
+
+.job-details summary:focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+}
+
+.job-details .ds-textarea {
+  margin-top: 0;
+}
+
+/* 참고 문구: 14px. 화면에서 한 번만 */
 .caveat {
-  margin: var(--ds-s2) 0 0;
-  color: var(--ds-ink-3);
+  margin: var(--ds-s4) 0 0;
+  color: var(--ds-ink-2);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -185,4 +269,17 @@
 .file-btn {
   display: inline-flex;
   cursor: pointer;
+}
+
+.save-row {
+  margin-top: var(--ds-s4);
+  padding-top: var(--ds-s4);
+  border-top: 1px solid var(--ds-line);
+}
+
+@media (max-width: 520px) {
+  .save-row .ds-btn {
+    flex: 1 1 calc(50% - var(--ds-s2));
+    min-width: 0;
+  }
 }

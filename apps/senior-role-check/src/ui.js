@@ -1,9 +1,9 @@
-// 시니어 역량 점검 — 화면 제어 모듈
+// 역량 점검 — 화면 제어 모듈
 // 순수 로직(app.js)과 DOM 사이를 잇는 유일한 모듈이다.
 // 화면의 모든 출력은 textContent 만으로 수행하며, localStorage 등
 // 어떤 저장소에도 쓰지 않는다.
 
-import { assessSeniorRole, isImportableResult, SENIOR_KEYWORDS } from './app.js';
+import { assessSeniorRole, isImportableResult } from './app.js';
 
 // ── 요소 참조 ─────────────────────────────────────────
 const els = {
@@ -25,10 +25,12 @@ const els = {
   directionNote: document.getElementById('direction-note'),
   jobMatch: document.getElementById('job-match'),
   jobMatchList: document.getElementById('job-match-list'),
+  answerLabel: document.getElementById('answer-label'),
   answerNum: document.getElementById('answer-num'),
   answerText: document.getElementById('answer-text'),
-  metaMatch: document.getElementById('meta-match'),
+  metaStrengths: document.getElementById('meta-strengths'),
   metaGaps: document.getElementById('meta-gaps'),
+  metaMatch: document.getElementById('meta-match'),
   status: document.getElementById('app-status'),
 };
 
@@ -59,11 +61,11 @@ const DIRECTION_LABELS = {
   generalist: '탐색형',
 };
 
-// 진행 방향 한 줄 풀이
+// 진행 방향 한 줄 풀이. 실제 판정 규칙(매칭된 키워드 수)에 맞게 쓴다.
 const DIRECTION_NOTES = {
   lead: '리드·팀·멘토 같은 키워드가 함께 나와, 이끄는 방향으로 읽혀요.',
-  specialist: '여러 능력이 골고루 언급되어, 특화된 전문가 방향으로 읽혀요.',
-  generalist: '여러 키워드가 고르게 나와 아직 방향을 탐색하는 단계로 읽혀요.',
+  specialist: '3개 이상 역량이 언급되어, 전문가 방향으로 읽혀요.',
+  generalist: '언급된 역량이 적어 방향을 단정하기 어려워요. 경험을 더 구체적으로 적어 보세요.',
 };
 
 // ── 한국어 처리 (화면 전용) ───────────────────────────
@@ -124,7 +126,7 @@ function renderJobMatch() {
   if (!jobText.trim()) {
     els.jobMatch.hidden = true;
     els.jobMatchList.textContent = '';
-    els.metaMatch.textContent = '';
+    els.metaMatch.textContent = '—';
     return;
   }
   let job;
@@ -133,7 +135,7 @@ function renderJobMatch() {
   } catch {
     els.jobMatch.hidden = true;
     els.jobMatchList.textContent = '';
-    els.metaMatch.textContent = '';
+    els.metaMatch.textContent = '—';
     return;
   }
 
@@ -170,16 +172,18 @@ function render(result) {
   els.directionNote.textContent = '';
   els.answerNum.textContent = '';
   els.answerText.textContent = '';
-  els.metaMatch.textContent = '';
+  els.metaStrengths.textContent = '';
   els.metaGaps.textContent = '';
+  els.metaMatch.textContent = '';
 
   if (!result) {
     els.strengthsEmpty.hidden = false;
     els.gapsEmpty.hidden = false;
     els.directionNote.textContent = '점검하면 여기에 나와요.';
-    els.answerNum.textContent = '탐색형';
-    els.answerText.textContent = '아래 이력을 붙여 넣고 "점검하기"를 누르면, 여기에 결과가 나와요.';
-    els.metaGaps.textContent = '';
+    els.answerNum.textContent = '—';
+    els.answerText.textContent = '예시 버튼을 누르거나 이력을 붙여 넣어 보세요.';
+    els.metaStrengths.textContent = '—';
+    els.metaGaps.textContent = '—';
     renderJobMatch();
     return;
   }
@@ -203,11 +207,12 @@ function render(result) {
   els.direction.textContent = DIRECTION_LABELS[result.direction] || result.direction;
   els.directionNote.textContent = DIRECTION_NOTES[result.direction] || '';
 
-  // 답 카드: 방향(큰 글자) + 한 문장 + 보조 숫자
+  // 답 카드: 방향(큰 글자) + 한 문장 + 보조 숫자 3개
   els.answerNum.textContent = DIRECTION_LABELS[result.direction] || result.direction;
   els.answerText.textContent =
     '역량 ' + result.strengths.length + '개, 보완 영역 ' + result.gaps.length +
     '개를 찾았어요. 아래 목록에서 자세히 보세요.';
+  els.metaStrengths.textContent = String(result.strengths.length);
   els.metaGaps.textContent = result.gaps.length ? result.gaps.length + '개' : '없음';
   renderJobMatch();
 }
@@ -216,6 +221,14 @@ function render(result) {
 function setStatus(message, isError = true) {
   els.status.textContent = message;
   els.status.className = 'status' + (message ? (isError ? ' error' : ' ok') : '');
+}
+
+// 점검 성공 후, 결과(답 카드)가 화면 안에 안 보이는 경우로 부드럽게 스크롤한다.
+// 이미 보이는 경우에는 움직이지 않는다.
+function scrollIfNeeded(anchor) {
+  const rect = anchor.getBoundingClientRect();
+  if (rect.top >= 0 && rect.top < window.innerHeight) return;
+  anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── 점검하기 ─────────────────────────────────────────
@@ -228,10 +241,8 @@ function runAssess() {
     if (err instanceof RangeError) {
       if (text.trim().length === 0) {
         setStatus('이력 텍스트가 비어 있습니다. 내용을 입력한 뒤 다시 시도해 주세요.');
-      } else if (text.trim().length > 20000) {
-        setStatus('이력 텍스트가 너무 깁니다. 20,000자 이하로 줄인 뒤 다시 시도해 주세요.');
       } else {
-        // 한국어 대응이 덧붙여져 20,000자를 넘긴 경우
+        // 20,000자를 넘긴 경우 (한국어 대응이 덧붙여져 넘긴 경우도 포함)
         setStatus('이력 텍스트가 너무 깁니다. 20,000자 이하로 줄인 뒤 다시 시도해 주세요.');
       }
     } else {
@@ -242,6 +253,7 @@ function runAssess() {
   lastResult = result;
   setStatus('');
   render(result);
+  scrollIfNeeded(els.answerLabel);
 }
 
 // ── 예시로 해 보기 ───────────────────────────────────
@@ -340,5 +352,5 @@ els.export.addEventListener('click', runExport);
 els.importFile.addEventListener('change', onImportChange);
 els.jobInput.addEventListener('input', renderJobMatch);
 
-// 첫 화면에 예시로 계산된 답을 미리 채워 둔다. (빈 답 카드 금지)
+// 첫 화면: 결과는 아직 없으니 "—" 안내 상태로 시작한다. (가짜 기본 결과 금지)
 render(null);

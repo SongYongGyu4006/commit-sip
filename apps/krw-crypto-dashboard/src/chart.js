@@ -1,5 +1,5 @@
-// 24시간 변동 비교 차트: 코인별 원화·달러·환율 막대를 그린다(순수 계산 + 렌더)
-import { formatSigned, formatRate, coinName } from "./format.js";
+// 24시간 변동 차트: 코인별 "달러 변동"·"환율 효과"·"원화 실질 변동" 세 막대를 한 축(%)에 그린다.
+import { formatSigned, coinName, formatWon } from "./format.js";
 import { round2 } from "./app.js";
 
 // canvas id + Chart.js 옵션으로 차트를 그린다. 재호출 시 기존 차트를 깨고 새로 만든다(누적 방지).
@@ -34,142 +34,95 @@ export function drawChart(canvasId, { data, options }) {
   });
 }
 
-// 좌축: 가격/환율, 우축: 24시간 변동 % — 두 축을 함께 보여주는 차트.
-const DUAL_SCALES = {
-  x: { stacked: true },
-  y: { type: "linear", position: "left", title: { display: true } },
-  y1: {
-    type: "linear",
-    position: "right",
-    grid: { drawOnChartArea: false },
-    ticks: { callback: (v) => v + "%" },
-  },
-};
-
-// 원화 시세: 코인별 원화 가격(좌축) + 24시간 원화 실질 변동(우축)
+// 원화 시세: 코인별 "달러 변동" + "환율 효과" + "원화 실질 변동" — 세 막대 모두 같은 축(%)에 둔다.
+// 이중축(가격+%)은 없앤다: 24시간 변동만 하나의 % 축으로 읽기 쉽게.
+// 환율 효과 = row.fxEffectPct(24시간 원화 변동 − 24시간 달러 변동, 환율 데이터가 하루치라 0).
 export function krwChartData(rows) {
   return {
     labels: rows.map((r) => coinName(r.id)),
     datasets: [
-      { label: "원화 가격", data: rows.map((r) => r.krwPrice), yAxisID: "y", backgroundColor: "var(--ds-c1)" },
-      { label: "24시간 원화 실질", data: rows.map((r) => r.krwChangePct), yAxisID: "y1" },
+      { label: "달러 변동", data: rows.map((r) => r.usdChangePct), backgroundColor: "var(--ds-c2)" },
+      { label: "환율 효과", data: rows.map((r) => r.fxEffectPct), backgroundColor: "var(--ds-c3)" },
+      { label: "원화 실질 변동", data: rows.map((r) => r.krwChangePct), backgroundColor: "var(--ds-c1)" },
     ],
   };
 }
 
-// 비트코인 시세: 달러 가격(좌축) + 24시간 변동(우축, 원화 실질 포함)
+// 비트코인 시세: 현재 가격(원) + 24시간 전 가격(원)을 막대로 보여 준다.
+// 24시간 전 가격 = 현재 ÷ (1 + 24시간 원화 변동/100). 환율 데이터가 하루 1회라 환율 효과는 반영 안 됨.
 export function btcChartData(rows) {
+  const b = rows.find((r) => r.id === "bitcoin") || rows[0];
+  const current = b.krwPrice;
+  const prev = Math.round(current / (1 + (b.krwChangePct / 100)));
+  return {
+    labels: [coinName(b.id)],
+    datasets: [
+      { label: "24시간 전", data: [prev], backgroundColor: "var(--ds-c2)" },
+      { label: "현재", data: [current], backgroundColor: "var(--ds-c1)" },
+    ],
+  };
+}
+
+// 원화·비트코인 반영 통합: 24시간 원화 변동(%)과 원화 금액 변동(원)을 같은 차트에.
+// 가격 레벨은 답 카드·목록에서 이미 보이기 때문에, 여기엔 변동 정보만.
+export function integratedChartData(rows) {
   return {
     labels: rows.map((r) => coinName(r.id)),
     datasets: [
-      { label: "달러 가격", data: rows.map((r) => r.usdPrice), yAxisID: "y", backgroundColor: "var(--ds-c2)" },
-      { label: "24시간 달러", data: rows.map((r) => r.usdChangePct), yAxisID: "y1" },
-      { label: "24시간 원화 실질", data: rows.map((r) => r.krwChangePct), yAxisID: "y1" },
+      { label: "24시간 변동(%)", data: rows.map((r) => r.krwChangePct), backgroundColor: "var(--ds-c1)", yAxisID: "y" },
+      { label: "24시간 원화 변동(원)", data: rows.map((r) => Math.round((r.krwPrice * r.krwChangePct) / 100)), backgroundColor: "var(--ds-c4)", yAxisID: "y1" },
     ],
   };
 }
 
-// 환율: 오늘 1$ 환율(좌축) + 코인별 환율 효과(우축)
-export function fxChartData(result) {
-  return {
-    labels: result.rows.map((r) => coinName(r.id)),
-    datasets: [
-      { label: "오늘 1$ 환율", data: result.rows.map(() => result.usdKrw), yAxisID: "y", backgroundColor: "var(--ds-c3)" },
-      { label: "환율 효과", data: result.rows.map((r) => r.fxEffectPct), yAxisID: "y1" },
-    ],
-  };
-}
-
-// 통합: 원화 가격 · 달러 가격(좌축, 스택) + 환율(우축)
-export function unifiedChartData(result) {
-  return {
-    labels: result.rows.map((r) => coinName(r.id)),
-    datasets: [
-      { label: "원화 가격", data: result.rows.map((r) => r.krwPrice), yAxisID: "y" },
-      { label: "달러 가격", data: result.rows.map((r) => r.usdPrice), yAxisID: "y" },
-      { label: "환율", data: result.rows.map(() => result.usdKrw), yAxisID: "y1" },
-    ],
-  };
-}
-
-// 24시간 흐름(접힌 구역): 24시간 전·지금의 원화 가격(좌축, 스택) + 24시간 전·지금 환율(우축).
-// 24시간 전 환율은 데이터에 없어 null(데이터 없음)로 둔다.
-export function flowChartData(result) {
-  return {
-    labels: result.rows.map((r) => coinName(r.id)),
-    datasets: [
-      { label: "24시간 전 원화", data: result.rows.map((r) => Math.round(r.krwPrice / (1 + r.krwChangePct / 100))), yAxisID: "y" },
-      { label: "지금 원화", data: result.rows.map((r) => r.krwPrice), yAxisID: "y" },
-      { label: "24시간 전 환율", data: result.rows.map(() => null), yAxisID: "y1" },
-      { label: "지금 환율", data: result.rows.map(() => result.usdKrw), yAxisID: "y1" },
-    ],
-  };
-}
-
-// 접힌 구역: 24시간 흐름 차트를 다시 그린다(시뮬레이터는 renderDashboard가 채운다).
-export function renderFlowCharts(result) {
-  drawChart("flow-chart", {
-    data: flowChartData(result),
-    options: {
-      indexAxis: "y",
-      scales: {
-        ...DUAL_SCALES,
-        x: { stacked: true },
-        y: { stacked: true, title: { display: true, text: "원화 가격(원)" } },
-        y1: { ...DUAL_SCALES.y1, title: { display: true, text: "1$(원)" } },
-      },
-      plugins: {
-        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + (ctx.parsed.y !== null ? (ctx.datasetIndex < 2 ? "₩" + ctx.parsed.y.toLocaleString() : formatRate(ctx.parsed.y)) : "데이터 없음") } },
-      },
-    },
-  });
-}
-
-// 첫 화면에 바로 보이는 4개 차트를 함께 그린다.
+// 첫 화면에 바로 보이는 3개 차트(원화 시세 / 비트코인 시세 / 통합)를 그린다.
 export function renderAllCharts(result) {
   const rows = result.rows;
   drawChart("krw-price-chart", {
     data: krwChartData(rows),
     options: {
       indexAxis: "y",
-      scales: { ...DUAL_SCALES, x: { stacked: false }, y: { title: { display: true, text: "원화 가격(원)" } } },
+      scales: {
+        x: { stacked: false, title: { display: true, text: "24시간 변동(%)" }, grid: { color: "var(--ds-line)" }, ticks: { callback: (v) => v + "%" } },
+        y: { stacked: false, grid: { display: false } },
+      },
       plugins: {
-        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + (ctx.datasetIndex ? formatSigned(ctx.parsed.x) + "%" : "₩" + ctx.parsed.y.toLocaleString()) } },
+        legend: { display: true, labels: { color: "var(--ds-ink-2)" } },
+        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + formatSigned(ctx.parsed.x) + "%" } },
       },
     },
   });
-  drawChart("btc-chart", {
+  drawChart("btc-price-chart", {
     data: btcChartData(rows),
     options: {
-      indexAxis: "y",
-      scales: { ...DUAL_SCALES, x: { stacked: false }, y: { title: { display: true, text: "달러 가격($)" } } },
-      plugins: {
-        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + (ctx.datasetIndex ? formatSigned(ctx.parsed.x) + "%" : "$" + ctx.parsed.y.toLocaleString()) } },
-      },
-    },
-  });
-  drawChart("fx-chart", {
-    data: fxChartData(result),
-    options: {
-      indexAxis: "y",
-      scales: { ...DUAL_SCALES, x: { stacked: false }, y: { title: { display: true, text: "1$(원)" } } },
-      plugins: {
-        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + (ctx.datasetIndex ? formatSigned(ctx.parsed.x) + "%" : formatRate(ctx.parsed.y)) } },
-      },
-    },
-  });
-  drawChart("unified-chart", {
-    data: unifiedChartData(result),
-    options: {
-      indexAxis: "y",
       scales: {
-        ...DUAL_SCALES,
-        x: { stacked: true },
-        y: { stacked: true, title: { display: true, text: "가격(원·$)" } },
-        y1: { ...DUAL_SCALES.y1, title: { display: true, text: "1$(원)" } },
+        x: { grid: { display: false } },
+        y: { grid: { display: false }, title: { display: true, text: "원" }, ticks: { callback: (v) => formatWon(v) } },
       },
       plugins: {
-        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " " + (ctx.parsed.y !== null ? (ctx.datasetIndex < 2 ? "₩$" + ctx.parsed.y.toLocaleString() : formatRate(ctx.parsed.y)) : "데이터 없음") } },
+        legend: { display: true, labels: { color: "var(--ds-ink-2)" } },
+        tooltip: { callbacks: { label: (ctx) => " " + ctx.dataset.label + " ₩" + formatWon(ctx.parsed.y) } },
+      },
+    },
+  });
+  drawChart("integrated-chart", {
+    data: integratedChartData(rows),
+    options: {
+      scales: {
+        x: { stacked: false, grid: { display: false } },
+        y: { position: "left", grid: { display: false }, title: { display: true, text: "24시간 변동(%)" }, ticks: { callback: (v) => v + "%" } },
+        y1: { position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "원화 변동(원)" }, ticks: { callback: (v) => formatWon(v) } },
+      },
+      plugins: {
+        legend: { display: true, labels: { color: "var(--ds-ink-2)" } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) =>
+              ctx.dataset.yAxisID === "y1"
+                ? " " + ctx.dataset.label + " " + (ctx.parsed.y > 0 ? "+" : ctx.parsed.y < 0 ? "−" : "") + formatWon(Math.abs(ctx.parsed.y)) + "원"
+                : " " + ctx.dataset.label + " " + formatSigned(ctx.parsed.y) + "%",
+          },
+        },
       },
     },
   });

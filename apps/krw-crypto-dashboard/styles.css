@@ -9,7 +9,7 @@
   :root, :root[data-accent] {
     color-scheme: dark;
     --ds-bg: #111214; --ds-surface: #1a1b1e; --ds-surface-2: #232428;
-    --ds-ink: #eeeff1; --ds-ink-2: #b4b4b4; --ds-ink-3: #949494; --ds-line: #2e3035;
+    --ds-ink: #eeeff1; --ds-ink-2: #b4b4b4; --ds-ink-3: #a3a3a3; --ds-line: #2e3035;
     --ds-accent: #7c9bff; --ds-accent-text: #7c9bff; --ds-accent-ink: #0b0e14;
     --ds-accent-soft: #1c2540; --ds-accent-line: #34457a;
     --ds-band: #1b2540; --ds-band-ink: #eeeff1; --ds-band-ink-2: #c4c8d4;
@@ -22,8 +22,8 @@
 
 /* 상단 밴드: 좌(제목·설명·기준) + 우(내비게이션) */
 .ds-band {
-  padding-top: 24px;
-  padding-bottom: 18px;
+  padding-top: 20px;
+  padding-bottom: 16px;
 }
 .ds-band-head {
   display: flex;
@@ -47,30 +47,33 @@
   font-size: 14px;
   color: var(--ds-band-ink-2);
 }
-.ds-band-meta span, #data-time {
+.ds-band-meta span {
   color: var(--ds-band-ink-2);
 }
-#fx-line {
+.ds-band p {
+  font-size: 15px;
+  color: var(--ds-band-ink-2);
+}
+#band-rates {
+  display: inline-flex;
+  gap: 6px;
+  word-spacing: .25em;
   color: var(--ds-band-ink);
   font-size: 15px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-/* 상단 내비게이션 + 예시 버튼 */
+/* 상단 내비게이션 */
 .topnav {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
-.nav-btn, .example-btn {
+.nav-btn {
   min-height: 44px;
   padding: 0 14px;
   border-radius: var(--ds-radius);
-}
-.example-btn {
-  margin-left: 0;
-  order: 3;
 }
 .ds-band .ds-btn-ghost {
   color: var(--ds-band-ink);
@@ -106,40 +109,74 @@
   font-size: 14px;
 }
 
-/* 첫 화면: 답 카드(24시간 원화 변동)를 띠 바로 아래에, 코인 목록을 그 아래에 */
+/* 예시 버튼: 띠 바로 아래(휴대폰에선 띠 아래·답 카드 위로) */
+.example-btn {
+  display: block;
+  width: min(calc(100% - 32px), calc(var(--ds-max) - 32px));
+  margin: 16px auto 0;
+  position: relative;
+  z-index: 2;
+  min-height: 48px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* 첫 화면: 답 카드(24시간 원화 변동) → 시세 차트 3개를 스크롤 전까지, 그 아래 목록·시뮬레이터(접을 수 있음) */
 #screen-dashboard {
   display: flex;
   flex-direction: column;
 }
 .ds-answer {
-  margin-top: -48px;
+  margin-top: 16px;
   position: relative;
+  z-index: 1;
 }
 .ds-answer-num {
-  font-size: clamp(38px, 9vw, 52px);
+  margin-top: 4px;
+  font-size: clamp(40px, 10vw, 56px);
+  font-weight: 800;
+}
+.ds-answer-text {
+  font-size: 15px;
+  line-height: 1.45;
+  max-width: 44ch;
 }
 .ds-answer-meta {
-  flex-wrap: wrap;
+  margin-top: 8px;
+  padding: 6px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px 0;
+}
+.ds-answer-meta dt {
+  font-size: 13px;
+}
+.ds-answer-meta dd {
+  font-size: 17px;
 }
 .ds-answer-meta > div {
   padding: 0 16px;
 }
+/* 환율은 띠에 이미 있으니 답 카드에서는 숨긴다 */
 .ds-answer-meta > div:first-child {
-  padding-left: 0;
+  display: none;
 }
-.ds-answer-meta > div + div {
+.ds-answer-meta > div:nth-child(2) {
+  padding-left: 16px;
+}
+.ds-answer-meta > div:nth-child(3) {
   border-left: 1px solid var(--ds-line);
 }
 
-/* 섹션 제목(코인 시세 / 24시간 흐름 / 그때 샀더라면) */
+/* 섹션 제목(시세 차트 / 코인 시세 / 그때 샀더라면): 제목 아래 설명을 세로로 쌓는다 */
 .ds-section-title {
-  margin: 28px 0 12px;
+  display: block;
+  margin: 32px 0 12px;
 }
 .ds-section-title h2 {
   font-size: 20px;
   font-weight: 800;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 .ds-section-title p {
   margin: 0;
@@ -148,20 +185,78 @@
   max-width: 60ch;
   color: var(--ds-ink-2);
 }
-#coin-list-title {
-  margin-top: 24px;
+#charts-title p {
+  display: none;
 }
 
-/* ── 차트 ── */
+/* 첫 화면 순서: 답 카드 → 코인 시세 목록 → 시세 차트 → 시뮬레이터 */
+#coin-list-title,
+#screen-dashboard > details:has(#coin-list) {
+  order: 1;
+}
+#charts-title,
+.chart-grid {
+  order: 2;
+}
+#sim-title,
+#sim-card {
+  order: 3;
+}
+#source-line {
+  order: 4;
+}
+
+/* ── 차트(첫 화면 3개) ── */
 .chart-canvas-wrap {
   position: relative;
   height: 260px;
 }
-#krw-chart-card, #btc-chart-card, #fx-chart-card, #unified-chart-card, #flow-chart-card {
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.chart-cell {
   box-shadow: none;
   border: 1px solid var(--ds-line);
   border-radius: 20px;
-  padding: 16px;
+  padding: 12px;
+}
+.chart-cell-wide {
+  grid-column: 1 / -1;
+}
+.chart-h {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 1px;
+}
+.chart-sub {
+  display: none;
+}
+.chart-h {
+  margin-bottom: 8px;
+}
+.chart-cell .chart-canvas-wrap {
+  height: 120px;
+}
+.chart-cell-wide .chart-canvas-wrap {
+  height: 130px;
+}
+
+/* ── 접는 구역(목록·시뮬레이터) ── */
+details.collapse {
+  overflow: hidden;
+}
+.ds-card-summary {
+  cursor: pointer;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-ink-2);
+  user-select: none;
+}
+details.collapse[open] .ds-card-summary {
+  border-bottom: 1px solid var(--ds-line);
 }
 
 /* ── 시뮬레이터 ── */
@@ -258,12 +353,12 @@
 .ds-list-sub {
   margin-top: 3px;
   display: flex;
-  gap: 12px;
+  gap: 8px 12px;
   flex-wrap: wrap;
 }
 .usd-change, .fx-effect {
   font-size: 14px;
-  color: var(--ds-ink-3);
+  color: var(--ds-ink-2);
 }
 .krw-price {
   font-size: 20px;
@@ -282,32 +377,6 @@
   font-size: 14px;
   text-align: left;
   color: var(--ds-ink-3);
-}
-
-/* ── 접힌 구역(24시간 흐름 / 차트) ── */
-.fold {
-  margin: 26px 0 0;
-  padding: 14px 18px 18px;
-  border: 1px solid var(--ds-line);
-  border-radius: var(--ds-radius);
-  background: var(--ds-surface);
-}
-/* 접힌 구역: 접혀 있을 때 안쪽 내용(h2·p·차트)을 숨겨 본문 하단 출처 줄과 겹치지 않게 한다.
-   [open] 이면 다시 보이게(접혀 있을 때 안쪽 요소가 summary 아래에 펼쳐져 겹치는 것을 막음) */
-.fold:not([open]) :not(summary) {
-  display: none;
-}
-.fold summary {
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  color: var(--ds-ink-2);
-}
-.fold[open] summary {
-  margin-bottom: 4px;
 }
 
 /* ── 코인 선택 화면 ── */
@@ -356,10 +425,24 @@
     padding: 0 6px;
   }
   .example-btn {
-    width: 100%;
+    width: calc(100% - 32px);
+    margin: 16px auto 0;
   }
-  .chart-canvas-wrap {
-    height: 220px;
+  .ds-answer-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .ds-answer-meta > div {
+    padding: 0 12px;
+  }
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+  .chart-cell .chart-canvas-wrap {
+    height: 140px;
+  }
+  .chart-cell-wide .chart-canvas-wrap {
+    height: 150px;
   }
   .ds-band-meta {
     gap: 10px;

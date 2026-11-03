@@ -23,21 +23,11 @@ function show(name) {
   }
 }
 
-// summarizeKrwCoins 는 순수(SPEC 규칙)라 화면 전용 필드(usdKrw·prevFx·prevKrwPrice)는 여기서 채운다.
-function enrich(result, data) {
-  for (const row of result.rows) {
-    row.usdKrw = result.usdKrw;
-    row.prevFx = data.fxPrevUsdKrw ?? null;
-    row.prevKrwPrice = Math.round(row.krwPrice / (1 + row.krwChangePct / 100));
-  }
-  return result;
-}
-
 function refresh() {
   const data = isExample ? SAMPLE_DATA : liveData;
   if (!data) return;
   try {
-    const result = enrich(summarizeKrwCoins(data.coinPrice, data.fxRates, coinIds), data);
+    const result = summarizeKrwCoins(data.coinPrice, data.fxRates, coinIds);
     renderDashboard(result, { coinMeta: data.coinMeta, fxMeta: data.fxMeta }, isExample);
     bindSim(result);
     bindExample(isExample);

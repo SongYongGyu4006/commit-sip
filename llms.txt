@@ -20,6 +20,7 @@
 
 ## 최근 글
 
+- [AI가 만든 '강력한 비밀번호' 100개, 겹치는 게 있었다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-02-zxcvbn-python.html)
 - [unslop, 바이브코딩 UI를 디자인처럼 다듬는 Claude 스킬을 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-02-unslop.html)
 - [NES CPU를 LLM 가중치에 컴파일한 nesformer, 설치 없이 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-01-nesformer.html)
 - [Lightpanda, 크롬 대신 쓰는 AI용 헤드리스 브라우저](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-31-browser.html)
@@ -31,7 +32,6 @@
 - [TradingAgents 설치 없이 받아서 돌려 본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-28-tradingagents.html)
 - [AI 에이전트용 웹 접근 도구 Agent-Reach, 설치 없이 직접 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-27-agent-reach.html)
 - [8KB 파일 하나로 에이전트에 역공학 스킬을 심었다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-26-leanrea.html)
-- [로컬 Qwen 27B를 5개 협업시켜 코딩 대회 문제 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-26-gvs5h.html)
 
 ## 앱 실험실
 
