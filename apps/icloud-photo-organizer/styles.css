@@ -40,25 +40,41 @@ body { padding-top: 0; }
 }
 #app-status:empty { display: none; }
 
-/* studio.css 기본값(13px)이 노안 사용자 기준 미달이라 앱 전용 안내 문구는 14px으로. */
-.ds-card-tint .ds-hint,
-.hp-privacy,
-#csv-hint { font-size: 14px; }
+/* 용량 진단 화면: 입력 카드와 답 카드를 나란히. 첫 화면에서 고르기 버튼과 결과가 함께. */
+.hp-diag { display: block; }
+.hp-col-input { margin-bottom: var(--ds-s4); }
+.hp-col-answer { margin-bottom: var(--ds-s4); }
+.hp-col-cat { margin-bottom: var(--ds-s5); }
+@media (min-width: 900px) {
+  .hp-diag { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); column-gap: var(--ds-s4); row-gap: var(--ds-s4); align-items: start; }
+  .hp-col-input { grid-column: 1; grid-row: 1 / span 2; }
+  .hp-col-answer { grid-column: 2; grid-row: 1; }
+  .hp-col-cat { grid-column: 2; grid-row: 2; }
+  .hp-diag > .hp-col { margin-bottom: 0; }
+}
 
-/* 화면 제목·서브 */
-.hp-h { font-size: 20px; margin: var(--ds-s4) 0 var(--ds-s1); letter-spacing: -.01em; }
-.hp-sub { margin: 0 0 var(--ds-s4); color: var(--ds-ink-2); font-size: 15px; }
-
-/* 상단 띠: 첫 화면에 답 카드 + 파일 올리기 버튼까지 들어가게 여백 조율 */
-.ds-band-thin { padding-top: var(--ds-s4); padding-bottom: var(--ds-s4); }
-.ds-band-thin h1 { margin-bottom: var(--ds-s1); }
-.ds-band-thin p { max-width: 56ch; font-size: 15px; line-height: 1.5; color: var(--ds-ink-2); }
-.ds-band-thin .ds-band-meta { margin-top: var(--ds-s3); }
+/* 입력 카드(첫 화면 주 행동) */
+.hp-input-card { display: block; }
+.hp-privacy {
+  position: static;
+  margin: 0 0 var(--ds-s3);
+  padding: 10px 14px;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  color: var(--ds-ink-2);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  background: var(--ds-surface-2);
+}
+#source-hint { margin: 0 0 var(--ds-s3); }
 
 /* 답 카드 */
-.ds-answer { padding: var(--ds-s4) var(--ds-s5); margin-bottom: var(--ds-s4); }
+.ds-answer { padding: var(--ds-s4) var(--ds-s5); margin-bottom: 0; }
 #sample-label { font-size: 14px; color: var(--ds-ink-2); }
-#headline { margin: 4px 0 8px; font-size: clamp(34px, 8.5vw, 48px); }
+#headline { margin: 4px 0 8px; font-size: clamp(34px, 8vw, 46px); }
 #savings { margin: 0 0 8px; font-size: 15px; font-weight: 600; color: var(--ds-ink-2); }
 #savings:empty { display: none; }
 
@@ -66,7 +82,6 @@ body { padding-top: 0; }
 #bar {
   display: flex;
   width: 100%;
-  max-width: none;
   height: 12px;
   border-radius: 999px;
   overflow: hidden;
@@ -79,17 +94,17 @@ body { padding-top: 0; }
 #seg-editedOriginal { background: var(--ds-c4); }
 #seg-keep { background: var(--ds-accent); }
 
-/* 막대 색 → 범주 범례: 막대 아래에 각 색의 뜻(라벨 + 용량 비율) 한 줄. */
-#bar-legend {
+/* 막대 색 → 범주 범례: 막대 바로 아래, 색 점 + 한국어 이름 + 용량. 14px 이상. */
+.hp-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 14px;
+  gap: 6px 16px;
   margin: 10px 0 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--ds-ink-2);
   font-variant-numeric: tabular-nums;
 }
-#bar-legend span::before {
+.hp-legend span::before {
   content: "";
   display: inline-block;
   width: 10px;
@@ -98,10 +113,15 @@ body { padding-top: 0; }
   margin-right: 6px;
   vertical-align: -1px;
 }
-#bar-legend .lg-liveVideo::before { background: var(--ds-c2); }
-#bar-legend .lg-copy::before { background: var(--ds-c3); }
-#bar-legend .lg-editedOriginal::before { background: var(--ds-c4); }
-#bar-legend .lg-keep::before { background: var(--ds-accent); }
+.hp-legend .lg-liveVideo::before { background: var(--ds-c2); }
+.hp-legend .lg-copy::before { background: var(--ds-c3); }
+.hp-legend .lg-editedOriginal::before { background: var(--ds-c4); }
+.hp-legend .lg-keep::before { background: var(--ds-accent); }
+
+/* 범주 목록 카드 안 제목 */
+.hp-list-title { margin: 0 0 var(--ds-s2); }
+.hp-list-title h2 { margin: 0; font-size: 18px; }
+.hp-list-title p { flex-basis: 100%; margin: 0; font-size: 14px; color: var(--ds-ink-3); }
 
 /* 범주 목록 줄 */
 #category-list { list-style: none; margin: 0; padding: 0; }
@@ -141,15 +161,16 @@ body { padding-top: 0; }
   height: 1px;
   margin: -1px;
   opacity: 0;
-  visibility: hidden;
 }
+/* 숨긴 input 안에 포커스가 들어와도 버튼 윤곽선이 보인다 */
+.ds-btn:focus-within { outline: 2px solid var(--ds-focus); outline-offset: 2px; }
 
 /* 파일 올리기 결과·날짜 안내 */
 #pick-result { margin: var(--ds-s3) 0 0; font-size: 14px; color: var(--ds-ink-2); }
 #pick-result:empty { margin: 0; }
 #csv-hint { margin: var(--ds-s2) 0 0; font-size: 14px; color: var(--ds-ink-3); }
 
-/* 내려받는 방법 접기: ds-details(아래) */
+/* 내려받는 방법 접기 */
 .hp-details summary {
   cursor: pointer;
   font-weight: 600;
@@ -161,29 +182,21 @@ body { padding-top: 0; }
 .hp-details p { margin: 0; font-size: 14px; color: var(--ds-ink-2); }
 
 /* 파일 입력 칸 */
-.hp-file-row { display: flex; flex-wrap: wrap; gap: var(--ds-s2); margin-top: var(--ds-s2); }
-.hp-privacy {
-  margin: var(--ds-s3) 0 0;
-  padding: 12px 16px;
-  border: 1px solid var(--ds-line);
-  border-radius: 12px;
-  color: var(--ds-ink-2);
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-  background: var(--ds-surface);
-}
+.hp-file-row { display: flex; flex-wrap: wrap; gap: var(--ds-s2); margin: var(--ds-s2) 0 0; }
+.hp-file-row .ds-btn { flex: 1 1 auto; min-width: 120px; }
 
-@media (max-width: 480px) {
-  #headline { white-space: nowrap; }
+@media (max-width: 640px) {
   .ds-answer { padding: var(--ds-s4) 20px; }
+  #headline { white-space: nowrap; font-size: clamp(32px, 9vw, 40px); }
+  .hp-file-row { flex-direction: column; }
+  .hp-file-row .ds-btn { width: 100%; min-height: 48px; justify-content: center; }
+  /* 폴더 고르기는 휴대폰에서 안 열리므로 주 버튼(파일 고르기)만 보이고, input은 접근성 때문에 숨긴 채 남아 있다 */
+  .hp-folder-label { display: none; }
   /* 범주 줄: 이름·체크박스·용량은 한 줄에, 설명은 줄 전체 폭으로 아래로 */
   #category-list li { gap: var(--ds-s2); flex-wrap: wrap; }
   .cat-desc { flex: 1 1 100%; order: 3; }
   .cat-meta { min-width: 72px; }
   .hp-nav-btn { flex: 1 1 0; padding: 10px 4px; }
-  .hp-file-row { flex-direction: column; }
-  .hp-file-row .ds-btn { width: 100%; min-height: 48px; justify-content: center; }
 }
 
 .ds-btn-danger { border-color: var(--ds-bad); color: var(--ds-bad); background: none; }
@@ -202,6 +215,12 @@ body { padding-top: 0; }
   font-size: 15px;
   color: var(--ds-ink-2);
 }
+
+/* 화면 제목·서브(진단 화면은 제외 — nav 버튼에 이미 같은 말이 있음) */
+#screen-tree .hp-h,
+#screen-data .hp-h { font-size: 20px; margin: var(--ds-s4) 0 var(--ds-s1); letter-spacing: -.01em; }
+#screen-tree .hp-sub,
+#screen-data .hp-sub { margin: 0 0 var(--ds-s4); color: var(--ds-ink-2); font-size: 15px; }
 
 /* 결과 JSON: 13px 미만 글자가 기준 미달이라 13px. */
 .hp-json {

@@ -1,468 +1,159 @@
-/* AI 모델 시장 판 — Hermes Studio 디자인 시스템(vendor/studio.css) 위에 덧씌우는 앱 스타일.
-   색·간격·모서리는 전부 ds- 토큰만 쓰고, 직접 쓴 색은 없다 → html[data-theme="auto"] 로 다크 모드 자동 전환.
-   화면 구조(DESIGN.md 생활 앱): .ds-band(띠) → .ds-answer(답 카드) → 조건 입력 → .ds-list(모델) → 차트·안내. */
+/* AI 모델 시장 판 — 앱 스타일.
+   색·모서리·간격·형은 전부 vendor/studio.css 의 ds- 토큰만 쓴다.
+   화면(대표 시안 EXAMPLE-APP): .ds-band → .ds-answer → 조건 입력 → 그래프(가격×컨텍스트 첫 화면 / 추세 접어)
+   → 모델 목록(표, 접어) → 내 장비에 맞는 모델(.ds-list) → 즐겨찾기·비교 → 안내. */
 :root {
-  /* studio.css ds- 토큰을 그대로 재사용(앱의 --bg/--card/... 이름으로 별칭) */
-  --bg: var(--ds-bg);
-  --card: var(--ds-surface);
-  --surface: var(--ds-surface-2);
-  --ink: var(--ds-ink);
-  --ink-soft: var(--ds-ink-2);
   --line: var(--ds-line);
+  --ink-3: var(--ds-ink-3);
+  --ink-soft: var(--ds-ink-2);
+  --ink: var(--ds-ink);
   --brand: var(--ds-accent);
-  --brand-ink: var(--ds-accent-ink);
-  --good: var(--ds-good);
-  --bad: var(--ds-bad);
-  --muted: var(--ds-ink-3);
-  --star: #b45309; /* 즐겨찾기 ☆ ★ (다크 블록에서 var(--ds-warn)으로 덮어씀) */
-  --good-soft: var(--ds-good-soft);
-  --bad-soft: var(--ds-bad-soft);
-  /* 예시 모드 배너: 주황 계열, 라이트·다크 모두 본문 대비 4.5:1 이상 */
-  --warn-soft: var(--ds-warn-soft);
-  --warn-ink: #8a5a00; /* #fff3dd 배경 대비 6.0 */
-  --radius: var(--ds-radius);
-  --radius-s: var(--ds-radius-s);
-  --radius-l: var(--ds-radius-l);
+  --surface-2: var(--ds-surface-2);
+  --surface: var(--ds-surface);
 }
 
-*,
-*::before,
-*::after { box-sizing: border-box; }
+body { word-break: keep-all; }
 
-html { color-scheme: light dark; -webkit-text-size-adjust: 100%; }
+.page { padding-top: var(--ds-s5); }
+.page > .ds-section-title:first-of-type { margin-top: var(--ds-s5); }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font: 16px/1.65 var(--ds-font);
-  -webkit-font-smoothing: antialiased;
-}
+.band-meta-line { font-variant-numeric: tabular-nums; }
+#data-meta:empty { display: none; }
 
-/* ---------- 띠(.ds-band) ----------
-   studio.css가 띠 전체 폭 + 가운데 여백을 처리. 기준 정보(데이터 기준·출처)는 띠 메타 안에. */
-#data-meta { margin: 0; }
+/* ---------- 답 카드: 스크롤 전 첫 화면의 주인공 ---------- */
+.ds-answer { padding: var(--ds-s4) var(--ds-s5); }
 
-/* ---------- 답 카드(.ds-answer): 스크롤 전 첫 화면의 주인공 ----------
-   띠 바로 아래에서 겹치는 구조(studio.css .ds-band:has(...) 규칙) 그대로.
-   보조 숫자는 3칸: 모델 전체 / 클라우드 API 가격 / 추세 1위. */
-#answer-top {
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* 답 카드: 스크롤 전 첫 화면(800px)에 띠·답·조건·차트가 들어가도록 패딩·높이를 줄인다. */
-.ds-answer { padding: 16px 20px; }
-.ds-answer-num { font-size: clamp(34px, 8vw, 48px); }
-
-/* ---------- 예시 모드 배너 ----------
-   hidden 속성은 display:flex 때문에 무시되어 빈 노란 띠로 남던 회귀를 막는다. */
-.sample-banner {
-  padding: 12px 16px;
-  border-radius: var(--radius);
-  background: var(--warn-soft);
-  color: var(--warn-ink);
-  font-size: 14px;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+/* ---------- 예시 모드 배너(실제 데이터로 복귀 안내) ---------- */
+.sample-banner { margin-bottom: var(--ds-s3); font-size: 14px; }
 .sample-banner[hidden] { display: none; }
 
-@media (prefers-color-scheme: dark) {
-  html[data-theme="auto"] {
-    --warn-ink: #f7c463; /* #2c2414 배경 대비 8.0 */
-    --star: var(--ds-warn); /* 다크에서는 어두운 배경에 밝은 주황 ☆ ★ */
-  }
-}
+/* ---------- 내 장비에 맞는 모델(.ds-list) ---------- */
+.top-list .ds-list-item { min-height: 60px; padding: var(--ds-s2) 0; cursor: pointer; }
+.top-list .ds-avatar { width: 36px; height: 36px; font-size: 14px; }
+.top-list .ds-list-item + .ds-list-item { border-top: 1px solid var(--line); }
+.top-list .ds-list-item:hover { background: var(--surface-2); }
+#top-empty { margin: 8px 0 0; }
 
-/* ---------- 조건 고르기 카드(RAM·양자·검색 + 버튼) ----------
-   답 카드 바로 아래에 두어, 바꾸면 답 카드 숫자가 즉각 바뀐다(3초 원칙).
-   첫 화면에 차트가 들어오도록 한 줄(인라인)으로 모은다. */
+/* ---------- 조건 고르기 ---------- */
 .board-controls { margin-top: 8px; }
+.controls { margin-top: var(--ds-s3); gap: var(--ds-s2); }
+.control { display: flex; flex-direction: column; gap: var(--ds-s1); flex: 1 1 140px; min-width: 0; }
+.control .ds-label { margin: 0; }
+.control-search { flex: 1 1 240px; }
+.board-actions { margin-top: var(--ds-s3); gap: var(--ds-s2); }
+#example-button { flex: 1 1 170px; }
 
-.controls {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 12px;
-  align-items: flex-end;
-  margin: 8px 0 0;
-}
-
-.control {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1 1 120px;
-  min-width: 0;
-}
-
-/* ds- 클래스가 붙은 input/select은 studio.css가 지배(44px+ 터치 영역).
-   첫 화면(스케이드)에서는 높이만 40px으로 줄이고, 모바일에서는 44px을 회복한다. */
-@media (max-width: 640px) {
-  .control .ds-input,
-  .control .ds-select { height: 44px; }
-}
-@media (min-width: 641px) {
-  .control .ds-input,
-  .control .ds-select { height: 40px; }
-}
-
-.board-actions {
-  align-items: center;
-  margin-top: 8px;
-}
-
-#search-input { width: 100%; max-width: 280px; flex: 1 1 160px; }
-
-/* ---------- 모델 목록(.ds-list) ----------
-   표 대신 '아바타 + 이름 + 보조 정보 + 오른쪽 값' 구조로 바꾸어 휴대폰에서도
-   모델 이름이 한눈에 보인다(SPEC 고정 id·기능: 행 클릭으로 ☆ 토글). */
-#board-table { display: none; } /* 화면에는 ds-list만. SPEC id는 유지한다. */
-
-.model-list { margin: 0; }
-
-.model-list .ds-list-item { border-top: 1px solid var(--line); }
-.model-list .ds-list-item:first-child { border-top: none; }
-
-.model-list .ds-avatar { width: 36px; height: 36px; font-size: 15px; }
-
-.model-name {
-  max-width: 210px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: inline-block;
-  vertical-align: bottom;
-}
-
-/* 행: ☆토글은 가족 칸(첫 번째) 클릭, 열기 토글은 그 외 클릭 */
-.model-list [data-role="family"] {
-  border: 0;
-  background: none;
-  padding: 0;
-  margin: 0;
-  width: auto;
-  min-height: 0;
-  cursor: pointer;
-  display: inline-flex;
-  color: inherit;
-}
-.model-list [data-role="family"] .ds-avatar { margin-right: 4px; }
-.model-list [data-role="open"] {
-  border: 0;
-  background: none;
-  padding: 0;
-  margin: 0;
-  width: auto;
-  min-height: 0;
-  cursor: pointer;
-  display: inline-flex;
-  color: inherit;
-}
-
-.star { color: var(--star); margin-right: 8px; }
-
-/* 값(오른쪽): 로컬 메모리 + 가능 여부(알약) */
-.model-list .ds-list-amount { font-size: 16px; }
-
-/* 로컬 가능 여부: 알약(필)로 가능(초록)·불가(빨강)·알 수 없음(테두리)을 구분 */
-.can-yes { background: var(--good-soft); color: var(--good); }
-.can-no { background: var(--bad-soft); color: var(--bad); }
-.can-unknown { background: transparent; border: 1px solid var(--line); color: var(--ink-soft); }
-.can-yes,
-.can-no,
-.can-unknown {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.5;
-}
-
-/* ---------- 비교 패널(즐겨찾기 3개 나란히) ---------- */
-#compare-panel { margin-top: 16px; }
-
-.compare-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.compare-table th,
-.compare-table td {
-  border: 1px solid var(--line);
-  padding: 8px 12px;
-  text-align: left;
-  vertical-align: top;
-}
-
-.compare-table thead th { background: var(--surface); }
-
-/* ---------- 즐겨찾기 ---------- */
-.fav-section { margin-bottom: 8px; }
-
-#fav-empty[hidden] { display: none; }
-
-.fav-list {
-  list-style: none;
-  margin: 0 0 16px;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.fav-list li {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 4px 12px;
-  font-size: 14px;
-  max-width: 100%;
-}
-
-.fav-list li > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.compare-lead { margin: 8px 0 0; font-size: 14px; color: var(--ink-soft); }
-.compare-lead[hidden] { display: none; }
-.compare-picks { margin-bottom: 0; }
-
-/* ---------- 공용: 알약·가족 수·표의 ☆ ---------- */
-.pill {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.5;
-  white-space: nowrap;
-}
-.family-count {
-  display: inline-block;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font-size: 12px;
-  padding: 0 6px;
-  margin-left: 4px;
-  color: var(--ink-soft);
-}
-.star { color: var(--star); }
-
-/* ---------- 표(숨김: ds-list가 화면 역할을 대신) — SPEC id·구조는 유지 ---------- */
-.table-wrap {
-  position: relative;
-  contain: paint;
-  overflow: auto;
-  max-width: 100%;
-  max-height: 260px;
-}
-
-.table-wrap[hidden] { display: none; }
-
-/* ---------- 모델 목록 구역(스크롤 전 화면에 들어올 때까지만 목록을 접는다) ----------
-   차트가 화면 순서에서 목록 위로 왔으므로, 열면 125개 행이 차트를 밀어내지 않도록
-   접힌 상태: 제목 + 요약 + 펼쳐 보기만 보이며(최대 360px), 펼쳐야 800px까지 열린다.
-   검색으로 결과가 12개 이하가 되면 자동으로 펼친다. */
-.board-list { position: relative; }
-.board-list.fold { max-height: 360px; overflow: hidden; }
-.board-list:not(.fold) { max-height: 800px; overflow: auto; }
-
-.list-toggle {
-  margin: 8px 0 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--brand);
-  background: none;
-  border: 0;
-  cursor: pointer;
-  padding: 4px 0;
-}
-.list-toggle:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-}
-
-/* ---------- 표 아래 안내·범례 ----------
-   스크롤 영역 밖의 독립 블록. 배경·배치로 표 행과 겹침을 막는다. */
-.summary { margin-top: 16px; position: relative; background: var(--card); }
-
-.table-note {
-  position: relative;
-  background: var(--card);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  min-height: 1.5em;
-}
-.table-note .note-text {
-  font-size: 14px;
-  color: var(--ink-soft);
-  white-space: normal;
-}
-.table-note button.link { margin-left: 4px; }
-
-.can-legend {
-  position: relative;
-  background: var(--card);
-  margin-top: 8px;
-  font-size: 14px;
-  color: var(--ink-soft);
-}
-
-/* ---------- 차트 ----------
-   가격×컨텍스트가 먼저(사용자 질문이므로), 휴대폰에서도 price-box가 위로.
-   화면 순서: 차트가 모델 목록보다 위라 앱이 열리자마자(스크롤 전) 보인다. */
-.chart-first { margin-top: 16px; }
-.chart-title:not(.chart-first) { margin-top: 24px; }
-
-.chart-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-top: 8px;
-}
-
-.chart-box {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-s);
-  background: var(--card);
-  padding: 16px;
-  min-width: 0;
-}
-
-.chart-box h3 { margin: 0 0 4px; font-size: 16px; }
-
-.chart-note { margin: 0 0 8px; }
-
-/* 범례: 로컬 가능 여부로 점 색을 나누기(색만, 칩·타일 없이) */
-.legend-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin: 0 2px 0 8px;
-  vertical-align: baseline;
-}
-.legend-cloud { background: var(--muted); }
+/* ---------- 그래프 ---------- */
+#chart-anchor { scroll-margin-top: var(--ds-s3); }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ds-s4); }
+.chart-box h3 { margin: 0 0 var(--ds-s1); font-size: 16px; }
+.chart-note { margin: 0 0 var(--ds-s3); }
+.chart-note b { color: var(--ink); }
+.chart-frame { position: relative; width: 100%; height: 280px; min-width: 0; }
+.chart-frame canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; max-width: 100%; display: block; }
+.legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin: 0 2px 0 8px; }
+.legend-cloud { background: var(--ink-3); }
 .legend-local { background: var(--brand); }
 
-/* Chart.js는 리사이즈 루프에서 캔버스 자체 높이로 CSS를 계속 밀어올려
-   프레임 높이를 유지하지 못하는 회귀가 있어, 상대 배치 프레임 안에
-   캔버스를 절대 배치해 높이를 고정한다(280px, 모바일 220px). */
-.chart-frame {
-  position: relative;
-  width: 100%;
-  height: 280px;
-  min-width: 0;
-}
-.chart-frame canvas {
-  position: absolute;
-  inset: 0;
-  /* Chart.js가 리사이즈 루프에서 canvas 요소 크기를 픽셀로 다시 쓰기 때문에
-     !important 로 프레임 폭/높이를 유지한다(캔버스가 자체 폭으로 팽창하는 회귀 방지) */
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100%;
-  display: block;
-}
-.chart-box canvas { flex-shrink: 1; min-width: 0; }
+/* 추세 그래프: 접혀 두고, 펼치면 그래프가 바로 보이는 높이로 */
+.chart-fold { margin: 0; }
+.chart-fold[open] .chart-frame { height: 340px; }
+.chart-fold summary { cursor: pointer; font-size: 16px; font-weight: 600; list-style: none; }
+.chart-fold summary::-webkit-details-marker { display: none; }
+.chart-fold summary::before { content: '▸'; margin-right: 8px; color: var(--ink-soft); }
+.chart-fold[open] summary::before { content: '▾'; }
+.chart-fold summary small { font-weight: 400; }
+.chart-fold:not([open]) .chart-note { display: none; }
+.chart-fold:not([open]) .chart-frame { display: none; }
 
-/* ---------- 푸터 ---------- */
-.footer { text-align: left; }
+/* ---------- 모델 목록(표): 접혀 두고, 펼치면 바로 쓸 수 있게 ---------- */
+.table-fold { margin: 0; }
+.table-fold summary { cursor: pointer; }
+.table-fold summary::-webkit-details-marker { display: none; }
+.table-fold summary::before { content: '▸'; margin-right: 8px; color: var(--ink-soft); }
+.table-fold[open] summary::before { content: '▾'; }
+.table-fold summary .ds-section-title { margin: 0; }
+.table-fold .table-wrap { contain: paint; max-height: 520px; }
+.table-fold #board-table { table-layout: fixed; }
+#board-table th, #board-table td { padding: 10px; }
+#board-table th, #board-table td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.th-family { width: 48px; }
+.th-model { width: 22%; }
+#board-table th:not(.th-family):not(.th-model) { text-align: right; }
+#board-table .th-can { text-align: center; }
+#board-table td { vertical-align: middle; }
+#board-table .num-cell { text-align: right; }
+#board-table .center-cell { text-align: center; }
+#board-table .model-name { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+#board-table .bar { margin-right: var(--ds-s2); vertical-align: middle; }
+#board-table .bar > span { display: block; height: 100%; background: var(--brand); border-radius: inherit; }
+#board-table tr.ds-pick td { background: var(--ds-accent-soft); }
+#board-table tr:hover td { background: var(--surface-2); }
+#board-table tr.ds-pick:hover td { background: var(--ds-accent-soft); }
 
-#app-status {
-  margin: 16px 0 0;
-  min-height: 1.5em;
-  color: var(--bad);
-  background: none;
-  padding: 0;
-}
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 13px; font-weight: 600; line-height: 1.5; white-space: nowrap; }
+.can-yes { background: var(--ds-good-soft); color: var(--ds-good); }
+.can-no { background: var(--ds-bad-soft); color: var(--ds-bad); }
+.can-unknown { background: transparent; border: 1px solid var(--line); color: var(--ink-soft); }
+.star { color: var(--ds-warn); font-size: 15px; cursor: pointer; }
+
+.summary { margin-top: var(--ds-s3); }
+.table-note { margin-top: var(--ds-s2); min-height: 1.4em; }
+.can-legend { margin: var(--ds-s2) 0 0; }
+.can-legend .can-yes, .can-legend .can-no, .can-legend .can-unknown { font-weight: 600; }
+
+/* ---------- 즐겨찾기·비교 ---------- */
+.fav-section { margin-top: var(--ds-s5); margin-bottom: var(--ds-s2); }
+#fav-empty[hidden] { display: none; }
+.fav-list { display: flex; flex-wrap: wrap; gap: var(--ds-s2); margin: var(--ds-s2) 0; }
+.fav-list .ds-list-item { width: auto; min-height: 0; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 4px var(--ds-s3); margin: 0; }
+.fav-list .ds-avatar { width: 24px; height: 24px; font-size: 11px; }
+.fav-remove { border: 0; background: none; color: var(--ink-soft); font-size: 13px; cursor: pointer; padding: 2px 8px; border-radius: 999px; }
+.fav-remove:hover { color: var(--ds-bad); background: var(--ds-bad-soft); }
+.compare-lead { margin: var(--ds-s3) 0 var(--ds-s2); }
+.compare-lead[hidden] { display: none; }
+.compare-picks { margin-bottom: var(--ds-s2); }
+#compare-panel { margin-top: var(--ds-s2); overflow-x: auto; }
+.compare-table { table-layout: auto; }
+.compare-table th, .compare-table td { white-space: normal; }
+
+/* ---------- 안내/오류 ---------- */
+#app-status { color: var(--ds-bad); }
 #app-status:empty { display: none; }
+#app-status.ds-status { background: var(--ds-bad-soft); }
+.ds-status-warn { background: var(--ds-warn-soft); color: var(--ds-warn); }
+.help-fold { margin-top: var(--ds-s3); }
+.help-fold summary { cursor: pointer; font-weight: 500; color: var(--ink-soft); }
+.help-fold p { margin: var(--ds-s2) 0 0; font-size: 14px; }
 
-.help-fold { margin-top: 8px; }
-.help-fold summary {
-  cursor: pointer;
-  font-weight: 500;
-  color: var(--ink-soft);
-}
-.help-fold p {
-  margin: 8px 0 0;
-  color: var(--ink-soft);
-  font-size: 14px;
-}
-
-button.link {
-  padding: 0 8px;
-  min-height: 0;
-  border: none;
-  background: none;
-  color: var(--brand);
-  cursor: pointer;
-  font: inherit;
-}
-button.link:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-}
-
-/* ---------- 휴대폰 (390px / ≤640px) ---------- */
+/* ---------- 휴대폰 (390px) ---------- */
 @media (max-width: 640px) {
-  .page { padding: 16px 16px 32px; }
-
-  /* 조건: RAM·양자가 한 줄, 검색은 전체 폭, 버튼은 전체 폭(44px 터치) */
-  .controls {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    align-items: stretch;
-  }
-  .control input,
-  .control select { width: 100%; height: 44px; font-size: 16px; }
-  #search-input { grid-column: 1 / -1; height: 44px; }
-  .board-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  #example-button { grid-column: 1 / -1; height: 44px; }
-  #refresh-button,
-  #reset-button { height: 44px; }
-
-  /* 값(오른쪽)이 길어도 한 줄: 줄바꿈 없이 줄임표 */
-  .model-list .ds-list-sub { flex-wrap: nowrap; }
-  .model-list .ds-list-amount,
-  .model-list .ds-list-end .ds-list-sub {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* 보조 숫자 3칸: 390px에서 3칸이 꽉 차면 2행으로 */
-  .ds-answer-meta { flex-wrap: wrap; }
-  .ds-answer-meta > div { flex: 1 1 30%; }
-  .ds-answer-meta > div + div { border-left: none; }
-
+  .page { padding-left: 16px; padding-right: 16px; }
+  .controls { flex-direction: column; }
+  .control, .control-search { width: 100%; }
+  .board-actions .ds-btn { width: 100%; flex: 1 1 auto; }
   .chart-grid { grid-template-columns: 1fr; }
-  /* 차트: 좁은 폭에 맞춰 높이를 확보. 가격×컨텍스트가 먼저 */
   .chart-frame { height: 220px; }
-
-  /* 좁은 화면에서는 접는 대신 목록 전체를 보여 준다. */
-  .board-list,
-  .board-list.fold,
-  .board-list:not(.fold) { max-height: none; overflow: visible; }
+  .chart-fold[open] .chart-frame { height: 260px; }
+  /* 접힌 목록: 표·요약·눈금 안내를 숨기고 제목만 보여 준다 */
+  .table-fold:not([open]) .table-wrap,
+  .table-fold:not([open]) .summary,
+  .table-fold:not([open]) .table-note,
+  .table-fold:not([open]) .can-legend { display: none; }
+  /* 표: 가족(☆)·모델·로컬 가능·로컬 메모리만, 나머지 4열은 숨겨 가로 스크롤을 없앤다 */
+  #board-table .th-trend,
+  #board-table .th-nums:nth-of-type(2),
+  #board-table td:nth-child(4),
+  #board-table td:nth-child(7),
+  #board-table td:nth-child(8) { display: none; }
+  #board-table { table-layout: auto; }
+  .top-list .ds-list-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+  .top-list .ds-list-amount { white-space: nowrap; }
+  .ds-answer-meta { flex-wrap: wrap; row-gap: var(--ds-s2); }
+  .ds-answer-meta > div { flex: 1 1 33%; }
+  .ds-answer-meta > div + div { border-left: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; }
+  * { transition: none !important; animation: none !important; }
 }

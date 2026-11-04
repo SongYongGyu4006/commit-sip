@@ -1,0 +1,111 @@
+[
+  {
+    "_id": "6ae17eade743c8905b0e4f81",
+    "id": "AtomicChat/DeepSeek-V4.1-Flash-1017-Uncensored-GSQ-RCO-GGUF",
+    "likes": 252,
+    "trendingScore": 226,
+    "downloads": 53913,
+    "tags": ["gguf", "atomic-chat", "deepseek", "text-generation", "conversational"],
+    "pipeline_tag": "text-generation",
+    "createdAt": "2026-10-28T04:48:45.000Z"
+  },
+  {
+    "_id": "6adbd32e8a9fcd3cba5db0ff",
+    "id": "LiquidAI/LFM3-1.7B",
+    "likes": 1384,
+    "trendingScore": 776,
+    "downloads": 47817,
+    "safetensors": { "parameters": { "BF16": 1728801536 }, "total": 1728801536 },
+    "tags": ["transformers", "safetensors", "lfm3", "text-generation", "conversational"],
+    "pipeline_tag": "text-generation",
+    "createdAt": "2026-10-23T21:35:42.000Z"
+  },
+  {
+    "_id": "6addd00f41f14b07d39d66b9",
+    "id": "meta-llama/Llama-3.1-8B-Instruct",
+    "likes": 610,
+    "trendingScore": 62,
+    "downloads": 2109998,
+    "safetensors": { "parameters": { "BF16": 8030264448 }, "total": 8030264448 },
+    "tags": ["transformers", "safetensors", "llama", "text-generation", "conversational"],
+    "pipeline_tag": "text-generation",
+    "createdAt": "2026-10-27T13:09:12.000Z"
+  },
+  {
+    "_id": "6ade17c2e41b4f09d0d87b4d",
+    "id": "jialinyyzz/humanizer",
+    "likes": 388,
+    "trendingScore": 55,
+    "downloads": 91204,
+    "safetensors": { "parameters": { "BF16": 12182539776 }, "total": 12182539776 },
+    "tags": ["transformers", "safetensors", "llama", "text-generation", "conversational"],
+    "pipeline_tag": "text-generation",
+    "createdAt": "2026-10-30T09:12:30.000Z"
+  },
+  {
+    "_id": "6addb81c90e44f06b8c0f3aa",
+    "id": "XHToken/Spark-X2.6-4B",
+    "likes": 154,
+    "trendingScore": 136,
+    "downloads": 30481,
+    "safetensors": { "parameters": { "BF16": 4214230016 }, "total": 4214230016 },
+    "tags": ["transformers", "safetensors", "text-generation", "conversational"],
+    "pipeline_tag": "text-generation",
+    "createdAt": "2026-10-29T18:40:05.000Z"
+  },
+  {
+    "_id": "6adc77f2f3d04b03a9d6c8e2",
+    "id": "divagr1925/Qwen3.5-4B-Qwenputer",
+    "likes": 203,
+    "trendingScore": 140,
+    "downloads": 18207,
+    "safetensors": { "parameters": { "BF16": 4338151424 }, "total": 4338151424 },
+    "tags": ["transformers", "safetensors", "qwen", "text-generation", "conversational"],
+    "pipeline_tag": "text-generation",
+    "createdAt": "2026-10-25T07:22:41.000Z"
+  },
+  {
+    "_id": "6adde6e02f8c4a01c5b7e93d",
+    "id": "HuggingFaceBio/Carbon-X",
+    "likes": 97,
+    "trendingScore": 49,
+    "downloads": 8912,
+    "safetensors": { "parameters": { "BF16": 13881713664 }, "total": 13881713664 },
+    "tags": ["transformers", "safetensors", "text-generation", "conversational"],
+    "pipeline_tag": "text-generation",
+    "createdAt": "2026-10-30T22:14:56.000Z"
+  },
+  {
+    "_id": "6add28b54b7d4c08e1a2f6d4",
+    "id": "summerAIO/Qwen3.8-27B-Longbook27-v2",
+    "likes": 61,
+    "trendingScore": 45,
+    "downloads": 5320,
+    "safetensors": { "parameters": { "BF16": 27300631040 }, "total": 27300631040 },
+    "tags": ["transformers", "safetensors", "qwen", "text-generation", "conversational"],
+    "pipeline_tag": "text-generation",
+    "createdAt": "2026-10-28T15:03:29.000Z"
+  },
+  {
+    "_id": "6adc9e617f2d4b08d3e5a1c0",
+    "id": "Nanbeige/Nanbeige4.3-33B",
+    "likes": 1024,
+    "trendingScore": 241,
+    "downloads": 17839,
+    "safetensors": { "parameters": { "BF16": 33118977024 }, "total": 33118977024 },
+    "tags": ["transformers", "safetensors", "llama", "text-generation", "llm", "conversational"],
+    "pipeline_tag": "text-generation",
+    "createdAt": "2026-10-24T02:49:18.000Z"
+  },
+  {
+    "_id": "6adcd53a11b24e05f8c9d7b6",
+    "id": "Diffuspace/Clover-35B-A3B-Preview",
+    "likes": 233,
+    "trendingScore": 219,
+    "downloads": 3017,
+    "safetensors": { "parameters": { "BF16": 34661350848 }, "total": 34661350848 },
+    "tags": ["transformers", "safetensors", "text-generation", "conversational"],
+    "pipeline_tag": "text-generation",
+    "createdAt": "2026-10-25T11:37:52.000Z"
+  }
+]

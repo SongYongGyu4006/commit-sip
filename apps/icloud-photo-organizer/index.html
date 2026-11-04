@@ -7,9 +7,9 @@
 <link rel="stylesheet" href="vendor/studio.css">
 <link rel="stylesheet" href="styles.css">
 <script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="아이클라우드에서 통째로 내려받은 사진 묶음을 넣으면, 라이브포토 영상·사본·편집 전 원본이 각각 몇 GB인지 바로 보여 주고 버릴 항목을 체크하면 촬영일 폴더 구조까지 미리 보여 주는 앱이에요."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/icloud-photo-organizer/"></head>
-<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 아이클라우드 사진 정리 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 아이클라우드 사진 용량 정리 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
 <header class="ds-band ds-band-thin">
-  <h1>아이클라우드 사진 정리</h1>
+  <h1>아이클라우드 사진 용량 정리</h1>
   <p>아이클라우드에서 통째로 내려받은 사진 묶음을 넣으면 라이브포토 영상·사본·편집 전 원본이 각각 몇 GB인지 보여 주고, 버릴 것을 골라 촬영일 폴더 구조를 미리 보여 줘요.</p>
   <div class="ds-band-meta">
     <span class="ds-badge">기기에서 계산</span>
@@ -26,42 +26,43 @@
 <main class="ds-page">
   <p id="app-status" role="status"></p>
 
-  <section id="screen-diagnose">
-    <h2 class="hp-h">용량 진단</h2>
-    <p class="hp-sub">사진 묶음을 넣으면 버릴 수 있는 용량이 바로 나와요.</p>
-    <section class="ds-answer">
-      <p class="ds-answer-label" id="sample-label">예시 묶음</p>
-      <p class="ds-answer-num" id="headline"></p>
-      <p id="savings"></p>
-      <p class="ds-answer-text" id="bar">
-        <span id="seg-liveVideo" class="hp-seg" style="width:0%"></span><span id="seg-copy" class="hp-seg" style="width:0%"></span><span id="seg-editedOriginal" class="hp-seg" style="width:0%"></span><span id="seg-keep" class="hp-seg" style="width:0%"></span>
-      </p>
-      <p id="bar-legend" class="hp-legend"></p>
-    </section>
-    <div class="ds-section-title">
-      <h2>사진은 어디에도 지워지지 않아요</h2>
-      <p>이 앱은 파일을 읽기만 하고 복사·삭제·수정을 하지 않아요. '버리기' 체크는 아래 폴더 미리보기에서만 빼는 표시일 뿐, 사진 그 자체는 그대로예요. 용량 제한 없음 · 업로드 없음 · 사진이 기기 밖으로 나가지 않음.</p>
-    </div>
-    <div class="ds-card ds-card-tint">
-      <ul id="category-list" class="ds-list"></ul>
-    </div>
-    <div class="ds-section-title">
-      <h2>내 사진 묶음으로 바꿔 보기</h2>
-      <p>아이클라우드에서 받은 사진 폴더와 Photos Details.csv를 함께 고르세요. 고르면 지금 내용이 바뀌어요. 휴대폰은 폴더 대신 '파일 고르기'를 쓰세요.</p>
-    </div>
-    <div class="ds-card ds-card-tint">
-      <div class="hp-file-row">
-        <label class="ds-btn ds-btn-primary">폴더 고르기<input id="folder-input" type="file" webkitdirectory multiple class="hp-hidden-input"></label>
-        <label class="ds-btn">파일 고르기<input id="files-input" type="file" multiple class="hp-hidden-input"></label>
-        <button id="sample-button" class="ds-btn" type="button">예시로 해 보기</button>
+  <section id="screen-diagnose" class="hp-diag">
+    <div class="hp-col hp-col-input">
+      <div class="ds-card hp-input-card">
+        <p id="privacy-badge" class="hp-privacy">용량 제한 없음 · 업로드 없음 · 사진이 기기 밖으로 나가지 않음</p>
+        <p id="source-hint" class="ds-hint">받는 곳: 아이클라우드(icloud.com) 사진 내보내기 → 사진 파일과 Photos Details.csv를 함께 고르세요.</p>
+        <div class="hp-file-row">
+          <label class="ds-btn ds-btn-primary hp-folder-label">폴더 고르기<input id="folder-input" type="file" webkitdirectory multiple class="hp-hidden-input"></label>
+          <label class="ds-btn">파일 고르기<input id="files-input" type="file" multiple class="hp-hidden-input"></label>
+          <button id="sample-button" class="ds-btn" type="button">예시로 해 보기</button>
+        </div>
+        <p id="csv-hint" class="ds-hint"></p>
+        <p id="pick-result" role="status"></p>
+        <details class="hp-details">
+          <summary>내려받는 방법</summary>
+          <p>iPhone에서는 '사진' 앱에서 사진을 전부 선택한 뒤 '내보내기 → 복사/내보내기'로 내려받을 수 있어요. 아이클라우드 웹(icloud.com)에서도 사진 전체를 선택한 뒤 '내보내기'를 누르면 사진과 Photos Details.csv가 함께 와요.</p>
+        </details>
       </div>
-      <p id="pick-result" role="status"></p>
-      <p id="csv-hint" class="ds-hint"></p>
-      <details class="hp-details">
-        <summary>내려받는 방법</summary>
-        <p>iPhone에서는 '사진' 앱에서 사진을 전부 선택한 뒤 '내보내기 → 복사/내보내기'로 내려받을 수 있어요. 아이클라우드 웹(icloud.com)에서도 사진 전체를 선택한 뒤 '내보내기'를 누르면 사진과 Photos Details.csv가 함께 와요.</p>
-      </details>
-      <p id="privacy-badge" class="hp-privacy">용량 제한 없음 · 업로드 없음 · 사진이 기기 밖으로 나가지 않음</p>
+    </div>
+    <div class="hp-col hp-col-answer">
+      <section class="ds-answer" aria-labelledby="sample-label">
+        <p class="ds-answer-label" id="sample-label">예시 묶음</p>
+        <p class="ds-answer-num" id="headline"></p>
+        <p id="savings"></p>
+        <div id="bar">
+          <span id="seg-liveVideo" class="hp-seg" style="width:0%"></span><span id="seg-copy" class="hp-seg" style="width:0%"></span><span id="seg-editedOriginal" class="hp-seg" style="width:0%"></span><span id="seg-keep" class="hp-seg" style="width:0%"></span>
+        </div>
+        <div id="bar-legend" class="hp-legend"></div>
+      </section>
+    </div>
+    <div class="hp-col hp-col-cat">
+      <div class="ds-card">
+        <div class="ds-section-title hp-list-title">
+          <h2>범주 고르기</h2>
+          <p>체크한 범주는 촬영일 폴더 미리보기에서만 빠져요. 사진 파일은 지워지지 않아요.</p>
+        </div>
+        <ul id="category-list" class="ds-list"></ul>
+      </div>
     </div>
   </section>
 

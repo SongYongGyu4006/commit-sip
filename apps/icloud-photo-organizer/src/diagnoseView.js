@@ -8,36 +8,34 @@ const CATEGORIES = [
   ['keep', '그대로 둘 사진', '다른 범주에 들지 않은 사진'],
 ];
 
-// 막대 색 → 범주 한 줄 설명: 색 점과 라벨·용량을 함께 보여 주면 막대만 봐도 무슨 색이 뭘 뜻하는지 안다.
+// 막대 색 → 범주 한 줄 설명: 색 점과 한국어 이름·용량을 함께 보여 주면 막대만 봐도 무슨 색이 뭘 뜻하는지 안다.
 function renderLegend(el, result) {
   el.textContent = '';
-  const total = result.totalBytes;
   for (const [key, label] of CATEGORIES) {
-    const bytes = result.categories[key].bytes;
-    const share = total > 0 ? Math.round((bytes / total) * 100) : 0;
     const span = document.createElement('span');
     span.className = 'lg-' + key;
-    span.textContent = label + ' ' + share + '%';
+    span.textContent = label + ' ' + fmt(result.categories[key].bytes);
     el.appendChild(span);
   }
 }
 
-// 버린 만큼의 절감량을 말로(0이면 비워 두어 빈 칸이 안 보이게).
+// 버린 만큼의 절감량을 말로. 실제 사진은 지워지지 않는다는 점을 한 번에. (0이면 비워 두어 빈 칸이 안 보이게)
 function renderSavings(el, result) {
   const saved = result.totalBytes - result.afterBytes;
-  el.textContent = saved > 0 ? '고른 항목을 뺀 폴더로 정리하면 ' + fmt(saved) + '가 줄어요. 이 앱은 사진을 지우거나 옮기지 않아요' : '';
+  el.textContent = saved > 0 ? '미리보기에서 빼면 ' + fmt(saved) + '가 줄어요. 실제 사진은 지워지지 않아요.' : '';
 }
 
-// 날짜 CSV(Photos Details.csv) 유무에 따라 폴더가 어떻게 생기는지 안내.
+// 날짜 CSV(Photos Details.csv) 유무 안내: CSV가 없으면 짧게, 있으면 촬영일 폴더로 된다는 한 문장.
 function renderCsvHint(el, state) {
   el.textContent = state.csvText.trim() !== ''
-    ? '날짜 CSV가 있어 촬영일 폴더로 정리돼요. CSV가 없거나 날짜가 없는 사진은 아래 폴더 미리보기의 "날짜 없음" 폴더에 들어요.'
-    : '날짜 CSV(Photos Details.csv)가 없어 사진은 전부 "날짜 없음" 폴더로 모여요. 아이클라우드에서 내보낸 Photos Details.csv를 함께 고르면 촬영일 폴더로 나눠져요.';
+    ? '날짜 CSV가 있어 촬영일 폴더로 나눠져요. 날짜가 없는 사진은 폴더 미리보기의 "날짜 없음" 폴더에 들어요.'
+    : '날짜 CSV가 없어 전부 "날짜 없음" 폴더에 들어가요.';
 }
 
 export function renderDiagnose(screen, state, result, isSample) {
   const $ = (id) => screen.querySelector('#' + id);
-  $('sample-label').textContent = isSample ? '예시 묶음' : '내 사진 묶음';
+  // 예시 묶음은 '버리기'가 미리 골라 둔 상태(예시 데이터)라 표시만 덧붙인다. 값 자체는 바꾸지 않는다.
+  $('sample-label').textContent = isSample ? '예시 묶음 (예시라서 미리 골라 둔 상태)' : '내 사진 묶음';
   $('headline').textContent = fmt(result.totalBytes) + ' → ' + fmt(result.afterBytes);
 
   const total = result.totalBytes;
@@ -52,9 +50,7 @@ export function renderDiagnose(screen, state, result, isSample) {
   renderSavings($('savings'), result);
   renderCsvHint($('csv-hint'), state);
 
-  const labelEl = $('sample-label');
-  labelEl.textContent = (isSample ? '예시 묶음' : '내 사진 묶음') + (isSample ? ' · 예시 데이터라 내 사진과 무관해요' : '');
-
+  // 체크박스 제목: 처음엔 아무것도 건드리지 않은 상태, 체크해도 폴더 미리보기에서만 빠진다는 뜻.
   const list = $('category-list');
   list.textContent = '';
   for (const [key, label, desc] of CATEGORIES) {
@@ -67,7 +63,7 @@ export function renderDiagnose(screen, state, result, isSample) {
     li.appendChild(name);
     const descEl = document.createElement('span');
     descEl.className = 'cat-desc';
-    descEl.textContent = desc;
+    descEl.textContent = key === 'keep' ? desc : desc + '. 체크하면 폴더 미리보기에서만 빠져요';
     li.appendChild(descEl);
     if (key !== 'keep') {
       const lab = document.createElement('label');
@@ -77,6 +73,7 @@ export function renderDiagnose(screen, state, result, isSample) {
       cb.className = 'discard-toggle';
       cb.dataset.category = key;
       cb.checked = !!state.discard[key];
+      cb.setAttribute('title', '체크하면 폴더 미리보기에서만 빠져요. 사진 파일은 지워지지 않아요.');
       lab.appendChild(cb);
       const t = document.createElement('span');
       t.textContent = '버리기';

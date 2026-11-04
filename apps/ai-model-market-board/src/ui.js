@@ -1,23 +1,25 @@
 // AI 모델 시장 판 — 인터페이스
-// 화면 구조: 띠 → 답 카드(.ds-answer) → 조건(RAM·양자·검색) → 모델 목록(.ds-list) → 차트 → 즐겨찾기·비교
-// 화면에는 ds- 클래스(스튜디오 디자인 시스템)를 쓴다. 색은 전부 디자인 토큰.
+// 화면 구조(대표 시안 EXAMPLE-APP): .ds-band(제목·설명·기준) → .ds-answer(답)
+// → 조건 입력 → 그래프(가격×컨텍스트 첫 화면 / 추세는 접어) → 모델 목록(접어) → 내 장비에 맞는 모델 → 즐겨찾기·비교 → 안내.
+// 색·컴포넌트는 전부 vendor/studio.css 의 ds- 토큰. 모든 글자는 textContent 로만 쓴다.
+
+import { buildModelBoard } from './app.js';
 
 const DEFAULT_MEMORY = 48;
-const DEFAULT_BITS = '8';
+const DEFAULT_BITS = 8;
 const MAX_FAV = 3;
+const FAV_KEY = 'ai-market-board:favorites';
+const DS_FONT = '-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif';
 
 // ---------- 상태 ----------
-let state = {
+const state = {
   memoryGB: DEFAULT_MEMORY,
-  bits: Number(DEFAULT_BITS),
+  bits: DEFAULT_BITS,
   search: '',
-  model: '', // 선택한 모델(상세)
-  sort: 'trend', // trend | local | price | context
-  data: null,
-  favorites: new Set(),
-  compare: [],
-  sampleMode: false,
-  expanded: new Set(), // 열려 있는 가족 키
+  result: null, // buildModelBoard 결과 { rows, pairedCount, unpairedCount }
+  favorites: new Set(), // SPEC: localStorage 'ai-market-board:favorites'(문자열 배열)
+  sample: false, // 예시 데이터로 보고 있는가
+  meta: null, // { fetched_at: [], terms: [] }
 };
 
 let trendChart = null;
@@ -29,339 +31,325 @@ const els = {};
 
 function initEls() {
   for (const id of [
-    'data-meta', 'sample-banner', 'answer-num', 'answer-unit', 'answer-text', 'answer-total', 'answer-priced', 'answer-top',
-    'board-title', 'memory-input', 'bits-select', 'search-input', 'example-button', 'refresh-button', 'reset-button',
-    'board', 'board-table', 'summary-line', 'table-note', 'list-toggle', 'price-chart', 'trend-chart',
-    'fav-count', 'fav-empty', 'fav-list', 'compare-lead', 'compare-lead-count', 'compare-list', 'compare-panel', 'app-status',
+    'data-meta', 'sample-banner', 'answer-label', 'answer-num', 'answer-unit', 'answer-text',
+    'answer-total', 'answer-priced', 'answer-top', 'answer-priced-box', 'answer-top-box',
+    'top-list', 'top-empty', 'memory-input', 'bits-select', 'search-input',
+    'example-button', 'refresh-button', 'reset-button',
+    'board', 'board-table', 'summary-line', 'table-note', 'price-chart', 'trend-chart',
+    'table-fold', 'trend-fold',
+    'fav-count', 'fav-empty', 'fav-list', 'compare-lead', 'compare-lead-count', 'compare-list',
+    'compare-panel', 'app-status',
   ]) {
     els[id] = $(id);
   }
 }
 
-function fmtGB(v) {
-  if (v == null || Number.isNaN(v)) return '—';
-  return v >= 10 ? Math.round(v).toString() : v.toFixed(1);
+// SPEC 의 반올림(반올림 = 0.5 올림): 8.9551 -> '9.0', 13.25 -> '13.3'
+function round1(v) {
+  return (Math.round((v + Number.EPSILON) * 10) / 10).toFixed(1);
 }
 
-function fmtPrice(perM) {
-  if (perM == null || !Number.isFinite(perM)) return '—';
-  if (perM === 0) return '무료';
-  if (perM < 1) return '$' + perM.toFixed(2);
-  if (perM < 10) return '$' + perM.toFixed(1);
-  return '$' + Math.round(perM);
-}
-
-function fmtPricePerMkTok(p) {
-  // 데이터 값은 1M 토큰당 달러.
-  return fmtPrice(p);
-}
-
-function fmtTokens(n) {
-  if (n == null || !Number.isFinite(n)) return '—';
-  if (n >= 1e6) return (n / 1e6).toFixed(n % 1e6 === 0 ? 0 : 1) + 'M';
-  if (n >= 1e3) return Math.round(n / 1e3) + 'K';
-  return String(n);
-}
-
+// 파라미터: 8030264448 -> '8.0B'
 function fmtParams(n) {
   if (n == null || !Number.isFinite(n)) return null;
   const b = n / 1e9;
-  if (b >= 1) return b >= 10 ? b.toFixed(0) + 'B' : b.toFixed(1).replace(/\.0$/, '') + 'B';
-  const m = n / 1e6;
-  return m >= 10 ? m.toFixed(0) + 'M' : m.toFixed(1).replace(/\.0$/, '') + 'M';
+  return b >= 1 ? round1(b) + 'B' : (b * 1000).toFixed(0) + 'M';
+}
+
+// 컨텍스트: 262144 -> '262.1K', 8192 -> '8.2K'
+function fmtContext(n) {
+  if (n == null || !Number.isFinite(n)) return null;
+  return round1(n / 1000) + 'K';
+}
+
+// 로컬 메모리 추정 (SPEC): parameters * (bits/8) * 1.2 / 1024^3
+function estimateGB(row, bits) {
+  const p = row.hf && row.hf.parameters;
+  if (p == null || !Number.isFinite(p)) return null;
+  return (p * (bits / 8) * 1.2) / (1024 ** 3);
+}
+
+// 로컬 가능: 1소수 반올림한 추정치 <= RAM (SPEC)
+function canRun(row, bits, memoryGB) {
+  const m = estimateGB(row, bits);
+  if (m == null) return { cls: 'can-unknown', text: '알 수 없음' };
+  if (Math.round(m * 10) / 10 <= memoryGB) return { cls: 'can-yes', text: '가능' };
+  return { cls: 'can-no', text: '불가' };
+}
+
+// API 가격: '$' + pricePerMillion (SPEC)
+function fmtPrice(p) {
+  return p == null ? '—' : '$' + p;
+}
+
+function displayName(raw) {
+  // org 접두를 떼고 '-'는 공백으로, 단어를 대문자로
+  let s = String(raw || '');
+  if (s.includes('/')) s = s.split('/').pop();
+  if (s.includes(':')) s = s.split(':').slice(1).join(':');
+  return s.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) || '알 수 없음';
+}
+
+function famBestName(row) {
+  return row.hf ? row.hf.name : row.openrouter ? row.openrouter.name : row.family;
+}
+
+function famBestInitials(name) {
+  const letters = (String(name).match(/[A-Za-z]/g) || []).slice(0, 2).join('').toUpperCase();
+  return letters || '?';
+}
+
+function hueFor(name) {
+  let h = 0;
+  for (const c of String(name)) h = (h * 31 + c.charCodeAt(0)) % 8;
+  return h;
+}
+
+function rows() {
+  return state.result ? state.result.rows : [];
+}
+
+function visibleRows() {
+  const q = state.search.trim().toLowerCase();
+  return rows().filter((r) => !q || r.family.toLowerCase().includes(q));
 }
 
 // ---------- 데이터 ----------
+const REAL_FILES = ['data/hf_models.json', 'data/openrouter_models.json', 'data/hf_models.meta.json', 'data/openrouter_models.meta.json'];
+const SAMPLE_FILES = ['data/hf_models.sample.json', 'data/openrouter_models.sample.json'];
+
 function fetchJSON(url, options = {}) {
   return fetch(url, options).then((r) => {
-    if (!r.ok) throw new Error(`데이터 가져오기 실패: ${r.status}`);
+    if (!r.ok) throw new Error(`데이터 파일 없음: ${url.split('/').pop()}`);
     return r.json();
   });
 }
 
-async function loadAppData(sample = false) {
-  // samples/ 폴더의 실제 예시 파일 이름(없던 파일 3개를 읽다 404가 되던 회귀를 막는다)
-  const files = sample
-    ? ['samples/openrouter_models.sample.json', 'samples/hf_models.sample.json']
-    : ['data/openrouter_models.json', 'data/hf_models.json'];
-  const urls = files.map((f) => `${f}?v=${state.data ? Date.now() : '1'}`);
-  const [openrouter, hf] = await Promise.all(urls.map((u) => fetchJSON(u, { cache: 'no-store' })));
-  return { openrouter, hf };
+function fileName(url) {
+  return url.split('/').pop().split('?')[0];
 }
 
-// ---------- 파이프라인 ----------
-function normId(id) {
-  let s = String(id || '').toLowerCase();
-  if (s.includes('/')) s = s.split('/').pop();
-  if (s.includes(':')) s = s.split(':').slice(1).join(':');
-  return s.replace(/[^a-z0-9]/g, '');
+function formatMeta(meta, name) {
+  const fa = meta && meta.fetched_at ? String(meta.fetched_at) : '';
+  const d = fa ? fa.slice(0, 16).replace('T', ' ') : '';
+  return { fetched_at: `데이터 기준: ${d}${fa ? ' ' + (fa.slice(17, 19) || '') : ''}`.trim(), terms: (meta && meta.terms ? meta.terms : '') + (meta && meta.name ? ` · 출처: ${meta.name}` : '') };
 }
 
-function displayName(family) {
-  if (!family) return '알 수 없음';
-  return family.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-// 아바타 문자: 원문 이름의 초기 2글자(대문자). 한글 규칙: 제목 자리는 '모델 N' 순번이 대신한다.
-function famBestInitials(name) {
-  const repo = String(name).split('/').pop() || '';
-  const letters = (repo.match(/[A-Za-z]/g) || []).slice(0, 2).join('').toUpperCase();
-  return letters || '?';
-}
-
-function familyKey(modelId) {
-  return String(modelId || '').split('/')[0];
-}
-
-// 데이터 기준 시점: Unix 초(epoch)를 'YYYY.MM.DD' 로, 아니면 '오늘'.
-function dataUpdatedLabel(openrouterData) {
-  const created = openrouterData?.data?.[0]?.created;
-  if (typeof created === 'number' && Number.isFinite(created) && created > 1e11) {
-    const dt = new Date(created * 1000);
-    if (Number.isNaN(dt.getTime())) return '오늘';
-    return `${dt.getFullYear()}.${String(dt.getMonth() + 1).padStart(2, '0')}.${String(dt.getDate()).padStart(2, '0')}`;
-  }
-  return '오늘';
-}
-
-// OpenRouter + HuggingFace를 같은 이름(예: 'qwen/qwen3')으로 묶어 통합 모델 리스트를 만든다.
-function buildUnifiedModels(openrouterData, hfData) {
-  const map = new Map();
-  const put = (key, val) => {
-    if (!map.has(key)) map.set(key, {});
-    Object.assign(map.get(key), val);
-  };
-
-  for (const row of openrouterData.data || []) {
-    const fam = row.id || '';
-    const key = familyKey(fam);
-    const pricing = row.pricing || {};
-    const perM = Number.isFinite(pricing.prompt) && Number.isFinite(pricing.completion)
-      ? (pricing.prompt + pricing.completion) * 1e6
-      : null;
-    put(key, {
-      name: fam,
-      pricePerMTok: perM,
-      ctxTokens: Number.isFinite(row.context_length) ? row.context_length : null,
-      trend: null,
-      source: 'openrouter',
-    });
-  }
-
-  for (const row of hfData) {
-    const fam = row.id || '';
-    const key = familyKey(fam);
-    const st = (row.safetensors || {}).total;
-    const params = st && st > 0 ? Math.round(st / 2) : null; // 8비트 기준(양자는 화면에서 바꿈)
-    const trend = Number.isFinite(row.trendingScore) && row.trendingScore > 0 ? row.trendingScore : null;
-    const existing = map.get(key);
-    put(key, {
-      name: fam,
-      source: existing ? 'both' : 'hf',
-      params: existing && existing.params != null ? existing.params : params,
-    });
-    if (trend != null) {
-      map.get(key).trend = Math.max(map.get(key).trend || 0, trend);
-    }
-  }
-
-  return [...map.values()].filter((m) => m.name);
-}
-
-function estimateMemGB(model, bits) {
-  if (!model.params) return null;
-  const bytes = model.params * (Number(bits) / 8) * 1.2; // 가중치 + 오버헤드 20%
-  return bytes / (1024 ** 3);
-}
-
-// ---------- 필터·정렬 ----------
-function visibleModels() {
-  if (!state.data) return [];
-  const q = state.search.trim().toLowerCase();
-  let rows = state.data.models.slice();
-  if (q) {
-    rows = rows.filter((m) => m.name.toLowerCase().includes(q) || displayName(m.name).toLowerCase().includes(q));
-  }
-  const s = state.sort;
-  const canRun = (m) => {
-    const mem = estimateMemGB(m, state.bits);
-    return mem != null && mem <= state.memoryGB ? 1 : 0;
-  };
-  rows.sort((a, b) => {
-    if (s === 'trend') return (b.trend || 0) - (a.trend || 0) || a.name.localeCompare(b.name);
-    if (s === 'local') return (b.trend || 0) - (a.trend || 0);
-    if (s === 'price') return (a.pricePerMTok ?? Infinity) - (b.pricePerMTok ?? Infinity);
-    if (s === 'context') return (b.ctxTokens || 0) - (a.ctxTokens || 0);
-    return 0;
-  });
-  return rows;
-}
-
-// 가족 그룹: 같은 이름(예: qwen/qwen3)의 여러 버전을 하나로.
-function buildFamilies(models) {
-  const map = new Map();
-  for (const m of models) {
-    const key = familyKey(m.name);
-    if (!map.has(key)) map.set(key, { key, models: [], best: null, bestScore: -1 });
-    const fam = map.get(key);
-    fam.models.push(m);
-    const mem = estimateMemGB(m, state.bits);
-    const score = (m.trend || 0) * 10 + (mem != null && mem <= state.memoryGB ? 1 : 0);
-    if (score > fam.bestScore) {
-      fam.best = m;
-      fam.bestScore = score;
-    }
-  }
-  return [...map.values()];
-}
-
-function canRunLabel(m) {
-  const mem = estimateMemGB(m, state.bits);
-  if (mem == null) return { cls: 'can-unknown', text: '알 수 없음' };
-  if (mem <= state.memoryGB) return { cls: 'can-yes', text: '가능' };
-  return { cls: 'can-no', text: '불가' };
+function loadAll(sample) {
+  const files = sample ? SAMPLE_FILES : REAL_FILES;
+  const urls = files.map((f) => f + '?v=' + (sample ? 's' : '1'));
+  return Promise.all(urls.map((u) => fetchJSON(u, { cache: 'no-store' }))).then((arr) => ({
+    hf: arr[0],
+    openrouter: arr[1],
+    hfMeta: arr[2] || null,
+    orMeta: arr[3] || null,
+    names: files.map(fileName),
+  }));
 }
 
 // ---------- 렌더 ----------
 function render() {
-  if (!state.data) return;
-  renderDataMeta();
+  if (!state.result) return;
   renderAnswer();
-  renderBoard();
+  renderTopList();
+  renderTable();
   renderFavs();
   renderCharts();
-}
-
-function renderDataMeta() {
-  const d = state.data;
-  const sources = new Set(d.models.map((m) => m.source));
-  const src = sources.has('both') ? 'HuggingFace·OpenRouter' : [...sources].join('·');
-  els['data-meta'].textContent = `데이터: ${src} · ${d.models.length}개 모델 · 갱신 ${d.updated}`;
+  // 첫 화면: 추세 그래프만 펼쳐 두고, 모델 목록은 접어 둔 채 시작한다(보이지 않는 구역은 아래로)
+  if (!state.result._foldTouched) {
+    if (els['trend-fold'] && !els['trend-fold'].open) els['trend-fold'].open = true;
+    if (els['table-fold'] && els['table-fold'].open) els['table-fold'].open = false;
+  }
 }
 
 function renderAnswer() {
-  const d = state.data;
   let total = 0, runnable = 0, priced = 0, top = null;
-  for (const m of d.models) {
-    const mem = estimateMemGB(m, state.bits);
-    total++;
-    if (mem != null && mem <= state.memoryGB) runnable++;
-    if (m.pricePerMTok != null) priced++;
-    if (!top || (m.trend || 0) > (top.trend || 0)) top = m;
+  for (const r of rows()) {
+    total += 1;
+    if (canRun(r, state.bits, state.memoryGB).text === '가능') runnable += 1;
+    if (r.openrouter && r.openrouter.pricePerMillion != null) priced += 1;
+    const t = r.hf && r.hf.trendingScore;
+    if (t != null && (top == null || t > top.trendingScore)) top = { trendingScore: t, name: famBestName(r) };
   }
+  els['answer-label'].textContent = state.sample
+    ? `예시 기준(내 RAM ${state.memoryGB}GB · ${state.bits}비트)으로 돌릴 수 있는 AI`
+    : `내 RAM ${state.memoryGB}GB · ${state.bits}비트로 직접 돌릴 수 있는 AI`;
   els['answer-num'].textContent = String(runnable);
   els['answer-unit'].textContent = '개';
-  els['answer-text'].textContent = `내 RAM ${state.memoryGB}GB · ${state.bits}비트로 실행할 수 있습니다.`;
-  els['answer-total'].textContent = `${total}개`;
-  els['answer-priced'].textContent = `${priced}개`;
-  els['answer-top'].textContent = top ? '모델 1' : '—'; // 한글 규칙: 원문 이름은 툴팁으로만
+  els['answer-text'].textContent = runnable > 0
+    ? '아래 목록에서 실행에 드는 메모리를 확인하고, ☆를 눌러 나란히 비교해 보세요.'
+    : '조건을 바꾸거나 RAM을 더 크게 올려 보세요.';
+  els['answer-total'].textContent = total + '개';
+  const pb = els['answer-priced-box'];
+  pb.hidden = priced === 0;
+  els['answer-priced'].textContent = priced + '개';
+  const tb = els['answer-top-box'];
+  tb.hidden = !top;
+  els['answer-top'].textContent = top ? displayName(top.name) : '—';
   els['answer-top'].title = top ? top.name : '';
 }
 
-function renderBoard() {
-  const tbody = els['board-table'].querySelector('tbody');
-  tbody.textContent = '';
-  const list = document.querySelector('.model-list');
+// 내 장비에 맞는 모델: 가능 모델(추세 순, 8개) — 스크롤 전 첫 화면의 목록
+function renderTopList() {
+  const can = rows().filter((r) => canRun(r, state.bits, state.memoryGB).text === '가능');
+  can.sort((a, b) => {
+    const ta = a.hf && a.hf.trendingScore != null ? a.hf.trendingScore : -1;
+    const tb = b.hf && b.hf.trendingScore != null ? b.hf.trendingScore : -1;
+    return tb - ta;
+  });
+  els['top-empty'].hidden = can.length > 0;
+  const list = els['top-list'];
   list.textContent = '';
-
-  const models = visibleModels();
-  const families = buildFamilies(models);
-
-  // 요약 한 줄
-  let runnable = 0, unknown = 0;
-  for (const m of models) {
-    const { text } = canRunLabel(m);
-    if (text === '가능') runnable++;
-    else if (text === '알 수 없음') unknown++;
-  }
-  els['summary-line'].textContent = models.length
-    ? `${models.length}개 모델 중 로컬 ${runnable}개 실행 가능 · ${unknown}개 정보 없음`
-    : '검색 결과 없음';
-
-  // 목록 접기: 기본은 접고(첫 화면에 차트를 주기 위해), 결과가 12개 이하로 줄면 자동으로 펼친다.
-  const boardList = els['board-list'];
-  if (boardList) {
-    const folded = boardList.classList.contains('fold');
-    if (families.length <= 12) {
-      boardList.classList.remove('fold');
-    } else if (!state.search.trim()) {
-      boardList.classList.add('fold');
-    }
-    if (els['list-toggle']) {
-      els['list-toggle'].hidden = families.length <= 12;
-      els['list-toggle'].textContent = boardList.classList.contains('fold')
-        ? `전체 ${families.length}개 보기`
-        : '접기';
-    }
-  }
-
-  // 표(테이블) 행 — SPEC 의 고정 id·구조는 유지(화면에는 ds-list 가 메인)
-  let famIdx = 0;
-  for (const fam of families) {
-    const tr = document.createElement('tr');
-    tr.className = 'row';
-    tr.dataset.model = fam.best.name;
-    const star = state.favorites.has(fam.best.name) ? '★' : '☆';
-    tr.innerHTML = `
-      <td class="family-cell" title="가족: ${fam.models.length}개 버전을 하나로. ☆를 눌러 즐겨찾기">
-        ${fam.models.length > 1 ? `<span class="family-count">${fam.models.length}</span>` : '—'}
-      </td>
-      <td class="model-cell" title="${fam.best.name}"><span class="star">${star}</span>모델 ${famIdx + 1}</td>
-      <td class="num-cell">${fam.best.params ? fmtParams(fam.best.params) : '—'}</td>
-      <td class="num-cell">${fam.best.trend ? fmtTokens(fam.best.trend) : '—'}</td>
-      <td class="num-cell">${(() => { const m = estimateMemGB(fam.best, state.bits); return m ? fmtGB(m) : '—'; })()}</td>
-      <td class="can-cell"><span class="pill ${canRunLabel(fam.best).cls}">${canRunLabel(fam.best).text}</span></td>
-      <td class="num-cell">${fam.best.pricePerMTok != null ? fmtPrice(fam.best.pricePerMTok) : '—'}</td>
-      <td class="num-cell">${fam.best.ctxTokens ? fmtTokens(fam.best.ctxTokens) : '—'}</td>
-    `;
-    tr.addEventListener('click', () => toggleFav(fam.best.name));
-    tbody.appendChild(tr);
-    famIdx++;
-  }
-
-  // 목록(주 화면) — .ds-list 구조: 아바타 + 이름 + 보조 정보 + 오른쪽 값
-  for (const fam of families) {
-    const star = state.favorites.has(fam.best.name) ? '★' : '☆';
-    const mem = estimateMemGB(fam.best, state.bits);
-    const can = canRunLabel(fam.best);
+  for (const r of can.slice(0, 8)) {
+    const name = famBestName(r);
     const li = document.createElement('li');
-    li.className = 'ds-list-item';
-    li.dataset.model = fam.best.name;
-    li.title = fam.best.name; // 원문 이름은 툴팁으로만(한글 규칙)
-    li.innerHTML = `
-      <div class="ds-avatar" aria-hidden="true">${famBestInitials(fam.best.name)}</div>
-      <div class="ds-list-main">
-        <span class="star" data-role="fav" role="button" tabindex="0" aria-label="즐겨찾기">${star}</span>
-        <b class="ds-list-title"><span class="model-name">모델 ${famIdx + 1}</span>${fam.models.length > 1 ? ` <span class="family-count">${fam.models.length}</span>` : ''}</b>
-        <small class="ds-list-sub">
-          ${fam.best.params ? `파라미터 ${fmtParams(fam.best.params)} · ` : ''}${fam.best.trend ? `추세 ${fmtTokens(fam.best.trend)} · ` : ''}
-          ${fam.best.pricePerMTok != null ? `API ${fmtPrice(fam.best.pricePerMTok)}/1M` : 'API 가격 —'}
-        </small>
-      </div>
-      <div class="ds-list-end">
-        <span class="ds-list-amount">${mem ? `${fmtGB(mem)} GB` : '—'}</span>
-        <span class="pill ${can.cls}">${can.text}</span>
-      </div>
-    `;
-    li.addEventListener('click', (e) => {
-      if (e.target.closest('[data-role="fav"]')) {
-        toggleFav(fam.best.name);
-      } else {
-        e.preventDefault();
-      }
-    });
-    li.querySelector('[data-role="fav"]').addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleFav(fam.best.name);
+    const mem = estimateGB(r, state.bits);
+    const av = document.createElement('span');
+    av.className = 'ds-avatar';
+    av.dataset.hue = String(hueFor(name));
+    av.textContent = famBestInitials(name);
+    const main = document.createElement('span');
+    main.className = 'ds-list-main';
+    const title = document.createElement('span');
+    title.className = 'ds-list-title';
+    title.textContent = displayName(name);
+    title.title = name;
+    const sub = document.createElement('span');
+    sub.className = 'ds-list-sub';
+    const parts = [];
+    const pp = r.hf && r.hf.parameters != null ? fmtParams(r.hf.parameters) : null;
+    if (pp) parts.push('파라미터 ' + pp);
+    if (r.openrouter && r.openrouter.contextLength != null) parts.push('컨텍스트 ' + fmtContext(r.openrouter.contextLength));
+    sub.textContent = parts.join(' · ') || '참고 정보 없음';
+    main.append(title, sub);
+    const end = document.createElement('span');
+    end.className = 'ds-list-end';
+    const amt = document.createElement('span');
+    amt.className = 'ds-list-amount';
+    amt.textContent = mem != null ? round1(mem) + ' GB' : '—';
+    end.append(amt);
+    li.append(av, main, end);
+    li.addEventListener('click', () => {
+      els['search-input'].value = displayName(name);
+      state.search = displayName(name);
+      state.result._foldTouched = true;
+      if (els['table-fold']) els['table-fold'].open = true;
+      render();
+      els['board-table'].scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     list.appendChild(li);
   }
+}
 
-  // 표 열 선택: 가족 수가 달라지면(검색 시) 표 열을 재계산
-  const famCount = Math.max(1, families.length);
-  const ths = els['board-table'].querySelectorAll('thead th');
-  if (ths.length >= 2) {
-    ths[1].style.width = `${Math.round((100 / famCount) * 0.6)}%`;
+function renderTable() {
+  const tbody = els['board-table'].querySelector('tbody');
+  tbody.textContent = '';
+  const vis = visibleRows();
+
+  // SPEC: '모델 N개 · 짝 M개 · 짝 안 됨 K개'
+  els['summary-line'].textContent = `모델 ${rows().length}개 · 짝 ${state.result.pairedCount}개 · 짝 안 됨 ${state.result.unpairedCount}개`;
+
+  // 검색 결과 안내: 빈 결과 / 일부 일치
+  els['table-note'].textContent = '';
+  if (state.search.trim() && vis.length === 0) {
+    els['table-note'].textContent = `“${state.search.trim()}” 검색 결과가 없어요. 다른 이름으로 검색해 보세요.`;
+  } else if (state.search.trim() && vis.length < rows().length) {
+    els['table-note'].textContent = `검색 조건에 맞는 모델 ${vis.length}개`;
+  }
+
+  // 추세 막대: 보이는 행의 최대 trendingScore 대비 (SPEC)
+  const maxTrend = vis.reduce((mx, r) => {
+    const t = r.hf && r.hf.trendingScore;
+    return t != null && t > mx ? t : mx;
+  }, 0);
+
+  for (const r of vis) {
+    const name = famBestName(r);
+    const tr = document.createElement('tr');
+    tr.dataset.family = r.family;
+    const star = state.favorites.has(r.family) ? '★' : '☆';
+
+    // 가족: ☆(즐겨찾기 토글)
+    const tdFam = document.createElement('td');
+    const starEl = document.createElement('span');
+    starEl.className = 'star';
+    starEl.textContent = star;
+    starEl.title = '즐겨찾기 추가/제거';
+    tdFam.append(starEl);
+    tdFam.title = `가족: 같은 이름의 모델 묶음. ☆를 눌러 즐겨찾기`;
+    tdFam.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFav(r.family);
+    });
+
+    // 모델: 원문 이름(영문)은 툴팁에 — 화면 글자는 한국어 규칙
+    const tdModel = document.createElement('td');
+    const mName = document.createElement('span');
+    mName.className = 'model-name';
+    mName.textContent = displayName(name);
+    mName.title = name;
+    tdModel.append(mName);
+    tr.append(tdFam, tdModel);
+
+    // 파라미터
+    const tdPar = document.createElement('td');
+    tdPar.className = 'num-cell';
+    tdPar.textContent = r.hf && r.hf.parameters != null ? fmtParams(r.hf.parameters) : '알 수 없음';
+    tr.append(tdPar);
+
+    // 추세: 막대 길이 = 최대 점수 대비
+    const tdTrend = document.createElement('td');
+    const t = r.hf && r.hf.trendingScore;
+    const num = document.createElement('span');
+    num.className = 'ds-num num-cell';
+    num.textContent = t != null ? String(t) : '—';
+    if (t != null && maxTrend > 0) {
+      const bar = document.createElement('span');
+      bar.className = 'ds-bar bar';
+      const fill = document.createElement('span');
+      fill.style.width = Math.max(6, Math.round((t / maxTrend) * 100)) + '%';
+      bar.style.width = '80px';
+      bar.append(fill);
+      tdTrend.append(bar, num);
+    } else {
+      tdTrend.append(num);
+    }
+    tr.append(tdTrend);
+
+    // 로컬 메모리 (GB)
+    const mem = estimateGB(r, state.bits);
+    const tdMem = document.createElement('td');
+    tdMem.className = 'num-cell';
+    tdMem.textContent = mem != null ? round1(mem) + ' GB' : '알 수 없음';
+    tr.append(tdMem);
+
+    // 로컬 가능
+    const can = canRun(r, state.bits, state.memoryGB);
+    const tdCan = document.createElement('td');
+    tdCan.className = 'center-cell';
+    const pill = document.createElement('span');
+    pill.className = 'pill ' + can.cls;
+    pill.textContent = can.text;
+    tdCan.append(pill);
+    tr.append(tdCan);
+
+    // API 가격 (1M 토큰)
+    const tdPrice = document.createElement('td');
+    tdPrice.className = 'num-cell';
+    tdPrice.textContent = fmtPrice(r.openrouter && r.openrouter.pricePerMillion);
+    tr.append(tdPrice);
+
+    // 컨텍스트
+    const tdCtx = document.createElement('td');
+    tdCtx.className = 'num-cell';
+    const cx = r.openrouter && r.openrouter.contextLength;
+    tdCtx.textContent = cx != null ? fmtContext(cx) : '—';
+    tr.append(tdCtx);
+
+    // 행 클릭 = 비교 추가/제거
+    tr.addEventListener('click', () => toggleCompare(r.family));
+    if (state.favorites.has(r.family)) tr.className = 'ds-pick';
+    tbody.appendChild(tr);
   }
 }
 
@@ -373,80 +361,125 @@ function renderFavs() {
   els['compare-lead-count'].textContent = String(Math.min(favs.length, MAX_FAV));
 
   els['fav-list'].textContent = '';
-  let fi = 0;
-  for (const name of favs) {
+  const byFam = new Map(rows().map((r) => [r.family, r]));
+  for (const f of favs) {
+    const r = byFam.get(f);
+    const name = r ? famBestName(r) : f;
     const li = document.createElement('li');
-    li.innerHTML = `<span class="star" aria-hidden="true">★</span><span class="fav-name"></span>`;
-    li.querySelector('.fav-name').textContent = `모델 ${++fi}`;
-    li.title = name; // 원문 이름은 툴팁으로만
+    li.className = 'ds-list-item';
+    const av = document.createElement('span');
+    av.className = 'ds-avatar ds-avatar-s';
+    av.dataset.hue = String(hueFor(name));
+    av.textContent = famBestInitials(name);
+    const main = document.createElement('span');
+    main.className = 'ds-list-main';
+    const title = document.createElement('span');
+    title.className = 'ds-list-title';
+    title.textContent = displayName(name);
+    title.title = name;
+    main.append(title);
+    const end = document.createElement('span');
+    end.className = 'ds-list-end';
+    const rm = document.createElement('button');
+    rm.className = 'fav-remove';
+    rm.type = 'button';
+    rm.textContent = '제거';
+    rm.title = '즐겨찾기에서 제거';
+    rm.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFav(f);
+    });
+    end.append(rm);
+    li.append(av, main, end);
     els['fav-list'].appendChild(li);
   }
 
   els['compare-list'].textContent = '';
-  const compare = state.compare.length ? state.compare : favs.slice(0, MAX_FAV);
-  let ci = 0;
-  for (const name of compare) {
+  for (const f of favs.slice(0, MAX_FAV)) {
+    const r = byFam.get(f);
+    const name = r ? famBestName(r) : f;
     const li = document.createElement('li');
-    li.innerHTML = `<span class="star" aria-hidden="true">★</span><span class="fav-name"></span>`;
-    li.querySelector('.fav-name').textContent = `모델 ${++ci}`;
+    li.className = 'fav-chip ds-chip';
+    li.textContent = displayName(name);
     li.title = name;
     els['compare-list'].appendChild(li);
   }
 
+  // 비교 표: 열 = 선택한 가족, 행 = 로컬 메모리·로컬 가능·API 가격·컨텍스트
   els['compare-panel'].textContent = '';
-  if (favs.length >= 2) {
-    const models = state.compare.map((n) => state.data.models.find((m) => m.name === n)).filter(Boolean);
-    if (models.length >= 2) {
-      const table = document.createElement('table');
-      table.className = 'compare-table';
-      let ri = 0;
-      const rows = [
-        ['모델', (m) => `모델 ${++ri}`],
-        ['파라미터', (m) => (m.params ? fmtParams(m.params) : '—')],
-        ['로컬 메모리', (m) => { const v = estimateMemGB(m, state.bits); return v ? `${fmtGB(v)}GB` : '—'; }],
-        ['로컬 가능', (m) => canRunLabel(m).text],
-        ['API 가격', (m) => (m.pricePerMTok != null ? `${fmtPrice(m.pricePerMTok)}/1M` : '—')],
-        ['컨텍스트', (m) => (m.ctxTokens ? fmtTokens(m.ctxTokens) : '—')],
-      ];
-      table.innerHTML = `<thead><tr>${models.map((m) => `<th title="${m.name}">모델 ${models.indexOf(m) + 1}</th>`).join('')}</tr></thead>`;
-      const tbody = document.createElement('tbody');
-      for (const [label, fn] of rows) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<th>${label}</th>${models.map((m) => `<td>${fn(m)}</td>`).join('')}`;
-        tbody.appendChild(tr);
-      }
-      table.appendChild(tbody);
-      els['compare-panel'].appendChild(table);
-    }
+  const sel = favs.slice(0, MAX_FAV).map((f) => byFam.get(f)).filter(Boolean);
+  if (sel.length < 2) return;
+  const table = document.createElement('table');
+  table.className = 'ds-table compare-table';
+  const thead = document.createElement('thead');
+  const htr = document.createElement('tr');
+  const corner = document.createElement('th');
+  corner.textContent = '';
+  htr.append(corner);
+  for (const r of sel) {
+    const th = document.createElement('th');
+    const name = famBestName(r);
+    th.textContent = displayName(name);
+    th.title = name;
+    htr.append(th);
   }
+  thead.append(htr);
+  const tbody = document.createElement('tbody');
+  const defs = [
+    ['로컬 메모리', (r) => {
+      const m = estimateGB(r, state.bits);
+      return m != null ? round1(m) + ' GB' : '알 수 없음';
+    }],
+    ['로컬 가능', (r) => canRun(r, state.bits, state.memoryGB).text],
+    ['API 가격', (r) => fmtPrice(r.openrouter && r.openrouter.pricePerMillion)],
+    ['컨텍스트', (r) => {
+      const c = r.openrouter && r.openrouter.contextLength;
+      return c != null ? fmtContext(c) : '—';
+    }],
+  ];
+  for (const [label, fn] of defs) {
+    const tr = document.createElement('tr');
+    const th = document.createElement('th');
+    th.textContent = label;
+    tr.append(th);
+    for (const r of sel) {
+      const td = document.createElement('td');
+      td.textContent = fn(r);
+      tr.append(td);
+    }
+    tbody.append(tr);
+  }
+  table.append(thead, tbody);
+  els['compare-panel'].appendChild(table);
 }
 
 // ---------- 차트 ----------
-function themeColors() {
-  const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  return {
-    ink: dark ? '#e7e3d8' : '#1c1917',
-    ink2: dark ? '#a8a29e' : '#57534e',
-    line: dark ? '#3f3a35' : '#e7e2d9',
-    accent: dark ? '#60a5fa' : '#2563eb',
-    accent2: dark ? '#34d399' : '#059669',
-  };
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
 function renderCharts() {
-  if (!state.data) return;
-  const c = themeColors();
-  const models = state.data.models;
-  const local = models.filter((m) => {
-    const mem = estimateMemGB(m, state.bits);
-    return mem != null && mem <= state.memoryGB;
-  });
-  const localSet = new Set(local.map((m) => m.name));
+  if (typeof Chart === 'undefined') return;
+  const ink = cssVar('--ds-ink') || '#151a24';
+  const ink2 = cssVar('--ds-ink-2') || '#454d5e';
+  const line = cssVar('--ds-line') || '#e1e4ea';
+  const c1 = cssVar('--ds-c1') || '#2f5bea';
+  const c3 = cssVar('--ds-c3') || '#0c8599';
+  const vis = visibleRows();
 
-  // 가격 × 컨텍스트 (로그 눈금)
-  const price = models.filter((m) => m.pricePerMTok != null && m.ctxTokens != null && m.trend != null);
+  Chart.defaults.font.family = DS_FONT;
+  Chart.defaults.font.size = 12;
+
+  // 가격 × 컨텍스트: 점 하나 = 모델 (로그 눈금)
+  const price = vis.filter((r) => {
+    const o = r.openrouter;
+    return o && o.contextLength != null && o.pricePerMillion != null;
+  });
+  const localNames = new Set(
+    vis.filter((r) => canRun(r, state.bits, state.memoryGB).text === '가능').map((r) => famBestName(r))
+  );
   priceChart = priceChart || new Chart(els['price-chart'], {
-    type: 'bubble',
+    type: 'scatter',
     data: { datasets: [] },
     options: {
       responsive: true,
@@ -455,23 +488,31 @@ function renderCharts() {
         legend: { display: false },
         tooltip: {
           callbacks: {
+            title: (items) => items.length ? items[0].raw._label : '',
             label: (ctx) => {
-              const m = ctx.raw;
-              return ` ${displayName(m.name)} · ${fmtPrice(m.pricePerMTok)}/1M · 컨텍스트 ${fmtTokens(m.ctxTokens)}`;
+              const p = ctx.raw;
+              const ctxK = p.x / 1000;
+              return ` ${fmtPrice(p.y)} / 1M 토큰 · 컨텍스트 ${round1(ctxK)}K`;
             },
           },
         },
       },
       scales: {
         x: {
-          type: 'logarithmic', min: 1000, max: 2e6,
-          title: { display: false },
-          grid: { color: c.line }, ticks: { color: c.ink2 },
+          type: 'logarithmic',
+          min: 1000, max: 2e6,
+          grid: { color: line },
+          ticks: {
+            color: ink2,
+            maxTicksLimit: 6,
+            callback: (v) => (v >= 1e6 ? v / 1e6 + 'M' : v / 1000 + 'K'),
+          },
         },
         y: {
-          type: 'logarithmic', min: 0.01, max: 100,
-          title: { display: false, text: 'API 가격 (1M 토큰당 $, 로그)' },
-          grid: { color: c.line }, ticks: { color: c.ink2 },
+          type: 'logarithmic',
+          min: 0.01, max: 500,
+          grid: { color: line },
+          ticks: { color: ink2, maxTicksLimit: 6, callback: (v) => '$' + v },
         },
       },
     },
@@ -479,21 +520,25 @@ function renderCharts() {
   priceChart.data.datasets = [
     {
       label: '클라우드 API',
-      data: price.filter((m) => !localSet.has(m.name)).map((m) => ({ x: m.ctxTokens, y: m.pricePerMTok, name: m.name })),
-      backgroundColor: c.ink2 + '66',
+      data: price.filter((r) => !localNames.has(famBestName(r))).map((r) => ({ x: r.openrouter.contextLength, y: r.openrouter.pricePerMillion, _label: displayName(famBestName(r)) })),
+      backgroundColor: ink2 + '66',
       pointRadius: 3,
+      pointHoverRadius: 6,
     },
     {
       label: '내 장비에서 실행',
-      data: price.filter((m) => localSet.has(m.name)).map((m) => ({ x: m.ctxTokens, y: m.pricePerMTok, name: m.name })),
-      backgroundColor: c.accent,
+      data: price.filter((r) => localNames.has(famBestName(r))).map((r) => ({ x: r.openrouter.contextLength, y: r.openrouter.pricePerMillion, _label: displayName(famBestName(r)) })),
+      backgroundColor: c1,
       pointRadius: 4,
+      pointHoverRadius: 7,
     },
   ];
   priceChart.update('none');
 
-  // 추세 상위 10 (막대)
-  const trend = [...models].filter((m) => m.trend).sort((a, b) => b.trend - a.trend).slice(0, 10);
+  // 추세 상위 10: 막대 길이 = trendingScore
+  const trend = vis.filter((r) => r.hf && r.hf.trendingScore != null)
+    .sort((a, b) => b.hf.trendingScore - a.hf.trendingScore)
+    .slice(0, 10);
   trendChart = trendChart || new Chart(els['trend-chart'], {
     type: 'bar',
     data: { labels: [], datasets: [] },
@@ -505,164 +550,204 @@ function renderCharts() {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (ctx) => ` ${displayName(ctx.raw.name)} · 추세 ${fmtTokens(ctx.raw.trend)}`,
+            label: (ctx) => ` 추세 ${ctx.raw._trend} · ${ctx.raw._label}`,
           },
         },
       },
       scales: {
-        x: { type: 'logarithmic', grid: { color: c.line }, ticks: { color: c.ink2 } },
-        y: { grid: { display: false }, ticks: { color: c.ink } },
+        x: { grid: { color: line }, ticks: { color: ink2 } },
+        y: { grid: { display: false }, ticks: { color: ink, font: { size: 11 } } },
       },
     },
   });
-  trendChart.data.labels = trend.map((m) => displayName(m.name));
+  trendChart.data.labels = trend.map((r) => displayName(famBestName(r)));
   trendChart.data.datasets = [
-    { data: trend.map((m) => ({ x: m.trend, name: m.name })), backgroundColor: c.accent2, borderRadius: 4 },
+    { data: trend.map((r) => ({ x: r.hf.trendingScore, _trend: r.hf.trendingScore, _label: displayName(famBestName(r)) })), backgroundColor: c3, borderRadius: 4, barThickness: 18 },
   ];
   trendChart.update('none');
 }
 
-// ---------- 이벤트 ----------
-function toggleFav(name) {
-  if (state.favorites.has(name)) {
-    state.favorites.delete(name);
-    state.compare = state.compare.filter((n) => n !== name);
+// ---------- 즐겨찾기·비교 (SPEC 규칙) ----------
+function loadFavs() {
+  try {
+    const raw = localStorage.getItem(FAV_KEY);
+    if (!raw) return;
+    const v = JSON.parse(raw);
+    if (Array.isArray(v) && v.every((x) => typeof x === 'string')) {
+      state.favorites = new Set(v);
+    }
+  } catch { /* 잘못된 값은 무시(빈 것으로 시작) */ }
+}
+
+function saveFavs() {
+  try {
+    localStorage.setItem(FAV_KEY, JSON.stringify([...state.favorites]));
+  } catch { /* ignore */ }
+}
+
+function toggleFav(family) {
+  if (state.favorites.has(family)) {
+    state.favorites.delete(family);
   } else {
     if (state.favorites.size >= MAX_FAV) {
-      setStatus(`즐겨찾기는 ${MAX_FAV}개까지예요. 하나를 해제하세요.`);
-      return;
+      state.favorites.delete(state.favorites.values().next().value); // 가장 오래된 1개 치환
     }
-    state.favorites.add(name);
-    if (state.compare.length < MAX_FAV) state.compare.push(name);
+    state.favorites.add(family);
   }
+  saveFavs();
   render();
 }
 
+// 행 클릭: 선택(비교) 토글 — ☆(가족 셀)은 즐겨찾기
+function toggleCompare(family) {
+  if (state.favorites.has(family)) {
+    state.favorites.delete(family);
+  } else {
+    if (state.favorites.size >= MAX_FAV) {
+      state.favorites.delete(state.favorites.values().next().value);
+    }
+    state.favorites.add(family);
+  }
+  saveFavs();
+  render();
+}
+
+// ---------- 상태 메시지 ----------
 let statusTimer;
-function setStatus(msg) {
+function setStatus(msg, sticky = false) {
   els['app-status'].textContent = msg || '';
   clearTimeout(statusTimer);
-  if (msg) statusTimer = setTimeout(() => { els['app-status'].textContent = ''; }, 4000);
+  if (msg && !sticky) statusTimer = setTimeout(() => { els['app-status'].textContent = ''; }, 6000);
 }
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem('ai-marketboard');
-    if (!raw) return;
-    const s = JSON.parse(raw);
-    state.favorites = new Set(s.favorites || []);
-    state.compare = s.compare || [];
-    state.memoryGB = s.memoryGB ?? state.memoryGB;
-    state.bits = s.bits ?? state.bits;
-    state.sort = s.sort ?? state.sort;
-  } catch { /* ignore */ }
-}
-
-function saveState() {
-  try {
-    localStorage.setItem('ai-marketboard', JSON.stringify({
-      favorites: [...state.favorites],
-      compare: state.compare,
-      memoryGB: state.memoryGB,
-      bits: state.bits,
-      sort: state.sort,
-    }));
-  } catch { /* ignore */ }
-}
-
-async function refresh(sample) {
-  state.sampleMode = sample;
+// ---------- 로드/새로고침 ----------
+async function load(sample) {
+  state.sample = sample;
   els['sample-banner'].hidden = !sample;
+  els['sample-banner'].className = 'sample-banner ds-status ds-status-warn';
   els['sample-banner'].textContent = sample
-    ? '예시 데이터로 보고 있어요. 새로고침하면 실제 데이터로 바뀝니다.'
+    ? '예시 데이터를 보고 있어요. 실제 데이터로 복귀하려면 [새로고침]을 누르세요.'
     : '';
-  setStatus('데이터를 불러오는 중…');
+  setStatus(sample ? '예시 데이터를 불러오는 중…' : '데이터를 불러오는 중…');
   try {
-    const d = await loadAppData(sample);
-    state.data = {
-      updated: dataUpdatedLabel(d.openrouter),
-      models: buildUnifiedModels(d.openrouter, d.hf),
-    };
+    const d = await loadAll(sample);
+    if (sample) {
+      // 예시 데이터: 파일 대신 코드에 들어 있는 실제 데이터(같은 처리를 실행)
+      state.result = buildModelBoard(d.hf, d.openrouter);
+      state.meta = {
+        fetched_at: ['데이터 기준: 2026-11-04 04:03 (예시)'],
+        terms: ['예시: 실제 데이터 파일의 일부(이용 조건은 실제 데이터와 같음)'],
+      };
+    } else {
+      try {
+        state.result = buildModelBoard(d.hf, d.openrouter);
+      } catch (err) {
+        state.result = null;
+        setStatus('데이터 모양이 기대와 달라서 화면을 표시할 수 없습니다. 새로고침을 눌러 주세요.', true);
+        return;
+      }
+      const metas = [d.hfMeta, d.orMeta].filter(Boolean);
+      state.meta = {
+        fetched_at: metas.map((m) => formatMeta(m).fetched_at),
+        terms: [...new Set(metas.map((m) => formatMeta(m).terms).filter((t) => t))],
+      };
+    }
     setStatus('');
-    saveState();
+    renderDataMeta();
     render();
   } catch (err) {
-    setStatus('데이터를 불러오지 못했어요. 새로고침을 눌러주세요.');
-    console.error(err);
+    state.result = null;
+    els['data-meta'].textContent = '';
+    els['board-table'].querySelector('tbody').textContent = '';
+    els['summary-line'].textContent = '';
+    els['table-note'].textContent = '';
+    els['top-list'].textContent = '';
+    els['fav-list'].textContent = '';
+    els['compare-list'].textContent = '';
+    els['compare-panel'].textContent = '';
+    if (els['table-fold']) els['table-fold'].open = false;
+    if (priceChart) { priceChart.data.datasets = []; priceChart.update('none'); }
+    if (trendChart) { trendChart.data.datasets = []; trendChart.data.labels = []; trendChart.update('none'); }
+    // SPEC: '데이터 파일을 불러올 수 없습니다: <file name>'
+    const m = String(err && err.message || '').match(/(?:데이터 파일 없음|데이터 파일을 불러올 수 없습니다):?\s*(\S+)/);
+    setStatus('데이터 파일을 불러올 수 없습니다: ' + (m ? m[1] : fileName((sample ? SAMPLE_FILES : REAL_FILES)[0])) + ' — 새로고침을 눌러 주세요.', true);
   }
 }
 
+function renderDataMeta() {
+  const lines = [];
+  if (state.meta) {
+    for (const f of state.meta.fetched_at) if (f) lines.push(f);
+    for (const t of state.meta.terms) if (t) lines.push(t);
+  }
+  els['data-meta'].textContent = lines.join(' · ');
+}
+
+// ---------- 이벤트 ----------
 function bindEvents() {
   els['memory-input'].addEventListener('input', (e) => {
     const v = Number(e.target.value);
     if (Number.isFinite(v) && v >= 1) {
-      state.memoryGB = v;
-      saveState();
+      state.memoryGB = Math.min(v, 1024);
       render();
     }
   });
   els['bits-select'].addEventListener('change', (e) => {
     state.bits = Number(e.target.value);
-    saveState();
     render();
   });
   let t;
   els['search-input'].addEventListener('input', (e) => {
     state.search = e.target.value;
+    if (e.target.value.trim()) {
+      // 검색을 시작하면 접혀 있는 모델 목록을 펼쳐 보여 준다
+      state.result._foldTouched = true;
+      if (els['table-fold'] && !els['table-fold'].open) els['table-fold'].open = true;
+    }
     clearTimeout(t);
-    t = setTimeout(render, 150); // 3초 원칙: 검색은 즉시 반영
+    t = setTimeout(render, 120);
   });
-  els['list-toggle'].addEventListener('click', () => {
-    const el = els['board-list'];
-    el.classList.toggle('fold');
-    els['list-toggle'].textContent = el.classList.contains('fold')
-      ? `전체 ${els['board-table'].querySelectorAll('tbody tr').length}개 보기`
-      : '접기';
+  // '내 장비에 맞는 모델' 제목의 '목록 전체 보기' — 접혀 있는 모델을 펼쳐 준다
+  const openTable = (a) => {
+    a.preventDefault();
+    state.result._foldTouched = true;
+    if (els['table-fold']) els['table-fold'].open = true;
+    els['board-table'].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  for (const a of document.querySelectorAll('a[data-open-table]')) a.addEventListener('click', openTable);
+  // 그래프로 보기: 추세 그래프가 접혀 있으면 펼친 뒤 그래프로 이동
+  els['board'].addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('a[href="#chart-anchor"]');
+    if (!a) return;
+    if (els['trend-fold'] && !els['trend-fold'].open) {
+      els['trend-fold'].open = true;
+      state.result._foldTouched = true;
+    }
   });
-  els['example-button'].addEventListener('click', () => refresh(true));
-  els['refresh-button'].addEventListener('click', () => refresh(false));
+  els['example-button'].addEventListener('click', () => load(true));
+  els['refresh-button'].addEventListener('click', () => load(false));
   els['reset-button'].addEventListener('click', () => {
     state.memoryGB = DEFAULT_MEMORY;
-    state.bits = Number(DEFAULT_BITS);
+    state.bits = DEFAULT_BITS;
     state.search = '';
+    state.favorites = new Set();
+    localStorage.removeItem(FAV_KEY);
     els['memory-input'].value = String(DEFAULT_MEMORY);
-    els['bits-select'].value = DEFAULT_BITS;
+    els['bits-select'].value = String(DEFAULT_BITS);
     els['search-input'].value = '';
-    saveState();
+    if (state.result) state.result._foldTouched = false;
+    setStatus('');
     render();
   });
-
-  // 표 헤더 클릭 → 정렬
-  const headers = [
-    { el: els['board-table'].querySelectorAll('thead th')[0], sort: 'trend' },
-    { el: els['board-table'].querySelectorAll('thead th')[3], sort: 'trend' },
-    { el: els['board-table'].querySelectorAll('thead th')[4], sort: 'local' },
-    { el: els['board-table'].querySelectorAll('thead th')[6], sort: 'price' },
-    { el: els['board-table'].querySelectorAll('thead th')[7], sort: 'context' },
-  ];
-  for (const h of headers) {
-    if (!h.el) continue;
-    h.el.style.cursor = 'pointer';
-    h.el.addEventListener('click', () => {
-      state.sort = h.sort;
-      saveState();
-      render();
-    });
-  }
 }
 
 // ---------- 시작 ----------
 function boot() {
   initEls();
-  // 모델 목록 컨테이너 삽입(표 아래)
-  const list = document.createElement('ul');
-  list.className = 'model-list ds-list';
-  els['board-table'].after(list);
-  loadState();
-  els['memory-input'].value = String(state.memoryGB);
-  els['bits-select'].value = String(state.bits);
+  loadFavs();
   bindEvents();
-  refresh(false);
+  renderDataMeta();
+  load(false);
 }
 
 document.addEventListener('DOMContentLoaded', boot);

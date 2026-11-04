@@ -31,6 +31,8 @@ export async function init() {
     diagnoseScreen.querySelector('#bar-legend').textContent = '';
     diagnoseScreen.querySelector('#pick-result').textContent = '';
     diagnoseScreen.querySelector('#csv-hint').textContent = '';
+    // 예시로 시작했는데 사용자 입력으로 실패하면 '예시 묶음' 문구가 다시 보인다.
+    diagnoseScreen.querySelector('#sample-label').textContent = '내 사진 묶음';
     treeScreen.querySelector('#tree-list').textContent = '';
     treeScreen.querySelector('#tree-summary').textContent = '';
     dataScreen.querySelector('#result-json').textContent = '';
@@ -41,9 +43,16 @@ export async function init() {
     clearResults();
   };
 
+  // 예시 묶음은 '버리기'가 미리 골라 둔 상태(예시)라 절감 문구 뒤에 '처음엔 아무것도 안 건드린 상태'를 덧붙인다.
+  const sampleNote = '처음에는 아무것도 버리기로 고르지 않은 상태예요.';
+
   const renderAll = () => {
     const result = diagnoseIcloudExport(state.entries, state.csvText, state.discard);
     renderDiagnose(diagnoseScreen, state, result, isSample);
+    const savings = diagnoseScreen.querySelector('#savings');
+    const saved = result.totalBytes - result.afterBytes;
+    if (!isSample && saved > 0) savings.textContent += ' 아래에서 체크를 풀면 그 항목은 폴더 미리보기에 남아요.';
+    else if (isSample && saved > 0) savings.textContent += ' ' + sampleNote;
     renderTree(treeScreen, result);
     renderData(dataScreen, result);
     status.textContent = '';
@@ -86,17 +95,37 @@ export async function init() {
 
   // 파일 고르기(폴더·개별): 상태 교체, discard 전부 true. 읽은 결과를 #pick-result 로 바로 알려 준다.
   const pickResult = diagnoseScreen.querySelector('#pick-result');
+  // 가져오기 JSON은 2개 파일(사진 + CSV)에 나뉘어 있어 input.files 전체를 읽는다.
   const onPicked = async (input) => {
-    if (!input.files || input.files.length === 0) return;
+    const files = input.files ? [...input.files] : [];
+    input.value = '';
+    if (files.length === 0) return;
+    // 상태 JSON(가져오기 파일)은 readImportFile 로, 그 외 파일은 readPickedFiles 로.
+    const jsons = files.filter((f) => /\.json$/i.test(f.name));
+    const photos = files.filter((f) => !/\.json$/i.test(f.name));
     try {
-      const picked = await readPickedFiles(input.files);
+      if (jsons.length > 0 && photos.length === 0) {
+        if (!window.confirm('지금 목록을 불러온 목록으로 바꿀까요? 사진 파일은 바뀌지 않아요.')) return;
+        const imported = await readImportFile(jsons[0]);
+        if (!imported) {
+          pickResult.textContent = '';
+          showError('가져오기를 실패했어요. heicpack-state.json 형식(사진 목록·날짜 정보·버릴 항목)이어야 해요.');
+          return;
+        }
+        pickResult.textContent = '가져온 ' + jsons[0].name + '으로 목록을 바꿨어요. 사진 파일은 그대로예요.';
+        state = imported;
+        isSample = false;
+        renderAll();
+        return;
+      }
+      const picked = await readPickedFiles(photos);
       if (picked.entries.length === 0) {
-        pickResult.textContent = '파일 ' + input.files.length + '개를 읽었어요 · 사진·영상 0장' +
+        pickResult.textContent = '파일 ' + files.length + '개를 읽었어요 · 사진·영상 0장' +
           (picked.csvText.trim() !== '' ? ' · 날짜 CSV 있음' : ' · 날짜 CSV 없음') +
           ' — 사진·영상이 없어요. 폴더 안의 HEIC·JPG·MOV 파일을 함께 골라 주세요.';
         showError('사진 파일이 하나도 없어요. 폴더 안의 HEIC·JPG·MOV 같은 사진·영상 파일을 함께 골라 주세요.');
       } else {
-        pickResult.textContent = '파일 ' + input.files.length + '개를 읽었어요 · 사진·영상 ' +
+        pickResult.textContent = '파일 ' + files.length + '개를 읽었어요 · 사진·영상 ' +
           picked.entries.length + '장' + (picked.csvText.trim() !== '' ? ' · 날짜 CSV 있음' : ' · 날짜 CSV 없음');
         state = {
           entries: picked.entries,
@@ -110,7 +139,6 @@ export async function init() {
       pickResult.textContent = '';
       showError('파일을 읽지 못했어요. 다시 골라 주세요. (' + err.message + ')');
     }
-    input.value = '';
   };
   diagnoseScreen.querySelector('#folder-input').addEventListener('change', (e) => onPicked(e.target));
   diagnoseScreen.querySelector('#files-input').addEventListener('change', (e) => onPicked(e.target));

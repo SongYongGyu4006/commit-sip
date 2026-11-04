@@ -10,48 +10,32 @@
 <body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: AI 모델 시장 판 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
 <header class="ds-band">
   <h1>AI 모델 시장 판</h1>
-  <p>내 컴퓨터 메모리로 AI를 직접 돌릴 수 있는지, 인터넷으로 쓰면 100만 글자당 얼마인지 알려 드려요.</p>
-  <p class="band-steps">
-    <ol class="steps">
-      <li>내 컴퓨터 메모리 양을 넣고</li>
-      <li>돌려 보고 싶은 AI 이름을 검색해 보세요. 바로 답이 나와요.</li>
-    </ol>
-  </p>
+  <p>내 컴퓨터로 AI를 직접 돌릴 수 있는지, 인터넷으로 쓰면 100만 글자당 얼마인지 알려 드려요.</p>
   <div class="ds-band-meta">
-    <span id="data-meta" class="ds-band-meta-line"></span>
+    <span class="band-base">데이터: Hugging Face 인기 모델 + OpenRouter API 가격</span>
+    <span id="data-meta" class="band-meta-line"></span>
   </div>
 </header>
 
 <main class="page ds-page">
-  <div id="sample-banner" class="sample-banner" hidden></div>
+  <div id="sample-banner" class="sample-banner ds-status" hidden></div>
 
   <section class="ds-answer" aria-label="지금 바로 알아야 할 수">
-    <p class="ds-answer-label"><span id="answer-label">내 컴퓨터로 직접 돌릴 수 있는 AI</span></p>
-    <p class="ds-answer-num"><span id="answer-num">—</span><small id="answer-unit">개</small></p>
+    <span class="ds-answer-label">내 컴퓨터로 돌릴 수 있는 AI</span>
+    <span class="ds-answer-num"><span id="answer-num">—</span><small id="answer-unit">개</small></span>
     <p class="ds-answer-text" id="answer-text">데이터를 불러오는 중이에요.</p>
     <dl class="ds-answer-meta">
-      <div><dt>전체</dt><dd id="answer-total">—</dd></div>
-      <div id="answer-priced-box" hidden><dt>가격 확인</dt><dd id="answer-priced">—</dd></div>
-      <div id="answer-top-box" hidden><dt>요즘 인기 1위</dt><dd id="answer-top" title="최근 인기 모델 1위">—</dd></div>
+      <div><dt>모두</dt><dd id="answer-total">—</dd></div>
+      <div id="answer-priced-box" hidden><dt>클라우드 가격</dt><dd id="answer-priced">—</dd></div>
+      <div id="answer-top-box" hidden><dt>요즘 인기 1위</dt><dd id="answer-top">—</dd></div>
     </dl>
   </section>
 
-  <section class="quick-results" aria-label="바로 보기">
-    <div class="ds-section-title quick-results-title">
-      <h2 id="quick-results-title">바로 보기</h2>
-      <a class="board-quick" href="#chart-anchor">그래프로 보기</a>
-      <a class="board-quick" href="#board-list">목록 전체 보기</a>
-    </div>
-    <ul id="quick-list" class="quick-list"></ul>
-  </section>
-
-
-  <div class="ds-section-title board-section">
-    <h2 id="board-title" tabindex="-1">조건 고르기</h2>
-    <a class="board-quick" href="#chart-anchor">그래프로 보기 ↓</a>
-    <p>RAM과 양자를 고르면 답 카드와 그래프가 바로 바뀝니다.</p>
+  <div class="ds-section-title">
+    <h2>조건 고르기</h2>
+    <p>RAM과 양자를 바꾸면 바로 위의 답과 아래 그래프가 바뀝니다. 검색으로 목록을 좁혀 보세요.</p>
   </div>
-  <div class="ds-card board-controls ds-card">
+  <div class="ds-card board-controls">
     <div class="controls ds-row">
       <div class="control">
         <label class="ds-label" for="memory-input">내 RAM (GB)</label>
@@ -65,12 +49,12 @@
           <option value="16">16비트</option>
         </select>
       </div>
-      <div class="control">
-        <span class="ds-label">모델 검색</span>
-        <input id="search-input" class="ds-input" type="text" placeholder="모델 검색">
+      <div class="control control-search">
+        <span class="ds-label" id="search-label">모델 검색</span>
+        <input id="search-input" class="ds-input" type="text" placeholder="모델 검색" aria-labelledby="search-label">
       </div>
     </div>
-    <div class="controls ds-row board-actions">
+    <div class="board-actions ds-row">
       <button id="example-button" class="ds-btn ds-btn-primary" type="button">예시로 해 보기</button>
       <button id="refresh-button" class="ds-btn" type="button">새로고침</button>
       <button id="reset-button" class="ds-btn" type="button">초기화</button>
@@ -78,35 +62,34 @@
   </div>
 
   <section id="board">
-    <div class="ds-section-title chart-title chart-first">
+    <div class="ds-section-title chart-title">
       <h2 id="chart-anchor" tabindex="-1">그래프로 보기</h2>
-      <a class="board-quick" href="#board-table">모델 목록 ↓</a>
-      <p>점 하나 = 모델 하나 · 오른쪽 = 한 번에 읽을 수 있는 글자 수(컨텍스트) · 위 = API가 비싸다(100만 토큰당 가격)</p>
+      <p>점 하나 = 모델 하나. 그래프를 바꾸면 아래 목록·비교가 함께 바뀝니다.</p>
     </div>
     <div class="chart-grid">
-      <div class="chart-box" id="price-chart-box">
+      <div class="ds-card chart-box">
         <h3>가격 × 컨텍스트</h3>
-        <p class="chart-note ds-hint">점 하나 = 모델 하나. <span class="legend-dot legend-cloud" aria-hidden="true"></span>클라우드 API 모델, <span class="legend-dot legend-local" aria-hidden="true"></span>내 장비에서 돌 수 있는 모델. 눈금 사이는 10배(로그 스케일).</p>
+        <p class="chart-note ds-hint"><b>가로(컨텍스트)</b> = 모델이 한 번에 읽을 수 있는 글자 수 · <b>세로(가격)</b> = API가 비싸다, 100만 토큰당 가격. 눈금 사이는 10배(로그 스케일). <span class="legend-dot legend-cloud" aria-hidden="true"></span>클라우드 API 모델 · <span class="legend-dot legend-local" aria-hidden="true"></span>내 장비에서 돌 수 있는 모델</p>
         <div class="chart-frame"><canvas id="price-chart"></canvas></div>
       </div>
-      <div class="chart-box" id="trend-chart-box">
-        <h3>추세 상위 모델</h3>
+      <details class="chart-fold ds-card chart-box" id="trend-fold">
+        <summary class="chart-fold-sum">추세 상위 모델 <small class="ds-hint">최근 인기 10개</small></summary>
         <p class="chart-note ds-hint">최근 인기 모델 상위 10개를 막대 길이로 비교합니다.</p>
         <div class="chart-frame"><canvas id="trend-chart"></canvas></div>
-      </div>
+      </details>
     </div>
   </section>
 
-  <section id="board-list" class="board-list">
-    <div class="ds-section-title">
+  <details class="table-fold" id="table-fold">
+    <summary class="table-fold-sum">
       <h2>모델 목록</h2>
-      <p>☆를 눌러 즐겨찾기, 행을 눌러 상세가 열립니다. 같은 이름의 모델 묶음이 '가족'이에요.</p>
-    </div>
+      <p class="ds-hint">☆를 누르면 즐겨찾기(최대 3개)로 들어가고, 행을 누르면 같은 모델이 나란히 비교됩니다.</p>
+    </summary>
     <div class="table-wrap ds-table-wrap">
       <table id="board-table" class="ds-table">
         <thead>
           <tr>
-            <th title="같은 이름의 모델 묶음. ☆를 눌러 즐겨찾기" class="th-family">가족</th>
+            <th class="th-family" title="같은 이름의 모델 묶음. ☆를 눌러 즐겨찾기">가족</th>
             <th class="th-model">모델</th>
             <th class="th-nums">파라미터</th>
             <th class="th-trend">추세</th>
@@ -122,17 +105,25 @@
     <div id="summary-line" class="summary ds-hint ds-num"></div>
     <div id="table-note" class="table-note"></div>
     <p class="can-legend ds-hint">로컬 가능: <b class="can-yes">가능</b> = 내 RAM으로 실행, <b class="can-no">불가</b> = 메모리 부족, <b class="can-unknown">알 수 없음</b> = 파라미터 정보 없음</p>
-    <button id="list-toggle" class="list-toggle" type="button" hidden>전체 보기</button>
-  </section>
+  </details>
+
+  <div class="ds-section-title list-title">
+    <h2>내 장비에 맞는 모델</h2>
+    <a class="board-quick" href="#" data-open-table>목록 전체 보기</a>
+    <a class="board-quick" href="#chart-anchor">그래프로 보기</a>
+    <p>지금의 RAM·양자로 실행 가능한 모델 순으로, 실행에 드는 메모리가 적은 것부터 보여 줍니다.</p>
+  </div>
+  <ul id="top-list" class="top-list ds-list"></ul>
+  <div id="top-empty" class="ds-empty" hidden>지금 메모리로는 돌릴 수 있는 모델이 없어요. RAM을 더 크게 올려 보세요.</div>
 
   <section id="favorites" class="ds-card">
     <div class="ds-section-title fav-section">
       <h2>즐겨찾기 <span id="fav-count" class="count ds-badge">0</span></h2>
       <p>☆를 누른 모델 최대 3개를 골라 나란히 비교합니다.</p>
     </div>
-    <div id="fav-empty" class="ds-empty">아직 즐겨찾기가 없어요. 모델 목록에서 ☆를 눌러 추가하세요.</div>
-    <ul id="fav-list" class="fav-list"></ul>
-    <p class="compare-lead" id="compare-lead" hidden>비교할 모델 <b id="compare-lead-count">3</b>개</p>
+    <div id="fav-empty" class="ds-empty" hidden>아직 즐겨찾기가 없어요. 모델 목록에서 ☆를 눌러 추가하세요.</div>
+    <ul id="fav-list" class="fav-list ds-list"></ul>
+    <p class="compare-lead ds-hint" id="compare-lead" hidden>비교할 모델 <b id="compare-lead-count">3</b>개</p>
     <ul id="compare-list" class="fav-list compare-picks"></ul>
     <div id="compare-panel"></div>
   </section>
