@@ -1,0 +1,50 @@
+/* Claude 플러그인 업데이트 보드 — studio.css 위 보정 (토큰만 사용) */
+#app-status[hidden]{display:none}
+#board-card{margin-top:var(--ds-s4)}
+.ds-btn-row{display:flex;flex-wrap:wrap;gap:var(--ds-s2)}
+.ds-answer .ds-btn-row{margin-top:var(--ds-s3)}
+/* 첫 화면 맨 위(헤더)에 바로 쓰는 컨트롤: 다시 보기·예시 */
+.ds-band-meta .ds-btn{min-height:36px;font-size:13px;padding:0 14px;margin-left:auto}
+#board-table-wrap[hidden]{display:none}
+.ds-filter-label{font-size:14px;font-weight:600;color:var(--ds-ink-2)}
+.ds-terms{margin-top:var(--ds-s4);font-size:14px;color:var(--ds-ink-2)}
+.ds-terms summary{cursor:pointer;font-weight:600;color:var(--ds-ink);padding:var(--ds-s2) 0}
+.ds-terms ul{margin:var(--ds-s2) 0 0;padding-left:20px}
+.ds-terms li{margin-top:2px}
+/* 390px 화면에서 가로 스크롤이 생기지 않게: 표는 카드 안에서 줄바꿈(최소 너비 해제) */
+#board{min-width:0}
+.ds-board-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--ds-s2) var(--ds-s3);margin-bottom:var(--ds-s3)}
+#status-filter{width:auto}
+.ds-summary{margin:0;flex:1 1 auto;text-align:right;font-size:14px;color:var(--ds-ink-2);font-variant-numeric:tabular-nums}
+.ds-table td.ds-desc{max-width:360px;overflow-wrap:anywhere}
+.ds-table td.ds-repo a{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;display:inline-block;vertical-align:bottom}
+.ds-table td.ds-updated{white-space:nowrap;color:var(--ds-ink-2)}
+.ds-table td[data-label]::before{display:none}
+@media (max-width:600px){
+  .ds-answer .ds-btn-row{flex-direction:column;align-items:stretch}
+  .ds-filter-label{margin-bottom:var(--ds-s1)}
+  .ds-board-head{gap:var(--ds-s1) var(--ds-s2)}
+  .ds-summary{flex-basis:100%;text-align:left;margin-top:calc(-1 * var(--ds-s1))}
+  .ds-table{font-size:13px}
+  .ds-table th,.ds-table td{padding:10px 8px}
+  .ds-table td.ds-repo a{max-width:150px}
+  .ds-summary{text-align:left;flex-basis:100%}
+  /* 7개 열 표를 390px에서 읽을 수 있게 카드형 행으로: 1줄 이름, 2줄 설명, 3줄 수치 */
+  #board thead{display:none}
+  #board tr{display:grid;grid-template-columns:48px minmax(0,1fr);gap:4px var(--ds-s2);row-gap:6px;padding:var(--ds-s3);border-top:1px solid var(--ds-line)}
+  #board tr:first-child{border-top:0}
+  #board td{display:block;padding:0}
+  #board td.ds-rank{grid-column:1;grid-row:1;font-weight:600;color:var(--ds-ink-3)}
+  #board td.ds-repo{grid-column:2;grid-row:1}
+  #board td.ds-desc{grid-column:1/-1;grid-row:2;overflow-wrap:anywhere}
+  #board td.ds-desc:empty{display:none}
+  #board td.ds-updated{grid-column:1/-1;grid-row:3}
+  /* 별·일별 별·상태: 2×2 격자로 정렬 */
+  #board td:nth-child(4){grid-column:1;grid-row:4}
+  #board td:nth-child(5){grid-column:2;grid-row:4}
+  #board td:nth-child(6){grid-column:1;grid-row:5}
+  #board td:nth-child(7){grid-column:2;grid-row:5}
+  #board td[data-label]::before{display:block;font-size:12px;font-weight:600;color:var(--ds-ink-3);margin-bottom:2px}
+  /* 카드 내 통계 박스: 값이 박스보다 길면 넘치며 잘리지 않게 줄바꿈 허용(원래 white-space:nowrap) */
+  .ds-answer-meta dd{white-space:normal}
+}

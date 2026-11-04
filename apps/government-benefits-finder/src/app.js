@@ -1,5 +1,5 @@
 // GovBenefit Finder — 순수 핵심: browseBenefits. Node에서도 import해도 부작용 없음(시계·저장소·전역 읽지 않음).
-import { localTodayIso, fmtDateTime, renderList, renderMeta } from './ui.js';
+import { localTodayIso, fmtDateTime, renderList, renderMeta, renderSoonList } from './ui.js';
 
 const KEYS = ['서비스ID', '서비스명', '서비스목적요약', '서비스분야', '지원대상', '신청기한', '신청방법', '소관기관명', '상세조회URL'];
 const TARGETS = {
@@ -138,9 +138,14 @@ if (typeof document !== 'undefined') {
   const sortSelect = $('sort-select');
   const answerNum = $('answer-num');
   const answerText = $('answer-text');
+  const answerLabel = $('answer-label');
+  const soonList = $('soon-list');
+  const sampleHint = $('sample-hint');
+  const listDesc = $('list-desc');
   const metaTotal = $('meta-total');
   const metaClosing = $('meta-closing');
   const metaNone = $('meta-none');
+  const metaTime = $('meta-time');
   const summaryLine = $('summary-line');
   const list = $('benefit-list');
   const moreButton = $('more-button');
@@ -164,6 +169,7 @@ if (typeof document !== 'undefined') {
 
   // 예시 버튼용 3개 샘플 (SPEC 고정)
   // 상세링크는 url 이 https:// 로 시작할 때만 보이므로, 샘플 3개에 정부24 상세페이지 주소를 넣어 두어요.
+  // 첫 화면의 목록은 5건만 펼쳐 두고 나머지는 '더 보기'에 접어 두어요(차이점인 마감 임박 TOP 5가 스크롤 전에 보이도록).
   const SAMPLE_ROWS = [
     { '서비스ID': 'B1', '서비스명': '청년 월세 지원', '서비스분야': '주거·자립', '지원대상': '만 19~34세 청년', '신청기한': '2026.10.22~2026.10.22', '상세조회URL': 'https://www.gov.kr/portal/gnb/contents/22146', '신청방법': '정부24온라인신청' },
     { '서비스ID': 'C1', '서비스명': '소상공인 경영안정 자금', '서비스분야': '금융', '지원대상': '소상공인', '신청기한': '2026.09.01~2026.10.29', '상세조회URL': 'https://www.gov.kr/portal/gnb/contents/22146', '신청방법': '정부24온라인신청||방문신청' },
@@ -171,14 +177,10 @@ if (typeof document !== 'undefined') {
   ];
 
   const PAGE = 20; // '더 보기' 단위로 한 번에 추가할 카드 수
-  const S = { liveRows: [], todayIso: localTodayIso(), usingSample: false, loaded: false, total: null, fetchedAt: '', terms: '', limit: PAGE };
+  const S = { liveRows: [], todayIso: localTodayIso(), usingSample: false, loaded: false, total: null, fetchedAt: '', terms: '', limit: 5 };
 
-  // 답 카드 문장: 현재 선택 기준(대상) 한 문장으로
-  const answerSentence = (t, c, closing) => {
-    if (!c || c.shown === null) return '';
-    if (t === 'all') return c.shown + '건 중 ' + closing + '건이 14일 안에 마감돼요. 급한 것부터 보여 드려요.';
-    return CHIP_LABELS[t] + ' 혜택 ' + c.shown + '건 중 14일 안에 마감 ' + closing + '건이에요.';
-  };
+  // 남은 일수 문장: D-day / n일 남음
+  const daysWord = (d) => (d === 0 ? '오늘 마감(D-day)' : d + '일 남음');
 
   // 시작: 데이터 파일 2개 불러오기
   Promise.all([fetch('data/gov_benefits.json').then((r) => (r.ok ? r.json() : Promise.reject(new Error('data')))),
@@ -191,14 +193,17 @@ if (typeof document !== 'undefined') {
       S.loaded = true;
       // #data-time·#source-line 은 푸터로 옮김(첫 화면 여백 확보) — id 유지, 같은 내용은 푸터에
       dataTime.textContent = S.fetchedAt ? '데이터 기준: ' + fmtDateTime(S.fetchedAt) : '';
-      sourceLine.textContent = '출처: 행정안전부·공공데이터포털 (공공누리 제1유형)' + (S.terms && !S.terms.includes('출처 표시') ? ' · ' + S.terms : '');
+      // 첫 화면에 '데이터 기준'이 보이도록 답 카드 메타에 같은 시각을 넣고, 푸터엔 출처 전체 문구를 둠
+      metaTime.textContent = S.fetchedAt ? fmtDateTime(S.fetchedAt) : '—';
+      sourceLine.textContent = '출처: 행정안전부·공공데이터포털 (공공누리 제1유형)' + (S.fetchedAt ? ' · 데이터 기준 ' + fmtDateTime(S.fetchedAt) : '') + (S.terms && !S.terms.includes('출처 표시') ? ' · ' + S.terms : '');
       totalLine.textContent = S.total !== null ? '전체 혜택 ' + S.total + '건' : '';
       applyParams(); // ?field=… 가 데이터 목록의 분야에 없으면 빈 값으로 (있는 값일 때만 유지)
       render();
     })
     .catch(() => {
       dataTime.textContent = '';
-      sourceLine.textContent = '출처: 행정안전부·공공데이터포털 (공공누리 제1유형)';
+      metaTime.textContent = '불러오지 못함';
+      sourceLine.textContent = '출처: 행정안전부·공공데이터포털 (공공누리 제1유형) · 데이터 파일을 불러오지 못했습니다.';
       totalLine.textContent = '';
       appStatus.textContent = '데이터 파일을 불러오지 못했습니다.';
       list.textContent = '';
@@ -206,8 +211,8 @@ if (typeof document !== 'undefined') {
 
   function render({ todayIso } = {}) {
     if (!S.loaded && !S.usingSample) return;
-    // 조건이 바뀌면(이 render 는 select 칩·버튼에서 불림) 목록을 처음 20개로 되돌린다
-    if (!todayIso) S.limit = PAGE;
+    // 조건이 바뀌면(이 render 는 select 칩·버튼에서 불림) 목록을 처음 5개로 접어 둔다
+    if (!todayIso) S.limit = 5;
     const rows = S.usingSample ? SAMPLE_ROWS : S.liveRows;
     const today = todayIso || S.todayIso;
     let result;
@@ -253,17 +258,57 @@ if (typeof document !== 'undefined') {
     moreButton.hidden = remain <= 0;
     moreButton.textContent = remain > 0 ? '더 보기 (남은 ' + remain + '건)' : '더 보기';
     summaryLine.textContent = '표시 ' + result.shown + '건 / 전체 ' + result.totalRows + '건 (마감 지난 ' + result.closedCount + '건 제외)';
-    answerNum.textContent = String(result.shown);
-    answerNum.appendChild(document.createElement('small')).textContent = '건';
-    answerNum.classList.toggle('answer-num-zero', result.shown === 0);
-    const closing = result.items.filter((i) => i.status === 'closing').length;
-    const none = result.items.filter((i) => i.status === 'none').length;
-    answerText.textContent = result.shown === 0
-      ? '조건에 맞는 혜택이 없어요. 조건을 바꿔 보세요.'
-      : (S.usingSample
-        ? '예시로 3개만 보여 드려요. 실제 목록은 처음으로를 누르면 다시 나와요.'
-        : answerSentence(targetSelect.value, counts[targetSelect.value], closing));
-    renderMeta(metaTotal, metaClosing, metaNone, S.usingSample ? result.totalRows : (S.total !== null ? S.total : result.totalRows), closing, none);
+
+    // 답 카드: 큰 숫자 = 가장 가까운 마감, TOP 5 목록(이름·남은 일수)
+    const closing = result.items.filter((i) => i.status === 'closing');
+    const closingFirst = closing.length > 0;
+    const soon = result.items.filter((i) => i.status !== 'none').slice(0, 5);
+    const noneCount = result.items.filter((i) => i.status === 'none').length;
+    const targetName = CHIP_LABELS[targetSelect.value];
+    const targetPhrase = targetSelect.value === 'all' ? '' : ' · ' + targetName;
+
+    if (result.shown === 0) {
+      answerLabel.textContent = '가장 가까운 마감';
+      answerNum.textContent = '—';
+      answerNum.appendChild(document.createElement('small')).textContent = '';
+      answerNum.classList.add('answer-num-zero');
+      answerText.textContent = '조건에 맞는 혜택이 없어요. 조건을 바꿔 보세요.';
+    } else if (closingFirst) {
+      const first = soon[0];
+      answerLabel.textContent = '마감 임박 TOP 5' + targetPhrase;
+      answerNum.textContent = String(first.daysLeft);
+      answerNum.appendChild(document.createElement('small')).textContent = first.daysLeft === 0 ? '' : '일';
+      answerNum.classList.remove('answer-num-zero');
+      answerText.textContent = '내 대상 기준, 가장 가까운 마감은 "' + first.name + '"이에요. ' + daysWord(first.daysLeft) + '.';
+    } else {
+      const first = soon.length ? soon[0] : null;
+      const top = result.items.slice(0, 5);
+      const anySoon = top.some((i) => i.daysLeft !== null);
+      answerLabel.textContent = anySoon ? '가장 가까운 마감 5건' + targetPhrase : '가장 가까운 마감' + targetPhrase;
+      if (first && first.daysLeft !== null) {
+        answerNum.textContent = String(first.daysLeft);
+        answerNum.appendChild(document.createElement('small')).textContent = '일';
+        answerNum.classList.remove('answer-num-zero');
+        answerText.textContent = '내 대상 기준, 가장 가까운 마감은 "' + first.name + '"이에요. ' + daysWord(first.daysLeft) + '.';
+      } else {
+        answerNum.textContent = '—';
+        answerNum.appendChild(document.createElement('small')).textContent = '';
+        answerNum.classList.add('answer-num-zero');
+        answerText.textContent = '기한이 적힌 혜택이 없어요. 상시 접수 혜택을 보여 드려요.';
+      }
+    }
+    // TOP 5: 마감 있는 것부터, 없으면 앞 5건(상시 포함)
+    const withDate = result.items.filter((i) => i.daysLeft !== null).sort((a, b) => a.daysLeft - b.daysLeft);
+    const soonPick = (withDate.length ? withDate : result.items).slice(0, 5);
+    renderSoonList(soonList, soonPick);
+    renderMeta(metaTotal, metaClosing, metaNone, S.usingSample ? result.totalRows : (S.total !== null ? S.total : result.totalRows), closing.length, noneCount);
+
+    // 예시 상태: 실제 목록 건수 안내(이 문장은 answerText·hint에만, #app-status 는 SPEC 문구 그대로)
+    sampleHint.hidden = !S.usingSample;
+    if (S.usingSample) {
+      const liveN = S.loaded ? S.liveRows.length : 0;
+      sampleHint.textContent = '아래는 예시 3건이에요. 실제 목록 ' + liveN + '건은 \'처음으로\'로 돌아와요.';
+    }
     // 예시 화면일 때: 목록·조작 위 '예시 화면' 표시 + '처음으로'를 눈에 띄게
     sampleBadgeList.hidden = !S.usingSample;
     sampleBadgeControls.hidden = !S.usingSample;
@@ -302,14 +347,14 @@ if (typeof document !== 'undefined') {
 
   $('example-button').addEventListener('click', () => {
     S.usingSample = true;
-    S.limit = PAGE;
+    S.limit = 5;
     render({ todayIso: '2026-10-22' });
   });
 
   $('reset-button').addEventListener('click', () => {
     S.usingSample = false;
     S.todayIso = localTodayIso();
-    S.limit = PAGE;
+    S.limit = 5;
     fieldSelect.value = '';
     targetSelect.value = 'all';
     sortSelect.value = 'deadline';

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko" data-accent="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Claude 플러그인 업데이트 보드 — 무료 웹 도구 · 커밋 한 모금</title>
+<link rel="stylesheet" href="vendor/studio.css">
+<link rel="stylesheet" href="styles.css">
+<script type="module" src="src/ui.js"></script>
+<script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="GitHub에서 최근 7일 내 새로 뜬 저장소 중 이름·설명에 Claude가 언급되는 항목을 골라, 최근 3일 내 업데이트 여부와 별 수(채택 신호)를 한 표로 비교해 보여 주는 앱입니다."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/claude-plugin-update-board/"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: Claude 플러그인 업데이트 보드 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+<header class="ds-band ds-band-thin">
+  <h1>Claude 플러그인 업데이트 보드</h1>
+  <p>GitHub에서 최근 7일 내 새로 뜬 저장소 중 이름이나 설명에 Claude가 언급되는 저장소를 골라, 최근 업데이트 여부와 별 수(채택 신호)를 한 표로 비교해 보여 드려요.</p>
+  <div class="ds-band-meta">
+    <span class="ds-badge" id="data-time">데이터 기준: 불러오는 중…</span>
+    <span id="data-source">GitHub API(키 없이 분당 10회)</span>
+    <button id="reload-button" class="ds-btn" type="button">지금 시각 기준으로 다시 보기</button>
+  </div>
+  <p id="scope-note" class="ds-hint">릴리스·체인지로그 자료는 포함하지 않아요. 최근 7일 내 생성된 GitHub 저장소 중 이름이나 설명에 Claude가 언급된 것만 골라 보여 드려요.</p>
+</header>
+<main class="ds-page">
+  <div id="app-status" role="status" class="ds-status" hidden></div>
+  <section class="ds-answer" aria-labelledby="answer-label">
+    <p class="ds-answer-label" id="answer-label">이번 주 새로 뜬 Claude 저장소</p>
+    <p class="ds-answer-num" id="answer-num">—<small>개</small></p>
+    <p class="ds-answer-text" id="answer-line">데이터를 불러오는 중이에요. 잠시만 기다려 주세요.</p>
+    <dl class="ds-answer-meta" id="answer-meta"></dl>
+    <div class="ds-row ds-btn-row" id="action-row">
+      <button id="sample-button" class="ds-btn ds-btn-primary" type="button">예시로 해 보기</button>
+      <button id="reset-button" class="ds-btn" type="button">실제 데이터로 돌아가기</button>
+    </div>
+  </section>
+  <div id="board-card" class="ds-card">
+    <div class="ds-board-head">
+      <label class="ds-filter-label" for="status-filter">상태로 거르기</label>
+      <select id="status-filter" class="ds-select" aria-label="상태 필터">
+        <option value="all">전체</option>
+        <option value="new">신규</option>
+        <option value="updated">갱신</option>
+        <option value="new_updated">신규·갱신</option>
+        <option value="quiet">조용한 저장소</option>
+      </select>
+      <p id="summary-line" class="ds-summary" aria-live="polite">일치: —</p>
+    </div>
+    <div id="board-empty" class="ds-empty">Claude 관련 저장소가 없어요. 「예시로 해 보기」로 예시 3개를 볼 수 있어요.</div>
+    <div id="board-table-wrap" class="ds-table-wrap" hidden>
+      <table id="board" class="ds-table">
+        <thead>
+          <tr>
+            <th>순위</th>
+            <th>저장소</th>
+            <th>설명</th>
+            <th class="ds-num">별</th>
+            <th class="ds-num">하루 평균 별</th>
+            <th>상태</th>
+            <th>최종 갱신</th>
+          </tr>
+        </thead>
+        <tbody id="board-body"></tbody>
+      </table>
+    </div>
+    <details class="ds-terms">
+      <summary>용어 설명</summary>
+      <ul>
+        <li>신규: 만든 지 7일 이내인 저장소</li>
+        <li>갱신: 최근 3일 안에 코드가 올라온 저장소</li>
+        <li>하루 평균 별: 만든 날부터 하루 평균으로 받은 별 수</li>
+      </ul>
+    </details>
+  </div>
+</main>
+
+</body>
+</html>

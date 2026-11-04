@@ -19,15 +19,8 @@
 
 #app-status { margin-top: var(--ds-s3); }
 .head-card #app-status { margin-top: var(--ds-s2); }
-
-/* 64·128(미실측)을 고르면 맥 메모리 라벨 옆에 표시 */
-.mem-note { margin-left: 4px; vertical-align: 1px; }
-
-/* 64·128(미실측)을 고르면 순위 아래에 표시 */
-#rank-warn { margin-top: var(--ds-s3); }
-
-/* 전체 결과 JSON: 순위 화면 맨 아래 접혀 있다 */
-#result-json-box { margin-top: var(--ds-s3); }
+.head-card { margin-top: var(--ds-s3); }
+.head-card > .ds-section-title { margin: 0 0 var(--ds-s3); }
 #app-status:empty { display: none; }
 #app-status.ok { background: var(--ds-good-soft); color: var(--ds-good); }
 #app-status:not(.ok):not(:empty) { background: var(--ds-bad-soft); color: var(--ds-bad); }
@@ -42,20 +35,28 @@
   .ds-segment > button { min-height: 44px; padding: 0 8px; font-size: 14px; }
 }
 
-/* rank list card: rank · name (+badge) · purpose score · save */
+/* rank list: rank · name (+badge) · purpose score · save (one row) */
 .rank-list { border-top: 1px solid var(--ds-line); }
 .rank-list li {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto auto;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--ds-s1) var(--ds-s3);
+  gap: var(--ds-s3);
   min-height: 56px;
   padding: var(--ds-s3) 0;
   border-bottom: 1px solid var(--ds-line);
 }
 .rank-list li:last-child { border-bottom: 0; }
+/* 관심 모델 줄: 통계(.stat)를 이름 아래 2행으로 — 390px에서 이름+통계를 한 줄에 못 담아 */
+#saved-list li .stat { grid-column: 2 / -1; }
 @media (max-width: 480px) {
   .rank-list li { grid-template-columns: 24px minmax(0, 1fr) auto; }
+  .rank-score { white-space: nowrap; font-size: 15px; }
+  .rank-list .rmodel { font-size: 15px; min-width: 0; }
+  /* 점수 줄(2행)을 이름·배지·저장 버튼 아래로: 배지+점수가 390px 한 줄에 안 들어와 겹침 */
+  .rank-list .badge { min-width: 0; }
+  .rank-list .rank-score { grid-column: 2 / -1; }
+  .save-toggle-btn { flex: none; min-height: 36px; padding: 0 12px; }
 }
 .rank-num {
   font-size: 16px;
@@ -74,10 +75,11 @@
 }
 .rank-main { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .rank-score { font-size: 17px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--ds-ink); }
-.rank-score .ds-hint { font-weight: 400; margin-left: 2px; }
 .rank-list .badge { flex: none; }
 .save-toggle-btn {
   min-height: 36px;
+  min-width: max-content;
+  white-space: nowrap;
   padding: 0 14px;
   border: 1px solid var(--ds-line);
   border-radius: 999px;
@@ -90,46 +92,14 @@
 .save-toggle-btn:active { transform: scale(.97); }
 .save-toggle-btn[aria-pressed="true"] { background: var(--ds-accent-soft); border-color: var(--ds-accent-line); color: var(--ds-accent-text); }
 
-/* metric details row (collapsed) */
-.rank-details { grid-column: 1 / -1; }
-.rank-details summary {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ds-ink-3);
-  cursor: pointer;
-  padding: 2px 0 6px;
-  list-style: none;
-}
-.rank-details summary::before { content: "＋ "; }
-.rank-details[open] summary::before { content: "－ "; }
-.rank-details .stat {
-  display: inline-flex;
-  gap: 4px;
-  margin: 4px 12px 4px 0;
-  font-size: 13px;
-  color: var(--ds-ink-2);
-  white-space: nowrap;
-}
-.rank-details .stat b { font-weight: 600; color: var(--ds-ink); font-variant-numeric: tabular-nums; }
-
-.rank-list li.stat-empty {
+.rank-list li.stat-empty,
+.rank-list li.rank-tip {
   display: block;
   text-align: center;
-  padding: var(--ds-s6);
+  padding: var(--ds-s6) var(--ds-s3);
   color: var(--ds-ink-3);
-  font-size: 14px;
-}
-
-/* one-line conclusion + warn above the list */
-.rank-lead { margin: var(--ds-s3) 0 0; font-size: 16px; font-weight: 600; color: var(--ds-ink); }
-.rank-lead:empty { display: none; }
-.rank-warn {
-  margin: var(--ds-s2) 0 0;
-  padding: var(--ds-s2) var(--ds-s3);
-  border-radius: var(--ds-radius);
-  background: var(--ds-warn-soft);
-  color: var(--ds-warn);
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 /* compare output */
@@ -173,17 +143,29 @@
   .cmp-label-row .cmp-cell:first-child { grid-column: 1 / -1; }
 }
 
-.json-box { margin-top: var(--ds-s3); overflow: hidden; }
-.json-box summary { font-weight: 600; cursor: pointer; }
-.json-box pre {
-  margin: var(--ds-s3) 0 0;
-  padding: var(--ds-s3);
-  background: var(--ds-surface-2);
-  border-radius: var(--ds-radius);
-  overflow-x: auto;
-  font-size: 13px;
-  white-space: pre;
+/* 결과 파일 내려받기: 순위 목록 아래 접어 둔 <details> (화면 아래로 내림) */
+.json-box { margin: var(--ds-s3) 0 0; }
+.json-box summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ds-ink-2);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
 }
+.json-box summary::before { content: "＋"; color: var(--ds-ink-3); }
+.json-box[open] summary::before { content: "－"; }
+.json-box[open] summary { margin-bottom: var(--ds-s3); }
+.json-card { margin: 0; }
+/* 접힌 <details> 의 본문(.json-card)이 summary 아래로 넘쳐나면 뒤의 푸터(#data-terms) 위로 겹친다:
+   접혀 있으면 summary 를 제외한 자식을 숨겨 card 가 레이아웃을 차지하지 못하게 한다. */
+.json-box:not([open]) > :not(summary) { display: none; }
+/* 내려받기 버튼과 안내 문구가 나란히: 안내가 버튼 너비보다 좁으면 아래로 내려 감 (겹침 방지) */
+.json-card .ds-table-wrap { display: flex; flex-wrap: wrap; gap: var(--ds-s2) var(--ds-s3); align-items: center; border: 0; background: none; border-radius: 0; }
+.json-card .ds-table-wrap .json-hint { margin: 0; flex: 1 1 auto; min-width: 0; }
 
 @media (max-width: 520px) {
   .ds-band .ds-badge {
@@ -193,7 +175,15 @@
     max-width: 100%;
     display: inline-block;
   }
+  /* 답 카드 보조 숫자: 3개 칸을 2열 2행으로 (겹침 방지) */
+  .ds-answer-meta { flex-wrap: wrap; }
+  .ds-answer-meta > div { flex: 1 1 50%; width: 50%; padding: var(--ds-s2) var(--ds-s3); }
+  .ds-answer-meta > div + div { border-left: 0; }
+  .ds-answer-meta > div:nth-child(even) { border-left: 1px solid var(--ds-line); }
+  .ds-answer-meta > div:nth-child(n + 3) { border-top: 1px solid var(--ds-line); }
+  .ds-answer-meta dd { white-space: normal; }
 }
+
 .hidden { display: none; }
 
 .import-field { display: inline-flex; align-items: center; }

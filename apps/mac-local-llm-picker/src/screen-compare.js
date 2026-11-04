@@ -41,7 +41,9 @@ export function renderCompare(models, comparePair, result) {
     none.value = "";
     none.textContent = "선택하지 않음";
     sel.appendChild(none);
-    for (const m of models) {
+    // 고른 메모리에 들어가는 모델이 위로, 안 들어가는 모델은 뒤에 (안 들어가는 쪽엔 안내를 붙인다).
+    const sorted = [...models.filter(fits), ...models.filter((m) => !fits(m))];
+    for (const m of sorted) {
       const o = document.createElement("option");
       o.value = m.model;
       o.textContent = fits(m) ? m.model : m.model + " (이 맥 메모리에 안 들어감)";
@@ -78,7 +80,7 @@ export function renderCompare(models, comparePair, result) {
     return c;
   };
   const head = mk("div", null, "cmp-row cmp-label-row");
-  head.appendChild(cell("<span class='ds-hint'>비교 결과 — 왼쪽 모델</span>", "cmp-cell"));
+  head.appendChild(cell("<span class='ds-hint'>왼쪽 모델</span>", "cmp-cell"));
   head.appendChild(cell("<span class='ds-hint'>오른쪽 모델</span>", "cmp-cell"));
   head.appendChild(cell("<span class='ds-hint'>차이(왼쪽 − 오른쪽)</span>", "cmp-cell diff-cell"));
   out.appendChild(head);

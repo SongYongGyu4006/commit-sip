@@ -2,7 +2,7 @@
 import { rankLocalModels } from "./app.js";
 import { DEFAULT_STATE, normalizeState, toggleSaved, removeSaved, parseImportedState } from "./state.js";
 import { loadState, saveState, clearState } from "./storage.js";
-import { setStatus, renderHeader, setHeaderValues, measuredRange, downloadJson, readJsonFile } from "./ui.js";
+import { setStatus, renderHeader, setHeaderValues, downloadJson, readJsonFile } from "./ui.js";
 import { renderRank, bindRank } from "./screen-rank.js";
 import { renderCompare, bindCompare } from "./screen-compare.js";
 import { renderSaved, bindSaved } from "./screen-saved.js";
@@ -33,14 +33,12 @@ export async function init() {
     models = Array.isArray(bench.models) ? bench.models : [];
     meta = m && typeof m === "object" ? m : null;
     renderHeader(meta);
-    measuredRange(); // 답 카드에 실측 범위(8–48GB)
     setStatus("");
   } catch {
     dataOk = false;
     models = [];
     meta = null;
     renderHeader(null);
-    measuredRange(); // 데이터 없이도 실측 범위(8–48GB) 안내
     setStatus("모델 데이터를 읽지 못했습니다. data/local_llm_bench.json 이 app/data 폴더에 있는지 확인해 주세요.", true);
   }
 
@@ -58,10 +56,13 @@ export async function init() {
     }
   }
 
-  // 3) 첫 화면 + 헤더 값 + 실측 메모리 범위(8–48GB)
-  // rank-warn·result-json-box 는 순위 화면 밖으로 내렸으니 rank 화면일 때만 보임.
-  $("rank-warn").classList.toggle("hidden", true);
-  $("result-json-box").classList.toggle("hidden", true);
+  // 64·128GB는 실측이 없으니(옵션도 선택 불가) 48GB로 바꿔서 열어 준다.
+  if (state.memoryGb === 64 || state.memoryGb === 128) {
+    state = { ...state, memoryGb: 48 };
+    if (saveState(state)) setStatus("64·128GB는 실측이 없어 48GB로 바꿨습니다.");
+  }
+
+  // 3) 첫 화면 + 헤더 값 (결과 내려받기 상자는 순위 화면 아래 접어 둠)
   for (const s of SCREENS) $("screen-" + s).classList.toggle("hidden", s !== "rank");
   for (const s of SCREENS) $("nav-" + s + "-btn").classList.toggle("active", s === "rank");
   for (const s of SCREENS) $("nav-" + s + "-btn").setAttribute("aria-pressed", String(s === "rank"));
@@ -97,10 +98,8 @@ export async function init() {
     runAndRender();
   };
 
-  // 5) 화면 전환 (rank-warn·JSON 상자는 순위 화면이 아닐 때 숨김)
+  // 5) 화면 전환
   const showScreen = (id) => {
-    $("rank-warn").classList.toggle("hidden", id !== "rank");
-    $("result-json-box").classList.toggle("hidden", id !== "rank");
     for (const s of SCREENS) $("screen-" + s).classList.toggle("hidden", s !== id);
     for (const s of SCREENS) $("nav-" + s + "-btn").classList.toggle("active", s === id);
     for (const s of SCREENS) $("nav-" + s + "-btn").setAttribute("aria-pressed", String(s === id));
@@ -128,7 +127,7 @@ export async function init() {
   $("reset-button").addEventListener("click", () => {
     clearState();
     applyChange({ ...DEFAULT_STATE, comparePair: [], savedIds: [] });
-    setStatus("모든 설정을 처음 상태로 되돌렸습니다.");
+    setStatus("모든 설정을 처음 상태로 되돌렸어요. 다시 골라 보세요.");
   });
 
   // 7) 각 화면
@@ -140,7 +139,7 @@ export async function init() {
   bindCompare(
     (left, right) => {
       if (!left || !right || left === right) {
-        setStatus("비교할 모델 두 개를 골라 주세요. 같은 모델을 두 번 고를 수는 없습니다.", true);
+        setStatus("서로 다른 두 모델을 골라 주세요.", true);
         return;
       }
       applyChange(normalizeState({ ...state, comparePair: [left, right] }, models));
@@ -180,7 +179,16 @@ export async function init() {
     },
   );
 
-  // 8) 첫 렌더
+  // 8) 결과 파일 내려받기 (원시 JSON 을 화면에 붙이지 않고 파일로)
+  const jsonDl = $("json-download");
+  if (jsonDl)
+    jsonDl.addEventListener("click", () => {
+      const r = window.__lastResult;
+      if (!r) return;
+      downloadJson("llmpick-result.json", r);
+    });
+
+  // 9) 첫 렌더
   runAndRender();
 }
 

@@ -10,29 +10,23 @@
 <body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 정부 혜택 찾기 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
 <header class="ds-band">
   <h1>정부 혜택 찾기</h1>
-  <p>관공서에 없는 <b>내 대상별 건수</b>와 <b>이번 주 마감</b>을 한눈에 — 최근 등록·수정된 혜택에서 나부터 골라 마감 급한 것부터 보여 드려요.</p>
+  <p>최근 등록·수정된 혜택에서 <b>내 대상</b>을 고르면 마감 급한 것부터 보여 드려요.</p>
+  <ol class="ds-band-steps">
+    <li><span class="ds-step">1</span>아래에서 <b>내 대상</b>을 골라요</li>
+    <li><span class="ds-step">2</span>위 카드에서 <b>마감 급한 혜택</b>부터 보여 드려요</li>
+    <li><span class="ds-step">3</span>카드를 눌러 <b>정부24 상세</b>로 가요</li>
+  </ol>
   <div class="ds-band-meta">
     <span class="ds-badge" id="total-line"></span>
+    <span class="ds-band-date" id="data-time"></span>
   </div>
 </header>
 
 <main class="ds-page">
-  <section class="ds-answer">
-    <p class="ds-answer-label">보여 주는 혜택</p>
-    <p class="ds-answer-num answer-num-zero" id="answer-num">—<small>건</small></p>
-    <p class="ds-answer-text" id="answer-text">데이터를 불러오는 중이에요.</p>
-    <dl class="ds-answer-meta">
-      <div><dt>전체 혜택</dt><dd id="meta-total">—건</dd></div>
-      <div><dt>마감 임박</dt><dd id="meta-closing">—건</dd></div>
-      <div><dt>기한 미표시</dt><dd id="meta-none">—건</dd></div>
-    </dl>
-  </section>
-
-  <div class="ds-section-title">
-    <h2 id="target-label">나는 누구? 고르면 마감 급한 것부터</h2>
-    <p>대상마다 건수를 모아서 보여 드려요. 누르면 바로 좁혀져요.</p>
-  </div>
-  <div class="ds-card">
+  <div id="target-zone">
+    <div class="ds-section-title target-title" aria-hidden="true">
+      <h2 id="target-label">해당하는 대상을 골라 보세요</h2>
+    </div>
     <div class="ds-chip-row" id="target-chips" role="group" aria-labelledby="target-label">
       <button class="ds-chip" type="button" data-target="all" aria-pressed="true">전체</button>
       <button class="ds-chip" type="button" data-target="youth" aria-pressed="false">청년</button>
@@ -41,7 +35,26 @@
       <button class="ds-chip" type="button" data-target="lowincome" aria-pressed="false">저소득</button>
       <button class="ds-chip" type="button" data-target="senior" aria-pressed="false">노인</button>
     </div>
+    <p class="ds-hint" id="target-hint"></p>
   </div>
+
+  <section class="ds-answer" id="answer-card">
+    <p class="ds-answer-label" id="answer-label">가장 가까운 마감</p>
+    <p class="ds-answer-num"><span class="ds-answer-num-prefix">가장 빠른 마감까지</span><span id="answer-num">—<small>일</small></span></p>
+    <p class="ds-answer-text" id="answer-text">데이터를 불러오는 중이에요.</p>
+    <ol id="soon-list" class="ds-list soon-list" aria-label="가장 가까운 마감 혜택"></ol>
+    <dl class="ds-answer-meta">
+      <div><dt>등록된 전체 혜택</dt><dd id="meta-total">—건</dd></div>
+      <div><dt>7일 이내 마감</dt><dd id="meta-closing">—건</dd></div>
+      <div><dt>마감일 없는 상시 혜택</dt><dd id="meta-none">—건</dd></div>
+      <div><dt>데이터 기준</dt><dd id="meta-time">—</dd></div>
+    </dl>
+    <div class="ds-row answer-actions" id="answer-actions">
+      <button class="ds-btn" id="example-button" type="button">청년 예시 보기</button>
+      <button class="ds-btn" id="reset-button" type="button">선택 초기화</button>
+      <span class="ds-hint" id="sample-hint" hidden>아래는 예시 3건이에요. 실제 목록은 '선택 초기화'로 돌아와요.</span>
+    </div>
+  </section>
 
   <div class="ds-card" id="filter-card">
     <button class="ds-filter-toggle" id="filter-toggle" type="button" aria-expanded="false" aria-controls="filter-body">
@@ -80,10 +93,7 @@
         </div>
       </div>
       <div class="ds-row ds-actions">
-        <button class="ds-btn ds-btn-primary" id="example-button" type="button">예시로 해 보기</button>
-        <button class="ds-btn" id="reset-button" type="button">처음으로</button>
         <button class="ds-btn" id="copy-link-button" type="button">내 조건 링크 복사</button>
-        <span class="ds-hint">실제 목록은 그대로예요. '처음으로'를 누르면 돌아와요.</span>
       </div>
     </div>
   </div>
@@ -92,7 +102,7 @@
     <h2>혜택 목록</h2>
     <div class="ds-row" id="list-titles-row">
       <span class="ds-badge ds-badge-accent" id="sample-badge-list" hidden>예시 화면</span>
-      <p>마감 날짜가 가까운 순서로, 마감과 신청 방법을 함께 보여 드려요.</p>
+      <p id="list-desc">모든 혜택이에요.</p>
     </div>
   </div>
   <div class="ds-card">
@@ -111,7 +121,6 @@
     <p>신청은 공식 사이트(정부24)에서 하세요.</p>
   </div>
 
-  <p class="ds-footer" id="data-time"></p>
   <p class="ds-footer" id="source-line"></p>
 </main>
 
