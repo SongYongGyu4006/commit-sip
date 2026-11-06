@@ -1,39 +1,46 @@
-// KoFilePDF — 앱 시작: 저장된 상태를 불러와 화면 모듈을 초기화하고 상단 이동 버튼으로 세 화면 전환.
+// 앱 시작: 저장된 상태를 불러와 전체 화면 모듈을 초기화하고,
+// 상단 이동 버튼(#nav-make/#nav-history/#nav-data)으로 세 화면 전환을 제어한다.
 import { loadState } from './storage.js';
 import { initMakeScreen, syncFromStorage } from './ui.js';
 import { initHistoryScreen, renderHistory } from './history-ui.js';
 import { initDataScreen } from './data-ui.js';
 
-const SCREENS = ['make', 'history', 'data'];
-// 현재 화면은 저장하지 않는다: 새로고침해도 문서 합치기 화면으로 돌아온다.
-let current = 'make';
+const NAV = { make: 'nav-make', history: 'nav-history', data: 'nav-data' };
+const SCREEN = { make: 'screen-make', history: 'screen-history', data: 'screen-data' };
 
 export function switchScreen(name) {
-  if (!SCREENS.includes(name)) return;
-  current = name;
-  for (const s of SCREENS) {
-    const sec = document.getElementById('screen-' + s);
-    if (sec) sec.hidden = s !== name;
-    const nav = document.getElementById('nav-' + s);
-    if (nav) nav.setAttribute('aria-current', s === name ? 'page' : 'false');
+  for (const key of ['make', 'history', 'data']) {
+    const s = document.getElementById(SCREEN[key]);
+    if (s) s.hidden = key !== name;
+    const n = document.getElementById(NAV[key]);
+    if (n) {
+      n.setAttribute('aria-pressed', String(key === name));
+      n.setAttribute('aria-current', key === name ? 'page' : 'false');
+    }
   }
-  if (name === 'history') renderHistory(); // 전환할 때 최신 기록 표시
 }
 
 export function initApp() {
-  loadState(); // 저장된 상태를 불러온다(목표 용량은 화면이, 기록은 화면이 표시)
+  loadState(); // 저장된 상태 미리 로딩(목표 용량 복원 등)
   initMakeScreen();
   initHistoryScreen();
   initDataScreen();
-  for (const s of SCREENS) {
-    const nav = document.getElementById('nav-' + s);
-    nav.addEventListener('click', () => switchScreen(s));
-  }
-  syncFromStorage();
+
+  document.getElementById('nav-make').addEventListener('click', () => switchScreen('make'));
+  document.getElementById('nav-history').addEventListener('click', () => {
+    switchScreen('history');
+    renderHistory();
+  });
+  document.getElementById('nav-data').addEventListener('click', () => switchScreen('data'));
+
+  // 보관 파일을 다시 불러오거나 기록을 비우면 화면 동기화.
+  window.addEventListener('kofilepdf:storage-changed', () => {
+    syncFromStorage();
+    renderHistory();
+  });
+
   switchScreen('make');
 }
 
-if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initApp);
-  else initApp();
-}
+// HTML 이 src/main.js 를 type="module" 로 로드하므로 여기서 시작한다.
+initApp();

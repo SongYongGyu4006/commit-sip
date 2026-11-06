@@ -1,89 +1,326 @@
-/* KoFilePDF — studio.css 토큰만 쓰는 앱 스타일 */
-.app-nav {
+/* KoFilePDF 앱 스타일 — 색·간격·모서리는 vendor/studio.css 의 --ds-* 토큰만 쓴다. */
+
+/* 다크 모드: html 에 data-theme 를 넣지 않고도 토큰이 바뀌도록 여기서 같은 값을 정의한다(blue). */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ds-bg: #111214; --ds-surface: #1a1b1e; --ds-surface-2: #232428;
+    --ds-ink: #eeeff1; --ds-ink-2: #b4b4b4; --ds-ink-3: #949494; --ds-line: #2e3035;
+    --ds-accent: #7c9bff; --ds-accent-text: #7c9bff; --ds-accent-ink: #0b0e14;
+    --ds-accent-soft: #1c2540; --ds-accent-line: #34457a;
+    --ds-good: #45c290; --ds-good-soft: #13291f; --ds-warn: #f0b34a; --ds-warn-soft: #2c2414;
+    --ds-bad: #ff7a6e; --ds-bad-soft: #331a18; --ds-up: #ff7b72; --ds-down: #79a8ff;
+    --ds-band: var(--ds-accent-soft); --ds-band-ink: var(--ds-ink); --ds-band-ink-2: var(--ds-ink-2);
+    --ds-focus: var(--ds-accent-text);
+    --ds-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+    color-scheme: light dark;
+  }
+  [data-accent="blue"] {
+    --ds-accent: #7c9bff; --ds-accent-text: #7c9bff; --ds-accent-soft: #1c2540; --ds-accent-line: #34457a;
+    --ds-band: #1c2540; --ds-band-ink: #eeeff1; --ds-band-ink-2: #b4b4b4;
+  }
+}
+
+/* 띠: 아래 여백을 늘려 이동 칩이 띠 끝에 걸치게 한다. */
+.ds-band {
+  padding-bottom: 72px;
+}
+
+.ds-band > * + * {
+  margin-top: var(--ds-s4);
+}
+
+.ds-band h1 {
+  margin-bottom: var(--ds-s2);
+}
+
+/* 띠 안 시작 버튼 */
+.band-cta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ds-s2);
-  margin-top: -28px;
-  margin-bottom: var(--ds-s5);
-  padding: var(--ds-s3);
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-line);
-  border-radius: var(--ds-radius-l);
-  box-shadow: var(--ds-shadow);
+  gap: 12px;
+  margin-top: 20px;
 }
-.app-nav .ds-chip {
-  width: 100%;
-  justify-content: center;
+
+.band-cta .ds-btn {
+  flex: 1 1 0;
+  max-width: none;
+  min-height: 48px;
+  background: var(--ds-band-ink);
+  border-color: var(--ds-band-ink);
+  color: var(--ds-band);
 }
-@media (min-width: 720px) {
-  .app-nav .ds-chip {
-    width: auto;
-    flex: 1 1 auto;
+
+.band-cta .ds-btn:hover {
+  filter: brightness(.92);
+}
+
+.band-cta .ds-btn:focus-visible,
+.band-target .ds-input:focus-visible {
+  outline: 2px solid var(--ds-band-ink);
+  outline-offset: 2px;
+}
+
+.band-cta #band-example-button {
+  background: transparent;
+  color: var(--ds-band-ink);
+  border: 1px solid var(--ds-band-ink);
+}
+
+@media (max-width: 480px) {
+  .band-cta {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .band-cta .ds-btn {
+    flex: 0 0 auto;
+    width: 100%;
   }
 }
-#screen-make .ds-grid-main > .ds-stack + .ds-stack {
-  margin-top: 0;
+
+/* 목표 용량 */
+.band-target {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 20px;
 }
-.plan-json {
-  font-family: var(--ds-mono);
-  font-size: 12.5px;
-  line-height: 1.55;
-  max-height: 320px;
-  overflow: auto;
-  margin: var(--ds-s2) 0 0;
-  padding: var(--ds-s3);
-  background: var(--ds-surface-2);
-  border-radius: var(--ds-radius);
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-/* 계획 박스: 내용이 없으면(사진 미선택·목표 용량 오류) 박스 자체를 숨겨 빈 회색 박스가 뜨지 않게 한다. */
-/* :empty 는 요소에 자식 요소와 텍스트가 전혀 없을 때만 맞으므로(백스페이스 같은 공백만은 안 됨),
-   텍스트가 들어오면 박스가 다시 나타난다. */
-.plan-json:not(:empty) {
-  min-height: 48px;
-}
-.plan-json:empty {
-  min-height: 0;
-  padding: 0;
+
+.band-target .ds-label {
   margin: 0;
-  background: none;
-  border: 0;
+  color: var(--ds-band-ink-2);
 }
-#size-result:empty {
-  margin-bottom: 0;
+
+#target-mb {
+  width: 6rem;
+  flex: 0 0 auto;
+  min-height: 44px;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .5);
+  color: var(--ds-band-ink);
 }
+
+.band-target .ds-hint {
+  flex-basis: 100%;
+  font-size: 14px;
+  margin: 0;
+  color: var(--ds-band-ink-2);
+}
+
+/* 신뢰 줄 */
+.ds-band-meta {
+  margin-top: 12px;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.ds-band .ds-badge {
+  font-size: 14px;
+}
+
+#net-check {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-band-ink-2);
+}
+
+#privacy-note {
+  margin: 16px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 44ch;
+  color: var(--ds-band-ink-2);
+}
+
+/* 이동 칩: 콘텐츠와 같은 왼쪽 선(.ds-page 폭·좌우 패딩 그대로) */
+.app-nav {
+  display: flex;
+  gap: 8px;
+  margin: -48px auto 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  position: relative;
+  overflow-x: auto;
+}
+
+.app-nav .ds-chip {
+  flex: 0 0 auto;
+  max-width: none;
+  margin-right: 0;
+  padding: 0 16px;
+  min-height: 44px;
+  font-size: 14px;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+/* 문서 합치기 화면 */
+#screen-make[hidden] {
+  display: none;
+}
+
+#screen-make {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding-top: 16px;
+}
+
+#screen-make > * {
+  min-width: 0;
+}
+
+#screen-make .ds-answer {
+  margin: 0;
+}
+
+.result-card,
+.target-card {
+  margin: 0;
+}
+
+#app-status:empty {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  #screen-make {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+  }
+  #screen-make > .ds-answer { grid-column: 1; grid-row: 1; }
+  #screen-make > .target-card { grid-column: 1; grid-row: 2; }
+  #screen-make > :nth-child(4) { grid-column: 1; grid-row: 3; }
+  #screen-make > .result-card { grid-column: 2; grid-row: 1 / span 2; }
+  #screen-make > :nth-child(5) { grid-column: 2; grid-row: 3; }
+  #screen-make > #app-status { grid-column: 1 / -1; grid-row: 4; }
+}
+
+/* ds-page 안 첫 화면은 main 의 위쪽 여백을 줄인다 */
+main.ds-page {
+  padding-top: 0;
+}
+
+/* 버튼 */
+#download-link[hidden] {
+  display: none;
+}
+
 #download-link {
-  margin-top: var(--ds-s3);
+  display: inline-flex;
+  margin-top: 8px;
 }
-#app-status {
+
+.target-card .ds-row {
+  gap: 12px;
+}
+
+.target-card .ds-btn {
+  min-height: 44px;
+  flex: 1 1 140px;
+}
+
+.target-card .ds-hint {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+#reset-button {
+  background: transparent;
+  border-color: var(--ds-ink-3);
+}
+
+#example-button {
+  background: transparent;
+  border: 0;
+  color: var(--ds-accent-text);
+  padding: 0;
+  min-height: 44px;
+  width: auto;
+}
+
+.ds-btn,
+.ds-chip {
+  transition: transform .15s ease-out, background-color var(--ds-fast) var(--ds-ease), border-color var(--ds-fast) var(--ds-ease), filter var(--ds-fast) var(--ds-ease);
+}
+
+.ds-btn:active:not(:disabled),
+.ds-chip:active {
+  transform: scale(.97);
+}
+
+#file-list:empty {
   min-height: 20px;
 }
-/* 휴대폰(390px): 예시 실행 결과(계획·결과·상태)가 화면 하단으로 밀려서 잘리지 않게 카드 패딩을 줄인다. */
-@media (max-width: 520px) {
-  #screen-make .ds-card {
-    padding: var(--ds-s4) 20px;
+
+.file-btns {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.file-btns .ds-btn {
+  padding: 0 8px;
+  min-width: 44px;
+  min-height: 44px;
+  width: auto;
+}
+
+@media (max-width: 480px) {
+  /* 목록 한 줄은 휴대폰에서 두 줄로 */
+  .ds-list-item {
+    flex-wrap: wrap;
   }
-  #screen-make .ds-card h2 {
-    margin-bottom: 0;
+  .ds-list-main {
+    flex: 1 1 100%;
   }
-  .plan-json {
-    max-height: 220px;
-    margin-top: var(--ds-s2);
+  .ds-list-end {
+    flex: 1 1 100%;
+    text-align: left;
   }
-  #size-result {
-    margin-bottom: var(--ds-s2);
+  .ds-list-end .ds-list-sub {
+    justify-content: flex-start;
+  }
+  .history-list .ds-list-end {
+    align-items: flex-start;
   }
 }
-#target-mb {
-  max-width: 140px;
-}
+
 .history-head {
-  justify-content: space-between;
+  margin-bottom: 8px;
 }
-.history-head h2 {
-  margin: 0;
+
+.history-list .ds-list-end {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
 }
-.history-list {
-  margin-top: var(--ds-s3);
+
+.plan-details {
+  margin-top: 8px;
+}
+
+.plan-details summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--ds-accent-text);
+  font-weight: 600;
+}
+
+.plan-json {
+  max-height: 180px;
+  overflow: auto;
+  background: var(--ds-surface-2);
+  border-radius: var(--ds-radius-s);
+  padding: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 8px 0 0;
+  color: var(--ds-ink-2);
+}
+
+.ds-footer {
+  padding: 0 var(--ds-s4);
 }

@@ -8,7 +8,14 @@
   color: var(--ds-ink-3);
 }
 
-/* 버튼 줄: 주 버튼 1개, 나머지는 보조. 모바일에서는 1줄에 2개씩 */
+/* 버튼 줄: 예시 안내 + 버튼 4개. 모바일에서는 1줄에 2개씩 */
+#example-row .ds-hint {
+  flex: 1 1 100%;
+  margin: 0;
+}
+#example-row .ds-btn {
+  flex: 1 1 auto;
+}
 .btn-row {
   display: flex;
   flex-wrap: wrap;
@@ -17,11 +24,19 @@
   margin-top: var(--ds-s3);
 }
 
-/* 순서: 점검하기(주) · 예시 둘 · 초기화(ghost) */
-#assess-button { order: 1; }
-#example-button { order: 2; }
-#example-career { order: 3; }
+/* 순서: 예시(주) · 경력직 예시 · 점검하기 · 초기화(ghost) */
+#example-button { order: 1; }
+#example-career { order: 2; }
+#assess-button { order: 3; }
 #reset-button { order: 4; margin-left: auto; }
+
+/* 채용 공고 입력 */
+#job-input {
+  margin-top: var(--ds-s3);
+}
+#job-input + .ds-hint {
+  margin-top: var(--ds-s2);
+}
 
 @media (max-width: 520px) {
   .btn-row .ds-btn {
@@ -35,31 +50,6 @@
   #reset-button {
     flex: 1 1 100%;
     margin-left: 0;
-  }
-}
-
-/* 띠: 설명을 짧은 폭으로, 아래 여백을 줄여 답 카드를 위로 */
-.ds-band p.band-desc {
-  max-width: 56ch;
-}
-.ds-band:has(+ .ds-page > .ds-answer:first-child) {
-  padding-bottom: 56px;
-}
-.ds-band + .ds-page > .ds-answer:first-child {
-  margin-top: -40px;
-}
-@media (max-width: 520px) {
-  .ds-band {
-    padding-top: var(--ds-s5);
-  }
-  .ds-band:has(+ .ds-page > .ds-answer:first-child) {
-    padding-bottom: 48px;
-  }
-  .ds-band + .ds-page > .ds-answer:first-child {
-    margin-top: -32px;
-  }
-  .ds-band-meta {
-    margin-top: var(--ds-s3);
   }
 }
 
@@ -89,10 +79,9 @@
   margin-bottom: var(--ds-s3);
 }
 
-/* 결과 블록: 카드 안에서 한 단계 다른 바탕 + 1px 선으로만 구분 (그림자 없음) */
+/* 결과 블록: 카드 안에서 1px 선으로만 구분 (그림자 없음) */
 .result-block {
   color: var(--ds-ink);
-  margin-top: var(--ds-s4);
 }
 
 .direction-row + .result-block,
@@ -164,21 +153,7 @@
   color: var(--ds-ink-2);
 }
 
-.empty-note {
-  margin: var(--ds-s2) 0 0;
-  color: var(--ds-ink-2);
-  font-size: 14px;
-}
-
-.tag-list:not(:empty) ~ .empty-note {
-  display: none;
-}
-
-.empty-note:empty {
-  display: none;
-}
-
-/* 진행 방향: 한 줄. 값은 주 색, 풀이는 보조 */
+/* 진행 방향: 한 줄. 값은 주 색 */
 .direction-row {
   display: flex;
   flex-wrap: wrap;
@@ -206,60 +181,9 @@
   flex: none;
 }
 
-.direction-note {
-  flex: 1 1 auto;
-  min-width: 0;
-  color: var(--ds-ink-2);
-  font-size: 14px;
-}
-
-/* 채용 공고 접기 (선택 입력) */
-.job-details {
-  margin-top: var(--ds-s4);
-}
-
-.job-details summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 44px;
-  padding: 0 var(--ds-s3);
-  border: 1px solid var(--ds-line);
-  border-radius: var(--ds-radius);
-  color: var(--ds-accent-text);
-  font-weight: 600;
-  cursor: pointer;
-  user-select: none;
-  list-style: none;
-  margin-bottom: var(--ds-s2);
-}
-
-.job-details summary::-webkit-details-marker {
-  display: none;
-}
-
-.job-details summary::after {
-  content: "+";
-  font-size: 20px;
-  line-height: 1;
-}
-
-.job-details[open] summary::after {
-  content: "−";
-}
-
-.job-details summary:focus-visible {
-  outline: 2px solid var(--ds-focus);
-  outline-offset: 2px;
-}
-
-.job-details .ds-textarea {
-  margin-top: 0;
-}
-
-/* 참고 문구: 14px. 화면에서 한 번만 */
+/* 참고 문구: 14px. 결과 카드 안 맨 위 */
 .caveat {
-  margin: var(--ds-s4) 0 0;
+  margin: 0;
   color: var(--ds-ink-2);
   font-size: 14px;
   line-height: 1.6;
@@ -271,10 +195,13 @@
   cursor: pointer;
 }
 
+/* 저장 줄(내보내기·불러오기): 입력 카드 안, 입력 쪽 아래 */
 .save-row {
   margin-top: var(--ds-s4);
-  padding-top: var(--ds-s4);
-  border-top: 1px solid var(--ds-line);
+}
+
+.save-row + .ds-hint {
+  margin-top: var(--ds-s2);
 }
 
 @media (max-width: 520px) {

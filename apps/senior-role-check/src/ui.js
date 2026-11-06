@@ -19,10 +19,7 @@ const els = {
   gaps: document.getElementById('gaps-list'),
   strengthsCount: document.getElementById('strengths-count'),
   gapsCount: document.getElementById('gaps-count'),
-  strengthsEmpty: document.getElementById('strengths-empty'),
-  gapsEmpty: document.getElementById('gaps-empty'),
   direction: document.getElementById('direction-output'),
-  directionNote: document.getElementById('direction-note'),
   jobMatch: document.getElementById('job-match'),
   jobMatchList: document.getElementById('job-match-list'),
   answerLabel: document.getElementById('answer-label'),
@@ -32,6 +29,8 @@ const els = {
   metaGaps: document.getElementById('meta-gaps'),
   metaMatch: document.getElementById('meta-match'),
   status: document.getElementById('app-status'),
+  answerCard: document.getElementById('answer-card'),
+  resultCard: document.getElementById('result-card'),
 };
 
 // 화면에 띄우는 한국어 라벨 (키워드 15개 + 예외 값 "general")
@@ -118,6 +117,12 @@ function normalizeKorean(text) {
 // 성공한 점검 결과를 보관한다. (내보내기·대조에 사용)
 let lastResult = null;
 
+// 첫 화면: 결과가 없으면 답 카드와 결과 카드를 숨긴다. (빈 카드 금지)
+function renderVisibility() {
+  els.answerCard.hidden = !lastResult;
+  els.resultCard.hidden = !lastResult;
+}
+
 // ── 채용 공고 대조 ────────────────────────────────────
 // 공고 요구 역량(assessSeniorRole 의 strengths)과 내 이력의 강점을
 // 비교해 "갖춤 / 보완 필요"으로 그린다. 공고가 비우면 줄을 숨긴다.
@@ -169,7 +174,6 @@ function render(result) {
   els.strengthsCount.textContent = '';
   els.gapsCount.textContent = '';
   els.direction.textContent = '';
-  els.directionNote.textContent = '';
   els.answerNum.textContent = '';
   els.answerText.textContent = '';
   els.metaStrengths.textContent = '';
@@ -177,19 +181,14 @@ function render(result) {
   els.metaMatch.textContent = '';
 
   if (!result) {
-    els.strengthsEmpty.hidden = false;
-    els.gapsEmpty.hidden = false;
-    els.directionNote.textContent = '점검하면 여기에 나와요.';
-    els.answerNum.textContent = '—';
-    els.answerText.textContent = '예시 버튼을 누르거나 이력을 붙여 넣어 보세요.';
-    els.metaStrengths.textContent = '—';
-    els.metaGaps.textContent = '—';
+    els.answerNum.textContent = '';
+    els.answerText.textContent = '';
+    els.metaStrengths.textContent = '';
+    els.metaGaps.textContent = '';
+    renderVisibility();
     renderJobMatch();
     return;
   }
-
-  els.strengthsEmpty.hidden = true;
-  els.gapsEmpty.hidden = true;
 
   for (const entry of result.strengths) {
     const li = document.createElement('li');
@@ -205,7 +204,6 @@ function render(result) {
   els.strengthsCount.textContent = String(result.strengths.length);
   els.gapsCount.textContent = String(result.gaps.length);
   els.direction.textContent = DIRECTION_LABELS[result.direction] || result.direction;
-  els.directionNote.textContent = DIRECTION_NOTES[result.direction] || '';
 
   // 답 카드: 방향(큰 글자) + 한 문장 + 보조 숫자 3개
   els.answerNum.textContent = DIRECTION_LABELS[result.direction] || result.direction;
@@ -214,6 +212,7 @@ function render(result) {
     '개를 찾았어요. 아래 목록에서 자세히 보세요.';
   els.metaStrengths.textContent = String(result.strengths.length);
   els.metaGaps.textContent = result.gaps.length ? result.gaps.length + '개' : '없음';
+  renderVisibility();
   renderJobMatch();
 }
 
@@ -253,7 +252,7 @@ function runAssess() {
   lastResult = result;
   setStatus('');
   render(result);
-  scrollIfNeeded(els.answerLabel);
+  scrollIfNeeded(els.answerCard);
 }
 
 // ── 예시로 해 보기 ───────────────────────────────────
@@ -293,6 +292,7 @@ function runReset() {
   lastResult = null;
   setStatus('');
   render(null);
+  updatePrimaryButton();
 }
 
 // ── JSON 내보내기 ────────────────────────────────────
@@ -344,6 +344,15 @@ function onImportChange(event) {
 }
 
 // ── 연결 ─────────────────────────────────────────────
+// 입력이 비어 있으면 예시 버튼, 한 글자라도 쓰면 점검하기가 주 버튼이 된다.
+function updatePrimaryButton() {
+  const empty = els.input.value.trim() === '';
+  els.example.classList.toggle('ds-btn-primary', empty);
+  els.assess.classList.toggle('ds-btn-primary', !empty);
+}
+els.input.addEventListener('input', updatePrimaryButton);
+updatePrimaryButton();
+
 els.assess.addEventListener('click', runAssess);
 els.example.addEventListener('click', runExample);
 els.exampleCareer.addEventListener('click', runExampleCareer);
