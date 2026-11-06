@@ -1,0 +1,89 @@
+/* KoFilePDF — studio.css 토큰만 쓰는 앱 스타일 */
+.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-s2);
+  margin-top: -28px;
+  margin-bottom: var(--ds-s5);
+  padding: var(--ds-s3);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-l);
+  box-shadow: var(--ds-shadow);
+}
+.app-nav .ds-chip {
+  width: 100%;
+  justify-content: center;
+}
+@media (min-width: 720px) {
+  .app-nav .ds-chip {
+    width: auto;
+    flex: 1 1 auto;
+  }
+}
+#screen-make .ds-grid-main > .ds-stack + .ds-stack {
+  margin-top: 0;
+}
+.plan-json {
+  font-family: var(--ds-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  max-height: 320px;
+  overflow: auto;
+  margin: var(--ds-s2) 0 0;
+  padding: var(--ds-s3);
+  background: var(--ds-surface-2);
+  border-radius: var(--ds-radius);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+/* 계획 박스: 내용이 없으면(사진 미선택·목표 용량 오류) 박스 자체를 숨겨 빈 회색 박스가 뜨지 않게 한다. */
+/* :empty 는 요소에 자식 요소와 텍스트가 전혀 없을 때만 맞으므로(백스페이스 같은 공백만은 안 됨),
+   텍스트가 들어오면 박스가 다시 나타난다. */
+.plan-json:not(:empty) {
+  min-height: 48px;
+}
+.plan-json:empty {
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: 0;
+}
+#size-result:empty {
+  margin-bottom: 0;
+}
+#download-link {
+  margin-top: var(--ds-s3);
+}
+#app-status {
+  min-height: 20px;
+}
+/* 휴대폰(390px): 예시 실행 결과(계획·결과·상태)가 화면 하단으로 밀려서 잘리지 않게 카드 패딩을 줄인다. */
+@media (max-width: 520px) {
+  #screen-make .ds-card {
+    padding: var(--ds-s4) 20px;
+  }
+  #screen-make .ds-card h2 {
+    margin-bottom: 0;
+  }
+  .plan-json {
+    max-height: 220px;
+    margin-top: var(--ds-s2);
+  }
+  #size-result {
+    margin-bottom: var(--ds-s2);
+  }
+}
+#target-mb {
+  max-width: 140px;
+}
+.history-head {
+  justify-content: space-between;
+}
+.history-head h2 {
+  margin: 0;
+}
+.history-list {
+  margin-top: var(--ds-s3);
+}

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko" data-accent="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'sha256-4OPd153yt5/Wru2VZEyO9IjmbD5viNy7Qekyq0S2aus=' 'sha256-VdskFr7IiACb/clfOdcr0dv1AHTSjl7YaKEwvOXHwHo=' 'sha256-hof4avaBkSlt/GMbuP6HkH/XdtiM7uz8D3gg0UWarXw='; img-src 'self' data: blob:; connect-src blob: data:; object-src 'none'">
+<title>제출용 PDF 만들기 — 사진이 5MB 미만 A4 하나로 — 무료 웹 도구 · 커밋 한 모금</title>
+<link rel="stylesheet" href="vendor/studio.css">
+<link rel="stylesheet" href="styles.css">
+<script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="사진(JPG/PNG)을 올려 제출처의 용량 제한(예: 5MB)을 넘지 않는 A4 PDF 하나로 합치고, 브라우저 안에서만 처리되며 외부로 전송되지 않음을 화면에서 확인할 수 있어요."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/submission-pdf-maker/"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 제출용 PDF 만들기 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+<header class="ds-band">
+  <h1>제출용 PDF 만들기</h1>
+  <p>사진을 올려 제출처 용량 제한에 맞는 A4 PDF 하나로 합쳐요. 브라우저 안에서만 처리하고, 외부로 올려 보내지 않아요.</p>
+  <div class="ds-band-meta">
+    <span class="ds-badge">브라우저 안에서만 처리</span>
+    <span>설정과 기록은 새로고침해도 그대로</span>
+    <span id="net-check">external requests: 0</span>
+  </div>
+</header>
+<nav class="app-nav ds-page" aria-label="화면 이동">
+  <button type="button" id="nav-make" class="ds-chip" aria-pressed="true" aria-current="page">문서 합치기</button>
+  <button type="button" id="nav-history" class="ds-chip" aria-pressed="false" aria-current="false">변환 기록</button>
+  <button type="button" id="nav-data" class="ds-chip" aria-pressed="false" aria-current="false">설정 보관</button>
+</nav>
+<main class="ds-page">
+  <section id="screen-make">
+    <div class="ds-section-title">
+      <h2>문서 합치기</h2>
+      <p>사진을 골라 순서를 정하면, 아래 계획에 맞춰 목표 용량 이하 A4 PDF가 돼요.</p>
+    </div>
+    <div class="ds-grid ds-grid-main">
+      <div class="ds-stack">
+        <section class="ds-answer" aria-label="작업 요약">
+          <p class="ds-answer-label" id="answer-label">다음 PDF</p>
+          <p class="ds-answer-num" id="answer-num">3장(예시)</p>
+          <p class="ds-answer-text" id="answer-text">예시 사진 3장을 올려 보면 바로 결과로 보여 드려요.</p>
+          <dl class="ds-answer-meta" id="answer-meta"></dl>
+        </section>
+        <div class="ds-card-tint" id="privacy-note">
+          <h2>브라우저 안에서만 처리</h2>
+          <p class="ds-hint">사진은 이 브라우저 안에서만 읽어서 PDF로 합쳐요. 어디에도 올려 보내지 않고, 새로고침해도 설정과 기록은 그대로 유지돼요.</p>
+        </div>
+        <div class="ds-card ds-stack">
+          <label class="ds-label" for="target-mb">목표 용량 (MB)</label>
+          <div class="ds-row">
+            <input class="ds-input ds-num" id="target-mb" type="text" inputmode="decimal" placeholder="5">
+            <span class="ds-hint">제출처 용량 제한이 있나요? 그 숫자를 넣어 주세요.</span>
+          </div>
+          <p class="ds-hint">0보다 크고 100 이하 숫자(예: 5)만 받을 수 있어요.</p>
+          <label class="ds-btn ds-btn-primary ds-btn-lg" for="file-input">파일 고르기</label>
+          <input id="file-input" type="file" multiple accept="image/jpeg,image/png" hidden>
+          <div class="ds-row">
+            <button type="button" class="ds-btn" id="example-button">예시로 해 보기</button>
+            <button type="button" class="ds-btn" id="build-button">PDF 만들기</button>
+            <button type="button" class="ds-btn" id="reset-button">다시 시작</button>
+          </div>
+        </div>
+        <div class="ds-card">
+          <h2>사진 목록</h2>
+          <p class="ds-sub">위에서부터 PDF 순서예요. 순서를 바꾸거나 지울 수 있어요.</p>
+          <ul id="file-list" class="ds-list"></ul>
+        </div>
+      </div>
+      <div class="ds-stack">
+        <div class="ds-card">
+          <h2>만들기 계획</h2>
+          <p class="ds-sub" id="plan-sub">사진을 고르면 A4 배치와 축소 계획이 여기에 보여요.</p>
+          <pre id="plan-json" class="plan-json"></pre>
+        </div>
+        <div class="ds-card">
+          <h2>결과</h2>
+          <p id="size-result" class="ds-sub">아직 만든 PDF가 없어요. 사진을 고르거나 예시로 해 보기를 누르면 결과가 여기에 나와요.</p>
+          <a id="download-link" class="ds-btn ds-btn-primary" download="submission.pdf" hidden>PDF 받아 가기</a>
+        </div>
+        <div id="app-status" class="ds-status" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+  <section id="screen-history" hidden>
+    <div class="ds-section-title">
+      <h2>변환 기록</h2>
+      <p>최근 20건까지 최신순으로 모아 둡니다. 필요할 때 기록을 지울 수 있어요.</p>
+    </div>
+    <div class="ds-card">
+      <div class="ds-row history-head">
+        <h2>변환 기록 목록</h2>
+        <button type="button" class="ds-btn" id="clear-history">기록 비우기</button>
+      </div>
+      <ul id="history-list" class="ds-list history-list"></ul>
+    </div>
+  </section>
+  <section id="screen-data" hidden>
+    <div class="ds-section-title">
+      <h2>설정과 기록 보관</h2>
+      <p>목표 용량과 변환 기록을 파일로 내려받거나, 파일을 다시 불러와 그대로 복원해요.</p>
+    </div>
+    <div class="ds-card ds-stack">
+      <p class="ds-hint">같은 기기의 브라우저에 저장된 목표 용량과 변환 기록을 JSON 파일로 옮길 수 있어요.</p>
+      <button type="button" class="ds-btn ds-btn-primary" id="export-button">파일로 내보내기</button>
+      <label class="ds-label" for="import-file">보관 파일 가져오기</label>
+      <div class="ds-row">
+        <input id="import-file" type="file" accept=".json" hidden>
+        <button type="button" class="ds-btn" id="import-btn">보관 파일 고르기</button>
+      </div>
+    </div>
+  </section>
+</main>
+<p class="ds-footer">사진은 이 브라우저 안에서만 처리돼요. 어디에도 전송하지 않아요.</p>
+<script type="module" src="src/main.js"></script>
+
+</body>
+</html>

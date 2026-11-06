@@ -1,221 +1,332 @@
-/* 채용 지원 자격 점검기 — 시스템 폰트, 카드형 구역, 최대 960px 중앙 정렬 */
-* { box-sizing: border-box; }
+/* 채용 지원 자격 점검기 — 색·간격·모서리는 vendor/studio.css 토큰만 사용. 여기에 레이아웃만. */
 
 body {
-  margin: 0;
-  padding: 16px 12px 32px;
-  font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
   font-size: 15px;
-  line-height: 1.5;
-  color: #1f2430;
-  background: #f2f4f8;
 }
 
-.page {
-  max-width: 960px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+/* 첫 화면(390×844)에 띠·답 카드·예시·두 입력칸·분석 버튼·격차 상단이 들어오도록 여백 조율 */
+.ds-band {
+  padding: var(--ds-s4) max(var(--ds-s4), calc((100% - var(--ds-max)) / 2 + var(--ds-s4))) 40px;
 }
 
-.app-header h1 {
-  margin: 0 0 4px;
-  font-size: 24px;
-  letter-spacing: -0.5px;
+.ds-band h1 {
+  font-size: clamp(24px, 5vw, 30px);
 }
 
-.app-subtitle {
-  margin: 0;
-  color: #4a5265;
-}
-
-.card {
-  background: #ffffff;
-  border: 1px solid #dfe3ec;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 1px 3px rgba(24, 30, 46, 0.06);
-}
-
-.card h2 {
-  margin: 0 0 6px;
-  font-size: 18px;
-}
-
-.hint {
-  margin: 0 0 10px;
-  font-size: 14px;
-  color: #5a637a;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.btn {
-  appearance: none;
-  border: 1px solid #c8cfdd;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #1f2430;
-  font: inherit;
-  font-size: 14px;
-  padding: 7px 12px;
-  cursor: pointer;
-}
-
-.btn:hover { background: #f5f7fb; }
-
-.btn-primary {
-  background: #2456d6;
-  border-color: #2456d6;
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.btn-primary:hover { background: #1e48b4; }
-
-.main-action {
-  margin: 0;
-}
-
-/* 주 버튼: 눈에 띄게 */
-#analyze-button {
-  width: 100%;
-  padding: 12px 16px;
-  font-size: 16px;
-}
-
-.field-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-textarea {
-  width: 100%;
-  border: 1px solid #c8cfdd;
-  border-radius: 8px;
-  padding: 10px;
-  font: inherit;
+.ds-band p {
   font-size: 14px;
   line-height: 1.5;
-  color: #1f2430;
-  resize: vertical;
+  max-width: 56ch;
 }
 
-/* 첫 화면(390px)에 두 입력 카드 + 주 버튼이 스크롤 없이 보이도록 축소 */
+.ds-band .ds-band-meta {
+  gap: var(--ds-s2) var(--ds-s3);
+  margin-top: var(--ds-s3);
+}
+
+.ds-band .ds-band-meta > span:last-child {
+  font-size: 12px;
+}
+
+/* 답 카드: 예시로 채워진 큰 숫자가 띠 바로 아래에 */
+.ds-answer {
+  margin-bottom: var(--ds-s3);
+}
+
+.ds-answer-num {
+  font-size: clamp(40px, 10vw, 54px);
+}
+
+.ds-answer-text {
+  font-size: 15px;
+}
+
+.ds-answer-meta {
+  margin-top: var(--ds-s3);
+  padding: var(--ds-s2) 0;
+}
+
+.ds-answer-meta dd {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* 예시 섹션: 답 카드 바로 아래, 첫 화면 상단에 붙여 줌 */
+main > .ds-section-title:first-of-type {
+  margin-top: var(--ds-s3);
+  margin-bottom: var(--ds-s2);
+}
+
+main > .ds-section-title:first-of-type .ds-btn {
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+main > .ds-section-title:first-of-type p {
+  font-size: 13px;
+}
+
+/* 입력 카드: 두 입력칸·분석 버튼이 예시 바로 아래, 스크롤 전부터 보이고 바로 쓸 수 있게 */
+#input-card {
+  padding: var(--ds-s4);
+}
+
+#input-card .ds-stack > * + * {
+  margin-top: var(--ds-s2);
+}
+
+#input-card .ds-hint {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 #text-area,
 #my-spec {
-  min-height: 80px;
-  padding: 10px;
-  line-height: 1.5;
+  min-height: 56px;
 }
 
-#text-area:focus,
-#my-spec:focus {
-  outline: 2px solid #2456d6;
-  outline-offset: 1px;
+#analyze-button {
+  min-height: 46px;
 }
 
-/* 상태 영역: 오류(기본 빨강) / notice(중립 주의색) / ok(녹색) */
+#input-tools .ds-btn {
+  flex: 1 1 auto;
+  min-width: 120px;
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+/* 핵심 역량: 긴 목록은 카드 안에서 여백에 맞춰 넘겨서 잘리지 않게 (스크롤 영역) */
+#skill-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-s2);
+  max-height: 240px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--ds-s1);
+  margin: calc(-1 * var(--ds-s1));
+}
+
+#skill-list {
+  display: block;
+}
+
+/* 더 보기로 펼칠 때만 보이는 잔여 목록(접힘 상태에서는 스크롤 영역 밖으로 숨김) */
+#skill-more-hidden {
+  display: none;
+}
+
+#skill-more-button {
+  margin-top: var(--ds-s2);
+  width: 100%;
+}
+
+/* 격차 목록: 긴 이름도 잘리지 않게(두 줄), 목록은 여백에 맞춰 표시 */
+#gap-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+#gap-list .ds-list-title {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+#gap-list .ds-list-end {
+  flex: none;
+  text-align: right;
+}
+
+/* 한 줄 결론 */
+#gap-summary {
+  margin: 0 0 var(--ds-s3);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ds-ink);
+}
+
+#gap-empty-hint,
+#skill-empty-hint {
+  margin: var(--ds-s3) 0 0;
+  font-size: 14px;
+  color: var(--ds-ink-3);
+}
+
+/* JSON: 접지 않는 단독 섹션 — 분석이 뜨면 즉시 보이고, 잘림 없음. 긴 내용은 카드 안에서만 넘김 */
+#analysis-json {
+  margin: 0;
+  padding: var(--ds-s4);
+  border-radius: var(--ds-radius);
+  background: var(--ds-surface-2);
+  border: 1px solid var(--ds-line);
+  font-size: 13px;
+  line-height: 1.6;
+  font-family: var(--ds-mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  max-height: 480px;
+  overflow: auto;
+  color: var(--ds-ink);
+  min-height: 56px;
+  font-variant-numeric: tabular-nums;
+}
+
+#analysis-json:empty::before {
+  content: "분석이 끝나면 여기에서 원본이 보이기 시작해요.";
+  color: var(--ds-ink-3);
+}
+
+#analysis-json:focus {
+  outline: none;
+  border-color: var(--ds-focus);
+  box-shadow: 0 0 0 3px var(--ds-accent-soft);
+}
+
+/* 상태 영역: 오류(기본) / notice(주의) / ok(성공) — ds-status 토큰 */
 #app-status {
-  min-height: 0;
   margin: 0;
   font-size: 14px;
-  color: #b3352b;
-  font-weight: 500;
+  color: var(--ds-ink-2);
+  min-height: 0;
 }
 
 #app-status:empty {
-  min-height: 18px;
+  display: none;
+}
+
+#app-status.error {
+  padding: var(--ds-s3) var(--ds-s4);
+  border-radius: var(--ds-radius);
+  background: var(--ds-bad-soft);
+  color: var(--ds-bad);
+  font-weight: 500;
 }
 
 #app-status.notice {
-  color: #8a6d1a;
-  background: #fdf6e3;
-  border: 1px solid #ead9a0;
-  border-radius: 8px;
-  padding: 8px 10px;
+  padding: var(--ds-s3) var(--ds-s4);
+  border-radius: var(--ds-radius);
+  background: var(--ds-warn-soft);
+  color: var(--ds-warn);
 }
 
 #app-status.ok {
-  color: #2c6e49;
+  padding: var(--ds-s3) var(--ds-s4);
+  border-radius: var(--ds-radius);
+  background: var(--ds-good-soft);
+  color: var(--ds-good);
 }
 
-.skill-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
+/* 역량·격차 행: 이름 + 숫자, 뒤로 깔리는 옅은 면이 빈도 막대 */
 .skill-item {
+  position: relative;
+  overflow: hidden;
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 16px;
-  padding: 8px 12px;
-  border: 1px solid #e3e7f0;
-  border-radius: 8px;
-  background: #fafbfd;
+  align-items: center;
+  gap: var(--ds-s3);
+  padding: var(--ds-s2) var(--ds-s3);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  min-height: 44px;
+  background: var(--ds-surface);
 }
 
-.skill-name { font-weight: 600; }
+/* 가로 막대: 빈도에 비례한 옅은 주색 면이 왼쪽에서 깔린다(내 이름 기준 100%) */
+.skill-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--w, 0%);
+  background: var(--ds-accent-soft);
+  pointer-events: none;
+}
 
-.skill-meta {
-  color: #5a637a;
+.skill-item .skill-name {
+  position: relative;
+  font-weight: 600;
   font-size: 15px;
+  min-width: 0;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 격차 카드: 충족(녹) / 차이(빨) / 미상(중립) */
-.meta-ok { color: #2c6e49; }
-.meta-gap { color: #b3352b; }
-.meta-warn { color: #8a6d1a; }
-
-/* 격차 안내: 목록 안에 넣지 않고 카드(페이지) 폭 전체에 두고, 목록이 비면만 보임 */
-#gap-summary {
-  margin: 0 0 10px;
-  font-size: 14px;
-  color: #5a637a;
-}
-
-#gap-empty-hint {
-  margin: 10px 0 0;
-  font-size: 14px;
-  color: #5a637a;
-}
-
-#analysis-json {
-  margin: 0;
-  padding: 16px;
-  border-radius: 8px;
-  background: #f5f7fb;
-  border: 1px solid #e3e7f0;
+.skill-item .skill-meta {
+  position: relative;
+  flex: none;
   font-size: 13px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-all;
-  max-height: 320px;
-  overflow: auto;
-  color: #1f2430;
+  color: var(--ds-ink-2);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-/* 390px 폭 휴대폰: 가로 스크롤 없이 동작, 첫 화면(844px)에 입력 흐름이 스크롤 없이 들어와야 함 */
+#gap-list .skill-item {
+  align-items: center;
+}
+
+#gap-list .ds-avatar {
+  flex: none;
+}
+
+#gap-list .ds-list-sub {
+  margin-top: 0;
+  font-size: 13px;
+}
+
+#gap-list .ds-list-amount {
+  font-size: 13px;
+}
+
+/* 한 화면에 들어맞도록: 격차·핵심 역량 섹션 간격 축소, 긴 목록은 카드 안에서만 넘김 */
+#input-card ~ .ds-section-title {
+  margin-top: var(--ds-s4);
+}
+
+#gap-list {
+  max-height: 352px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#gap-list::-webkit-scrollbar,
+#skill-wrap::-webkit-scrollbar {
+  width: 8px;
+}
+
+#gap-list::-webkit-scrollbar-thumb,
+#skill-wrap::-webkit-scrollbar-thumb {
+  background: var(--ds-line);
+  border-radius: 999px;
+}
+
+.meta-ok { color: var(--ds-good); }
+.meta-gap { color: var(--ds-bad); }
+.meta-warn { color: var(--ds-warn); }
+
+/* 390px 폭 휴대폰: 첫 화면에 흐름이 들어오고 가로 스크롤이 없도록 */
 @media (max-width: 480px) {
-  .app-header h1 { font-size: 22px; }
-  .hint { margin-bottom: 6px; line-height: 1.45; }
-  .actions { margin-bottom: 6px; }
-  #analyze-button { padding: 11px 14px; }
+  .ds-band {
+    padding-top: var(--ds-s5);
+  }
+  .ds-card {
+    padding: 20px;
+  }
   #text-area,
-  #my-spec { min-height: 76px; }
-  #app-status:empty { min-height: 12px; }
+  #my-spec {
+    min-height: 56px;
+  }
+  #analysis-json {
+    max-height: 360px;
+  }
+  #skill-wrap {
+    max-height: 208px;
+  }
+  #gap-list {
+    max-height: 288px;
+  }
 }
