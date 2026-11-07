@@ -56,14 +56,13 @@ export async function init() {
     }
   }
 
-  // 64·128GB는 실측이 없으니(옵션도 선택 불가) 48GB로 바꿔서 열어 준다.
-  if (state.memoryGb === 64 || state.memoryGb === 128) {
-    state = { ...state, memoryGb: 48 };
-    if (saveState(state)) setStatus("64·128GB는 실측이 없어 48GB로 바꿨습니다.");
+  // 64·128GB 저장 상태: 그대로 두고(강제 48 전환 없음), 안내로 기준을 알린다 (1번).
+  if (state.memoryGb > 48) {
+    setStatus("64·128GB 맥을 고르셨어요. 실측은 48GB 맥뿐이라, 순위·비교는 48GB 맥 기준으로 보여 드려요.");
   }
 
-  // 3) 첫 화면 + 헤더 값 (결과 내려받기 상자는 순위 화면 아래 접어 둠)
-  for (const s of SCREENS) $("screen-" + s).classList.toggle("hidden", s !== "rank");
+  // 3) 첫 화면: 비교는 1등 시민이라 rank·compare 양쪽 탭에서 보이도록 (2번)
+  for (const s of SCREENS) $("screen-" + s).classList.toggle("hidden", s !== "rank" && s !== "compare");
   for (const s of SCREENS) $("nav-" + s + "-btn").classList.toggle("active", s === "rank");
   for (const s of SCREENS) $("nav-" + s + "-btn").setAttribute("aria-pressed", String(s === "rank"));
   setHeaderValues(state.memoryGb, state.category);
@@ -100,7 +99,9 @@ export async function init() {
 
   // 5) 화면 전환
   const showScreen = (id) => {
-    for (const s of SCREENS) $("screen-" + s).classList.toggle("hidden", s !== id);
+    // 2번: rank 활성 시 compare + rank 동시 표시, compare 활성 시 compare 만, saved 활성 시 saved 만
+    const hidden = (s) => id !== s && !(id === "rank" && s === "compare");
+    for (const s of SCREENS) $("screen-" + s).classList.toggle("hidden", hidden(s));
     for (const s of SCREENS) $("nav-" + s + "-btn").classList.toggle("active", s === id);
     for (const s of SCREENS) $("nav-" + s + "-btn").setAttribute("aria-pressed", String(s === id));
   };
@@ -142,6 +143,15 @@ export async function init() {
         setStatus("서로 다른 두 모델을 골라 주세요.", true);
         return;
       }
+      // import·예시로 48GB 실측 맥 상한에 못 들어가는 쌍이 들어와도 차단 (4번).
+      const basis = Math.min(state.memoryGb, 48);
+      for (const name of [left, right]) {
+        const m = models.find((x) => x.model === name);
+        if (m && !(m.peak_memory_gb < basis)) {
+          setStatus(name + " 은(는) " + basis + "GB 실측 맥에 안 들어가요. 비교에서 뺐어요. 다른 모델을 골라 주세요.", true);
+          return;
+        }
+      }
       applyChange(normalizeState({ ...state, comparePair: [left, right] }, models));
     },
     () => {
@@ -179,13 +189,13 @@ export async function init() {
     },
   );
 
-  // 8) 결과 파일 내려받기 (원시 JSON 을 화면에 붙이지 않고 파일로)
+  // 8) 결과 파일 내려받기: 화면의 pre#result-json 원문을 그대로 파일로 (5번: 파일 이름·내용은 그대로)
   const jsonDl = $("json-download");
   if (jsonDl)
     jsonDl.addEventListener("click", () => {
-      const r = window.__lastResult;
-      if (!r) return;
-      downloadJson("llmpick-result.json", r);
+      const pre = $("result-json");
+      if (!pre || !pre.textContent) return;
+      downloadJson("llmpick-result.json", JSON.parse(pre.textContent));
     });
 
   // 9) 첫 렌더

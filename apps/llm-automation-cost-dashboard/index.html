@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko" data-accent="teal">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LLM 작업 자동화 비용 주간 대시보드 — 무료 웹 도구 · 커밋 한 모금</title>
+<link rel="stylesheet" href="vendor/studio.css">
+<link rel="stylesheet" href="styles.css">
+<script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="OpenRouter 모델 가격과 Hugging Face 신규 모델 데이터로, 코딩·테스트·문서화·운영 작업 1회당 가장 싼 자동화 비용과 4주 전 대비 변화를 계산하고 날짜별 기록을 브라우저에 남기는 대시보드예요."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/llm-automation-cost-dashboard/"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: LLM 작업 자동화 비용 대시보드 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+
+<header class="ds-band ds-band-thin">
+  <h1>LLM 작업 자동화 비용 대시보드</h1>
+  <p>OpenRouter 모델 가격과 Hugging Face 신규 모델 데이터로, 코딩·테스트·문서화·운영 작업당 가장 싼 자동화 비용과 4주 전 대비 변화를 보여 주며 주간 기록을 남기어요.</p>
+  <nav class="app-nav" aria-label="화면 이동">
+    <button type="button" class="ds-chip nav-btn" id="nav-dashboard" aria-pressed="true" autofocus>비용 대시보드</button>
+    <button type="button" class="ds-chip nav-btn" id="nav-history" aria-pressed="false">주간 기록</button>
+    <button type="button" class="ds-chip nav-btn" id="nav-settings" aria-pressed="false">기준 설정</button>
+  </nav>
+  <p id="app-status" class="ds-status" role="status" hidden></p>
+</header>
+
+<main class="ds-page">
+
+  <!-- 대시보드: 한 줄 설명 → 버튼 → 답 카드 → 표 -->
+  <section id="screen-dashboard">
+    <p id="intro-line" class="ds-hint" style="font-size:14px;color:var(--ds-ink-2);margin:0 0 var(--ds-s2)">모델 데이터를 불러오는 중이에요.</p>
+
+    <div class="ds-row" id="mode-actions">
+      <button type="button" class="ds-btn ds-btn-primary" id="example-button">예시로 해 보기</button>
+      <button type="button" class="ds-btn" id="live-button">실시간 데이터 보기</button>
+    </div>
+
+    <section class="ds-answer" aria-labelledby="answer-label">
+      <p class="ds-answer-label" id="answer-label">코딩 작업 1회당 최저 비용</p>
+      <p class="ds-answer-num" id="answer-num">—<small> / 작업당</small></p>
+      <p class="ds-answer-text" id="answer-text">데이터를 불러오는 중이에요. 잠시만 기다려 주세요.</p>
+      <dl class="ds-answer-meta" id="answer-meta">
+        <div><dt>기준일</dt><dd id="answer-date">—</dd></div>
+        <div><dt>기준 컨텍스트</dt><dd id="answer-ctx">모두 포함</dd></div>
+        <div class="ds-data-source" title="OpenRouter 공개 모델 목록과 Hugging Face 공개 API(키 없음) 데이터"><dt>출처</dt><dd><span id="data-time">불러오는 중</span> · <span id="data-terms">실시간 데이터</span></dd></div>
+      </dl>
+    </section>
+
+    <div class="ds-section-title">
+      <h2>작업군별 최저 비용</h2>
+      <p>작업 1회당 가장 싼 모델과 4주 전 가격 비교</p>
+    </div>
+    <div class="ds-card ds-table-wrap">
+      <table class="ds-table" id="task-table">
+        <thead>
+          <tr><th>작업군</th><th>조건 맞는 모델</th><th>가장 싼 모델</th><th>작업 1회 비용(달러)</th><th>4주 전(달러)</th><th>4주 전 대비</th></tr>
+        </thead>
+        <tbody>
+          <tr id="task-coding"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr id="task-testing"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr id="task-docs"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr id="task-ops"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p id="context-hint" class="ds-hint">작업 1회당 입력·출력 토큰(코딩 20,000/4,000 · 테스트 12,000/3,000 · 문서 8,000/2,000 · 운영 30,000/1,000)으로 가장 싼 모델 1회 사용 비용(달러)을 계산해요.</p>
+
+    <details class="ds-more" id="hf-details">
+      <summary>Hugging Face 모델 요약</summary>
+      <div class="ds-card ds-more-body">
+        <ul class="ds-list" id="hf-summary">
+          <li class="ds-list-item"><span class="ds-list-title">—</span></li>
+          <li class="ds-list-item"><span class="ds-list-title">—</span></li>
+        </ul>
+        <p class="ds-hint ds-more-hint">공개 API 기준으로 최근 등록과 인기 모델을 보여 주어요.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- 주간 기록 -->
+  <section id="screen-history" hidden>
+    <div class="ds-section-title">
+      <h2>주간 비용 변화 기록</h2>
+      <p>저장된 날짜별 비용이에요. 실시간·예시 모드마다 따로 쌓이고, 같은 날짜는 최신 값으로 바뀌어요 (최대 60개, 오래된 순).</p>
+    </div>
+    <div class="ds-card ds-table-wrap" id="history-wrap">
+      <table class="ds-table" id="history-table">
+        <thead>
+          <tr><th>날짜</th><th>코딩</th><th>테스트</th><th>문서</th><th>운영</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p id="history-empty" class="ds-empty">기록 없음<br>대시보드에서 데이터가 계산되면 여기에 날짜별 비용이 쌓여요.</p>
+    </div>
+  </section>
+
+  <!-- 기준 설정 -->
+  <section id="screen-settings" hidden>
+    <div class="ds-section-title">
+      <h2>최소 컨텍스트 길이</h2>
+      <p>이 길이 이상인 모델만 비교해요. 바꿀 때마다 결과가 다시 계산돼요.</p>
+    </div>
+    <div class="ds-card">
+      <label class="ds-label" for="min-context-select">최소 컨텍스트 길이 (토큰)</label>
+      <select class="ds-select" id="min-context-select">
+        <option value="0" selected>모두 포함 (0)</option>
+        <option value="32000">32,000</option>
+        <option value="131072">131,072</option>
+        <option value="200000">200,000</option>
+      </select>
+    </div>
+
+    <div class="ds-section-title">
+      <h2>기록 내보내기</h2>
+      <p>저장된 상태(데이터 모드, 최소 컨텍스트, 날짜별 기록)를 JSON 파일로 받아 두고, 다시 불러와요.</p>
+    </div>
+    <div class="ds-card ds-stack">
+      <button type="button" class="ds-btn" id="export-button">기록 파일 내보내기</button>
+      <div class="ds-row">
+        <button type="button" class="ds-btn" id="import-button">기록 파일 가져오기</button>
+        <input type="file" id="import-file" accept=".json" hidden>
+      </div>
+      <button type="button" class="ds-btn" id="reset-button">기록 초기화</button>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="src/main.js"></script>
+
+</body>
+</html>

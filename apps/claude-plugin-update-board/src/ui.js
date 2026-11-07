@@ -44,9 +44,10 @@ function renderTable(result, mode) {
       ['ds-desc', '', it.description],
       ['ds-num', '별', String(it.stars)],
       ['ds-num', '하루 평균 별', String(it.starsPerDay)],
-      ['ds-status-cell', '', null],
-      ['ds-updated', '', null]
+      ['ds-status-cell', '상태', null],
+      ['ds-updated', '최종 갱신', null]
     ];
+    if (it.recency) tr.classList.add('is-fresh');
     for (const [cls, label, txt] of cells) {
       const td = document.createElement('td');
       if (cls) td.className = cls;
@@ -82,8 +83,8 @@ function renderTable(result, mode) {
     : `실제 데이터 · 일치: ${result.count} / ${result.total}`;
   const top = result.items[0];
   $('#answer-line').textContent = top
-    ? `${mode === 'sample' ? '예시 ' : '실제 데이터 기준, '}${'이번 주 새 Claude 저장소 ' + result.count + '개 · 1위 ' + top.fullName + ' (별 ' + top.stars + ')'}`
-    : 'Claude 관련 저장소가 아직 없어요. 「예시로 해 보기」로 예시 3개를 볼 수 있어요.';
+    ? `좋아요. ${mode === 'sample' ? '예시 ' : '실제 데이터 기준, '}${'이번 주 새 Claude 저장소 ' + result.count + '개 · 1위 ' + top.fullName + ' (별 ' + top.stars + ')'}`
+    : '좋아요. Claude 관련 저장소가 아직 없어요. 「예시로 해 보기」로 예시 3개를 볼 수 있어요.';
   const meta = $('#answer-meta');
   meta.innerHTML = '';
   if (top) {

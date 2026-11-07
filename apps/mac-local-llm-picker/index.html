@@ -26,7 +26,7 @@
       <div class="field">
         <label class="ds-label" for="memory-select">맥 메모리</label>
         <select id="memory-select" class="ds-select">
-          <option>8</option><option selected>16</option><option>24</option><option>32</option><option>48 (실측 최대)</option>
+          <option>8</option><option selected>16</option><option>24</option><option>32</option><option>48</option><option>64 (48GB 맥 실측 기준)</option><option>128 (48GB 맥 실측 기준)</option>
         </select>
       </div>
       <div class="field">
@@ -54,13 +54,41 @@
     </dl>
   </section>
 
+  <section id="screen-compare" class="screen">
+    <div class="ds-section-title">
+      <h2>두 모델 비교</h2>
+      <p class="purpose">내 맥에 들어가는 모델 두 개를 골라 실측 수치와 차이를 나란히 보여 줍니다.</p>
+    </div>
+    <div class="ds-card cmp-card">
+      <div class="controls">
+        <div class="field">
+          <label class="ds-label" for="compare-left-select">왼쪽 모델</label>
+          <select id="compare-left-select" class="ds-select"></select>
+        </div>
+        <div class="field">
+          <label class="ds-label" for="compare-right-select">오른쪽 모델</label>
+          <select id="compare-right-select" class="ds-select"></select>
+        </div>
+      </div>
+      <div class="ds-row act-row">
+        <button id="compare-button" class="ds-btn ds-btn-primary" type="button">비교</button>
+        <button id="clear-compare-button" class="ds-btn" type="button">비교 해제</button>
+      </div>
+    </div>
+    <div id="compare-output"></div>
+  </section>
+
   <section id="screen-rank" class="screen">
     <div class="ds-section-title">
       <h2>모델 순위</h2>
       <p class="purpose" id="rank-purpose">내 맥 메모리에 들어가는 모델만 골라 용도별 순위를 보여 주고 관심 모델을 저장합니다.</p>
     </div>
-    <div class="ds-card">
-      <ul id="rank-list" class="ds-list rank-list"></ul>
+    <ul id="rank-list" class="ds-list rank-list"></ul>
+    <div class="ds-card rank-card">
+      <details class="result-json-box">
+        <summary>결과 원문(JSON) 보기</summary>
+        <pre id="result-json" class="ds-mono"></pre>
+      </details>
     </div>
   </section>
 
@@ -79,30 +107,6 @@
       </div>
     </div>
   </details>
-
-  <section id="screen-compare" class="screen hidden">
-    <div class="ds-section-title">
-      <h2>두 모델 비교</h2>
-      <p class="purpose">모델 두 개를 골라 실측 수치와 차이를 나란히 보여 줍니다.</p>
-    </div>
-    <div class="ds-card">
-      <div class="controls">
-        <div class="field">
-          <label class="ds-label" for="compare-left-select">왼쪽 모델</label>
-          <select id="compare-left-select" class="ds-select"></select>
-        </div>
-        <div class="field">
-          <label class="ds-label" for="compare-right-select">오른쪽 모델</label>
-          <select id="compare-right-select" class="ds-select"></select>
-        </div>
-      </div>
-      <div class="ds-row act-row">
-        <button id="compare-button" class="ds-btn ds-btn-primary" type="button">비교</button>
-        <button id="clear-compare-button" class="ds-btn" type="button">비교 해제</button>
-      </div>
-    </div>
-    <div id="compare-output"></div>
-  </section>
 
   <section id="screen-saved" class="screen hidden">
     <div class="ds-section-title">

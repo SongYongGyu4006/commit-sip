@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "mode": "example",
+  "minContext": 0,
+  "history": {
+    "live": [
+      {
+        "asOf": "2026-11-02",
+        "costs": {
+          "coding": 0.00051,
+          "testing": 0.000338,
+          "docs": 0.000226,
+          "ops": 0.000543
+        }
+      },
+      {
+        "asOf": "2026-11-03",
+        "costs": {
+          "coding": 0.0005,
+          "testing": 0.00033,
+          "docs": 0.00022,
+          "ops": 0.000532
+        }
+      }
+    ],
+    "example": [
+      {
+        "asOf": "2026-11-07",
+        "costs": {
+          "coding": 0.001,
+          "testing": 0.0006,
+          "docs": 0.00036,
+          "ops": 0.00105
+        }
+      }
+    ]
+  }
+}

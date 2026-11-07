@@ -35,27 +35,45 @@
   .ds-segment > button { min-height: 44px; padding: 0 8px; font-size: 14px; }
 }
 
-/* rank list: rank · name (+badge) · purpose score · save (one row) */
-.rank-list { border-top: 1px solid var(--ds-line); }
+/* rank list: rank · name(+badge) · purpose score · save — (5a) 1줄 = 번호+이름, 2줄 = 점수+저장 버튼.
+   390px 에서 긴 모델명(31자)이 중간에 잘리지 않고 전부 보이게. */
+.rank-list {
+  margin: 0;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-l);
+  background: var(--ds-surface);
+  overflow: hidden;
+  margin-bottom: var(--ds-s3);
+}
 .rank-list li {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--ds-s3);
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--ds-s1) var(--ds-s3);
   min-height: 56px;
-  padding: var(--ds-s3) 0;
+  padding: var(--ds-s3);
   border-bottom: 1px solid var(--ds-line);
 }
 .rank-list li:last-child { border-bottom: 0; }
+/* 2행: 점수(우) + 저장 버튼 — 1행 이름·배지 아래로 */
+.rank-score {
+  grid-column: 2;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-s2);
+}
+.rank-list .save-toggle-btn {
+  grid-column: 1 / -1;
+  justify-self: end;
+}
 /* 관심 모델 줄: 통계(.stat)를 이름 아래 2행으로 — 390px에서 이름+통계를 한 줄에 못 담아 */
 #saved-list li .stat { grid-column: 2 / -1; }
 @media (max-width: 480px) {
-  .rank-list li { grid-template-columns: 24px minmax(0, 1fr) auto; }
-  .rank-score { white-space: nowrap; font-size: 15px; }
-  .rank-list .rmodel { font-size: 15px; min-width: 0; }
-  /* 점수 줄(2행)을 이름·배지·저장 버튼 아래로: 배지+점수가 390px 한 줄에 안 들어와 겹침 */
+  .rank-list li { grid-template-columns: 24px minmax(0, 1fr); }
+  .rank-score { font-size: 15px; white-space: nowrap; }
+  .rank-list .rmodel { font-size: 15px; max-width: 100%; }
   .rank-list .badge { min-width: 0; }
-  .rank-list .rank-score { grid-column: 2 / -1; }
   .save-toggle-btn { flex: none; min-height: 36px; padding: 0 12px; }
 }
 .rank-num {
@@ -102,7 +120,14 @@
   line-height: 1.5;
 }
 
-/* compare output */
+/* compare output (2번: 선택지 카드는 .ds-card, 결과표는 카드 밖 — 첫 화면에서 답 카드 바로 아래) */
+#compare-output { margin-top: var(--ds-s3); }
+#compare-output .cmp-notice {
+  margin: 0 0 var(--ds-s2);
+  font-size: 14px;
+  color: var(--ds-ink-2);
+}
+#compare-output .cmp-empty,
 #compare-output .cmp-warn {
   margin: 0 0 var(--ds-s3);
   padding: var(--ds-s3) var(--ds-s4);
@@ -126,11 +151,10 @@
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(0, .7fr);
   gap: 1px;
   background: var(--ds-line);
-  border-top: 1px solid var(--ds-line);
+  border: 1px solid var(--ds-line);
 }
-.cmp-row:first-child { border-top: 0; border-radius: var(--ds-radius); overflow: hidden; }
-.cmp-row:last-child { border-bottom: 1px solid var(--ds-line); border-radius: 0 var(--ds-radius) var(--ds-radius) 0; }
-.cmp-row:first-child:last-child { border-radius: var(--ds-radius); }
+.cmp-row:first-child { border-radius: var(--ds-radius); }
+.cmp-row:last-child { border-radius: 0 0 var(--ds-radius) var(--ds-radius); }
 .cmp-cell { background: var(--ds-surface); padding: 10px var(--ds-s3); font-size: 14px; min-width: 0; }
 .cmp-row .diff-cell { background: var(--ds-surface-2); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 .cmp-name { font-weight: 700; font-size: 15px; }
@@ -142,6 +166,26 @@
   .cmp-row { grid-template-columns: 1fr 1fr; }
   .cmp-label-row .cmp-cell:first-child { grid-column: 1 / -1; }
 }
+
+/* (5b) 결과 원문: SPEC 고정 id #result-json. 접혀 있어 화면 지저분함 없이, <pre>는 스크롤로 제한. */
+.result-json-box { margin: var(--ds-s3) 0 0; }
+.result-json-box summary { cursor: pointer; list-style: none; user-select: none; font-weight: 600; font-size: 14px; color: var(--ds-ink-2); }
+.result-json-box summary::before { content: "＋ "; color: var(--ds-ink-3); }
+.result-json-box[open] summary::before { content: "－ "; }
+#result-json {
+  margin: var(--ds-s3) 0 0;
+  max-height: 240px;
+  overflow: auto;
+  font: 12px/1.5 var(--ds-mono);
+  background: var(--ds-surface-2);
+  border-radius: var(--ds-radius);
+  padding: var(--ds-s3);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* 접혀 있으면 카드 레이아웃에 영향 주지 않게 (summary 제외 자식 숨김) */
+.result-json-box:not([open]) > :not(summary) { display: none; }
+.rank-card { margin-top: var(--ds-s3); }
 
 /* 결과 파일 내려받기: 순위 목록 아래 접어 둔 <details> (화면 아래로 내림) */
 .json-box { margin: var(--ds-s3) 0 0; }

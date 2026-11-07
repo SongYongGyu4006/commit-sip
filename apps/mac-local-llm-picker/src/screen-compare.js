@@ -1,4 +1,5 @@
 // 비교 화면: 두 select, 비교/해제 버튼, div#compare-output.
+import { fmtOrDash } from "./ui.js";
 const $ = (id) => document.getElementById(id);
 const mk = (tag, text, cls) => {
   const n = document.createElement(tag);
@@ -11,28 +12,32 @@ const show = (v) => (v === undefined || v === null ? "—" : String(v));
 
 // 비교 표의 행. weights_gb 는 SPEC 의 diff 에 없어서 화면에서 직접 차이를 계산한다.
 const ROWS = [
-  ["최대 메모리(GB)", "peak_memory_gb", (v) => String(v)],
-  ["가중치(GB)", "weights_gb", (v) => String(v)],
-  ["속도: 짧은 문장(t/s)", "gen_tps_short", (v) => String(v)],
-  ["속도: 긴 문장(t/s)", "gen_tps_long", (v) => String(v)],
-  ["한국어(KMMLU/50)", "kmmlu_of_50", (v) => String(v)],
-  ["코딩(10점 만점)", "code_of_10", (v) => String(v)],
-  ["도구(10점 만점)", "tools_of_10", (v) => String(v)],
-  ["포맷(10점 만점)", "format_of_10", (v) => String(v)],
+  ["최대 메모리(GB)", "peak_memory_gb", (v) => fmtOrDash(v)],
+  ["가중치(GB)", "weights_gb", (v) => fmtOrDash(v)],
+  ["속도: 짧은 문장(t/s)", "gen_tps_short", (v) => fmtOrDash(v)],
+  ["속도: 긴 문장(t/s)", "gen_tps_long", (v) => fmtOrDash(v)],
+  ["한국어(KMMLU/50)", "kmmlu_of_50", (v) => fmtOrDash(v)],
+  ["코딩(10점 만점)", "code_of_10", (v) => fmtOrDash(v)],
+  ["도구(10점 만점)", "tools_of_10", (v) => fmtOrDash(v)],
+  ["포맷(10점 만점)", "format_of_10", (v) => fmtOrDash(v)],
 ];
 const FMT = {
-  peak_memory_gb: (v) => v + " GB",
-  weights_gb: (v) => v + " GB",
-  gen_tps_short: (v) => v + " t/s",
-  gen_tps_long: (v) => v + " t/s",
-  kmmlu_of_50: (v) => v + "/50",
-  code_of_10: (v) => v + "점",
-  tools_of_10: (v) => v + "점",
-  format_of_10: (v) => v + "점",
+  peak_memory_gb: (v) => fmtOrDash(v, " GB"),
+  weights_gb: (v) => fmtOrDash(v, " GB"),
+  gen_tps_short: (v) => fmtOrDash(v, " t/s"),
+  gen_tps_long: (v) => fmtOrDash(v, " t/s"),
+  kmmlu_of_50: (v) => fmtOrDash(v, "/50"),
+  code_of_10: (v) => fmtOrDash(v, "점"),
+  tools_of_10: (v) => fmtOrDash(v, "점"),
+  format_of_10: (v) => fmtOrDash(v, "점"),
 };
 
+// 내 맥에 "들어가는" 모델 판정: 실측 데이터는 48GB 맥뿐이므로,
+// 64/128GB 를 고르더라도 48GB 실측 맥 상한 기준(4번 — 1번과 공유).
+const fits = (m, memoryGb) =>
+  typeof m.peak_memory_gb === "number" && m.peak_memory_gb < Math.min(memoryGb, 48);
+
 export function renderCompare(models, comparePair, result) {
-  const fits = (m) => typeof m.peak_memory_gb === "number" ? m.peak_memory_gb < result.memoryGb : false;
   for (const id of ["compare-left-select", "compare-right-select"]) {
     const sel = $(id);
     const current = sel.value;
@@ -41,12 +46,12 @@ export function renderCompare(models, comparePair, result) {
     none.value = "";
     none.textContent = "선택하지 않음";
     sel.appendChild(none);
-    // 고른 메모리에 들어가는 모델이 위로, 안 들어가는 모델은 뒤에 (안 들어가는 쪽엔 안내를 붙인다).
-    const sorted = [...models.filter(fits), ...models.filter((m) => !fits(m))];
-    for (const m of sorted) {
+    // 고른 메모리(48GB 실측 맥 상한 기준)에 들어가는 모델만 넣는다 (4번: 차단).
+    const eligible = models.filter((m) => fits(m, result.memoryGb));
+    for (const m of eligible) {
       const o = document.createElement("option");
       o.value = m.model;
-      o.textContent = fits(m) ? m.model : m.model + " (이 맥 메모리에 안 들어감)";
+      o.textContent = m.model;
       sel.appendChild(o);
     }
     sel.value = current;
@@ -60,18 +65,34 @@ export function renderCompare(models, comparePair, result) {
   out.textContent = "";
   // SPEC: compare.must_show = ["왼쪽 모델", "오른쪽 모델", "비교 결과"] — 아직 비교 전에도 항상 존재
   out.appendChild(mk("h3", "비교 결과"));
+  // 항상 1줄: 선택지에는 내 맥에 들어가는 모델만 둔다 (4번 — 2번과 동일한 규칙·안내).
+  const total = models.length;
+  const elig = models.filter((m) => fits(m, result.memoryGb)).length;
+  const basis = Math.min(result.memoryGb, 48);
+  out.appendChild(
+    mk(
+      "p",
+      result.memoryGb > 48
+        ? total + "개 중 " + elig + "개만 비교할 수 있어요(48GB 실측 맥에 안 맞는 모델 제외)."
+        : "내 맥(" + result.memoryGb + "GB)에 들어가는 모델만 비교할 수 있어요. " + total + "개 중 " + elig + "개.",
+      "cmp-notice",
+    ),
+  );
   if (!result.comparison) {
     out.appendChild(mk("p", "왼쪽·오른쪽 모델을 고르고 [비교]를 누르세요.", "cmp-empty"));
     return;
   }
 
   const { left, right, diff } = result.comparison;
-  // 메모리에 안 들어가는 쪽이 있으면 표 위에 크게 경고한다.
+  // import·예시로 64/128GB + 큰 모델이 들어와도, 48GB 실측 맥 상한 기준에 못 들면 막는다 (4번).
   const missing = [];
-  if (!left.fitsMemory) missing.push("왼쪽(" + left.model + ")");
-  if (!right.fitsMemory) missing.push("오른쪽(" + right.model + ")");
+  if (!fits(left, basis)) missing.push("왼쪽(" + left.model + ")");
+  if (!fits(right, basis)) missing.push("오른쪽(" + right.model + ")");
   if (missing.length) {
-    out.appendChild(mk("p", missing.join("과 ") + "은(는) " + result.memoryGb + "GB 맥에 들어가지 않습니다", "cmp-warn"));
+    out.appendChild(
+      mk("p", missing.join("과 ") + "은(는) " + basis + "GB 실측 맥에 들어가지 않습니다", "cmp-warn"),
+    );
+    return;
   }
 
   const cell = (html, cls) => {
@@ -88,10 +109,9 @@ export function renderCompare(models, comparePair, result) {
   // 모델 이름 행 (textContent 로, raw 데이터 그대로)
   const nameRow = mk("div", null, "cmp-row");
   const nl = mk("div", null, "cmp-cell");
-  const nl2 = mk("span", left.model + (left.fitsMemory ? "" : " — 메모리 미달"), "cmp-name");
-  nl.appendChild(nl2);
+  nl.appendChild(mk("span", left.model, "cmp-name"));
   const nr = mk("div", null, "cmp-cell");
-  nr.appendChild(mk("span", right.model + (right.fitsMemory ? "" : " — 메모리 미달"), "cmp-name"));
+  nr.appendChild(mk("span", right.model, "cmp-name"));
   nameRow.appendChild(nl);
   nameRow.appendChild(nr);
   nameRow.appendChild(mk("div", null, "cmp-cell diff-cell"));
@@ -106,13 +126,16 @@ export function renderCompare(models, comparePair, result) {
     if (dv === undefined && left[field] !== undefined && right[field] !== undefined)
       dv = Number((left[field] - right[field]).toFixed(3));
     let html;
-    if (dv === undefined || dv === null) html = "<span class='diff-flat'>—</span>";
+    // undefined·null·NaN 3종 모두 "—" (3번: "undefined" 문자열이 표에 절대 나오지 않게).
+    if (dv === undefined || dv === null || (typeof dv === "number" && !Number.isFinite(dv)))
+      html = "<span class='diff-flat'>—</span>";
     else if (dv > 0) html = "<span class='diff-plus'>+" + dv + " (앞섬)</span>";
     else if (dv < 0) html = "<span class='diff-minus'>" + dv + " (뒤로)</span>";
     else html = "<span class='diff-flat'>0 (동률)</span>";
     row.appendChild(cell(html, "cmp-cell diff-cell"));
     out.appendChild(row);
   }
+  out.appendChild(mk("p", "가중치(GB) 차이는 실측 값에서 직접 뺀 값이에요. 나머지 차이도 모두 왼쪽 − 오른쪽이에요.", "cmp-hint"));
   out.appendChild(mk("p", compareSummary(left, right, diff, result.memoryGb), "cmp-summary"));
 }
 
@@ -138,8 +161,6 @@ function compareSummary(left, right, diff, memoryGb) {
     if (leftWins.length) s += "왼쪽(" + left.model + ")이 " + leftWins.join("·") + "에서 앞섭니다. ";
     if (rightWins.length) s += "오른쪽(" + right.model + ")이 " + rightWins.join("·") + "에서 앞섭니다. ";
   }
-  if (!left.fitsMemory) s += "왼쪽은 " + memoryGb + "GB 맥 메모리에 들어가지 않습니다. ";
-  if (!right.fitsMemory) s += "오른쪽은 " + memoryGb + "GB 맥 메모리에 들어가지 않습니다. ";
   return s.trim();
 }
 
