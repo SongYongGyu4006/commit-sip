@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'sha256-81IUcuOssTHFttkrw1dIqIBtnHd1hWz57jIwoiYtBbw=' 'sha256-nS8O3RxCefpzy5Wl/LS6x+YNdmVeoTYhlxK1neXB5UA='; img-src 'self' data: blob:; connect-src blob: data:; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'sha256-y0q2ZOe0dFaPJZtMgI6wF/UxkoVbbDJKT09jUl+jK84='; img-src 'self' data: blob:; connect-src blob: data:; object-src 'none'">
 <title>제출용 PDF 만들기 — 사진이 5MB 미만 A4 하나로 — 무료 웹 도구 · 커밋 한 모금</title>
 <link rel="stylesheet" href="vendor/studio.css">
 <link rel="stylesheet" href="styles.css">
@@ -14,7 +14,7 @@
   <p>사진을 올리면 제출처 용량 제한에 맞는 A4 PDF 하나로 합쳐 드려요.</p>
   <div class="ds-band-meta">
     <span class="ds-badge">브라우저 안에서만 처리</span>
-    <span id="net-check">external requests: 0</span>
+    <span>외부로 나간 요청 <span id="net-check">external requests: 0</span></span>
   </div>
   <div class="band-cta">
     <label class="ds-btn ds-btn-primary ds-btn-lg" for="band-file-input">파일 고르기</label>
@@ -41,28 +41,34 @@
       <p class="ds-answer-text" id="answer-text">사진을 고르면 A4 PDF 하나로 합쳐 드려요. 바로 위에서 파일 고르기로 시작하거나 예시로 해 보기를 눌러 보세요.</p>
       <dl class="ds-answer-meta" id="answer-meta"></dl>
     </div>
-    <div class="ds-card result-card">
-      <h2>결과</h2>
-      <p id="size-result" class="ds-sub">아직 만든 PDF가 없어요. 파일을 고르거나 예시로 해 보기를 누르면 결과가 여기에 나와요.</p>
-      <a id="download-link" class="ds-btn ds-btn-primary" download="submission.pdf" hidden>PDF 받아 가기</a>
+    <div class="ds-section-title">
+      <h2>사진 목록</h2>
+      <button type="button" class="ds-btn" id="example-button">예시로 해 보기</button>
+      <p>위에서부터 PDF 순서예요. 순서를 바꾸거나 지울 수 있어요.</p>
+    </div>
+    <div class="ds-card">
+      <input id="file-input" type="file" multiple accept="image/jpeg,image/png" hidden>
+      <ul id="file-list" class="ds-list"></ul>
     </div>
     <div class="ds-card target-card">
       <div class="ds-row">
         <button type="button" class="ds-btn ds-btn-primary" id="build-button">PDF 만들기</button>
         <button type="button" class="ds-btn" id="reset-button">다시 시작</button>
       </div>
-      <p class="ds-hint target-hint" hidden>목표 용량은 0보다 크고 100 이하 숫자(예: 5)로만 받을 수 있어요.</p>
     </div>
-    <div class="ds-card">
-      <h2>사진 목록</h2>
-      <p class="ds-sub">위에서부터 PDF 순서예요. 순서를 바꾸거나 지울 수 있어요.</p>
-      <input id="file-input" type="file" multiple accept="image/jpeg,image/png" hidden>
-      <button type="button" class="ds-btn" id="example-button">예시로 해 보기</button>
-      <ul id="file-list" class="ds-list"></ul>
+    <div class="ds-section-title">
+      <h2>결과</h2>
+      <p>PDF를 만들면 원본과 결과 용량, 받아 가기 버튼이 여기에 나와요.</p>
     </div>
-    <div class="ds-card">
+    <div class="ds-card result-card">
+      <p id="size-result" class="ds-sub" hidden></p>
+      <a id="download-link" class="ds-btn ds-btn-primary" download="submission.pdf" hidden>PDF 받아 가기</a>
+    </div>
+    <div class="ds-section-title">
       <h2>만들기 계획</h2>
-      <p class="ds-sub" id="plan-sub">사진을 고르면 각 페이지를 어떻게 저장할지 여기에 보여 드려요.</p>
+      <p>사진을 고르면 각 페이지를 어떻게 저장할지 여기에 보여 드려요.</p>
+    </div>
+    <div class="ds-card plan-card">
       <ul id="plan-pages" class="ds-list"></ul>
       <details class="plan-details">
         <summary>자세한 계획 보기</summary>

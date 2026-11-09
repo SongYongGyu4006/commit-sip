@@ -196,34 +196,29 @@ if (isDOM()) {
 
   function updateSigunguOptions() {
     const sel = $('sigungu-select');
-    if (!sel || !rawData) {
-      if (sel) setSelect(sel, '', '전체 시군구');
+    if (!sel) return;
+    if (!rawData) {
+      setSelect(sel, '', '전체 시군구');
+      sel.disabled = false;
       return;
     }
+    // 현재 보이는 목록(연료·시도로 거른 것)의 주소에서만 시군구를 만든다.
+    const shown = getDisplayLowest().stations;
     const words = new Set();
-    const l20 = rawData.lowest_20;
-    const stationList = Array.isArray(l20) ? l20 : [];
-    const bySido = (sidoName) => {
-      if (Array.isArray(l20)) {
-        // 평평한 배열이면 주소가 시도명으로 시작하는 것만
-        return stationList.filter(s => typeof s.address === 'string' && s.address.startsWith(sidoName));
-      }
-      if (!l20 || typeof l20 !== 'object') return [];
-      const s = l20[sidoName];
-      if (!s || typeof s !== 'object') return [];
-      const out = [];
-      for (const fk of Object.keys(s)) if (Array.isArray(s[fk])) out.push(...s[fk]);
-      return out;
-    };
-    for (const st of (selectedSido ? bySido(selectedSido) : stationList)) {
+    for (const st of shown) {
       if (!st || typeof st.address !== 'string') continue;
-      // 주소: '경북 포항시 남구 …' → 시·도(군) 단어를 뺀 뒤 남은 단어('남구')
+      // 주소: '서울 은평구 …'은 시도 다음이 바로 구, '경북 포항시 남구 …'는 시·도(군)를 뺀 뒤 남은 단어.
       const toks = st.address.split(' ').filter(Boolean);
-      const rest = toks.slice(1).join(' ');
-      const m = rest.match(/^[가-힣]+(?:시|도|군)/);
-      if (m) {
-        const w = rest.slice(m[0].length).split(' ')[0];
-        if (w) words.add(w);
+      const first = toks[1] || '';
+      if (/^[가-힣]+구$/.test(first)) {
+        words.add(first);
+      } else if (toks.length >= 2) {
+        const rest = toks.slice(1).join(' ');
+        const m = rest.match(/^[가-힣]+(?:시|도|군)/);
+        if (m) {
+          const w = rest.slice(m[0].length).split(' ')[0];
+          if (w && /^[가-힣]+구$/.test(w)) words.add(w);
+        }
       }
     }
     sel.innerHTML = '<option value="">전체 시군구</option>';
@@ -233,39 +228,64 @@ if (isDOM()) {
       opt.textContent = w;
       sel.appendChild(opt);
     });
+    sel.disabled = !words.size;
+    sel.title = words.size ? '' : '이 시도는 시군구 구분 없음';
     sel.value = [...sel.options].some(o => o.value === selectedSigungu) ? selectedSigungu : '';
     selectedSigungu = sel.value;
   }
 
-  // 화면용 최저가 필터: rawData.lowest_20 을 직접 읽고 시도·시군구·연료로 거른다.
-  function getDisplayLowest() {
+  // rawData.lowest_20 의 형식을 알려 준다.
+  // object: 시도별·연료별 {시도: {연료키: [station]}} / array: 평평한 [station] / 그 외: 없음
+  function lowestShape() {
     const l20 = rawData ? rawData.lowest_20 : null;
+    if (Array.isArray(l20)) return { type: 'array', stations: l20 };
+    if (l20 && typeof l20 === 'object') {
+      return {
+        type: 'object',
+        stations: Object.values(l20).filter(v => Array.isArray(v)).flatMap(v => v)
+      };
+    }
+    return { type: 'none', stations: [] };
+  }
+
+  // 현재 선택(연료·시도·시군구)에 맞는 최저가 목록.
+  // { stations: [...가격 낮은 순 20곳], missing: '데이터에 없는 연료를 합쳤는지 안내 문구', avg: 시도 평균가, allCount: 전국 개수 }
+  function getDisplayLowest() {
+    const shape = lowestShape();
     const fuelKey = FUEL_TO_KEY[selectedFuel];
-    let stations = [];
-    if (Array.isArray(l20)) {
-      stations = l20;
-      if (selectedSido) stations = stations.filter(s => typeof s.address === 'string' && s.address.startsWith(selectedSido));
-    } else if (l20 && typeof l20 === 'object') {
-      // [시도][연료] 구조: 선택한 시도에 선택한 연료가 있으면 그 연료만,
-      // 없으면 그 시도의 있는 연료를 모아 보여 준다(데이터에 연료가 없을 때 '없음'이 되지 않도록).
+    const all = shape.stations;
+    const allCount = all.length;
+    let stations;
+    let missing = '';
+    if (shape.type === 'object') {
+      // 시도별·연료별 객체: 선택한 시도+연료를 쓴다.
       if (selectedSido) {
-        const s = l20[selectedSido];
-        if (s && typeof s === 'object') {
-          if (Object.prototype.hasOwnProperty.call(s, fuelKey) && Array.isArray(s[fuelKey])) {
-            stations = s[fuelKey];
-          } else {
-            for (const fk of Object.keys(s)) if (Array.isArray(s[fk])) stations.push(...s[fk]);
-          }
+        const s = rawData.lowest_20[selectedSido];
+        const own = (s && Array.isArray(s[fuelKey])) ? s[fuelKey] : [];
+        if (own.length) {
+          stations = own;
+        } else {
+          // 그 연료가 없으면(예: 고급휘발유) 그 시도의 있는 다른 연료를 합쳐 보여 준다.
+          const merged = Object.keys(s || {}).filter(fk => fk !== fuelKey && Array.isArray(s[fk])).flatMap(fk => s[fk]);
+          stations = merged;
+          if (merged.length) missing = `이 시도에 ${fuelKey} 최저가 데이터가 없어 다른 연료도 함께 보여 드려요.`;
         }
       } else {
-        for (const sk of Object.keys(l20)) {
-          const s = l20[sk];
-          if (!s || typeof s !== 'object') continue;
-          if (Object.prototype.hasOwnProperty.call(s, fuelKey) && Array.isArray(s[fuelKey])) stations.push(...s[fuelKey]);
-        }
+        // 전국: 시도마다 선택한 연료를 모은다(있는 연료만).
+        stations = Object.values(rawData.lowest_20).flatMap(s => {
+          if (!s || typeof s !== 'object' || !Array.isArray(s[fuelKey])) return [];
+          return s[fuelKey];
+        });
+      }
+    } else if (shape.type === 'array') {
+      // 평평한 배열(전국 최저가 20곳): 시도(주소)·연료로 거른다.
+      stations = all;
+      if (selectedSido) {
+        stations = stations.filter(s => typeof s.address === 'string' && s.address.startsWith(selectedSido));
+        if (!stations.length) missing = `전국 최저가 20곳 중 ${selectedSido} 주유소가 없어 지역 평균으로 보여 드려요.`;
       }
     } else {
-      return null;
+      return { stations: [], missing: '최저가 주유소 데이터가 없어 전국 평균만 보여 드려요.', allCount: 0 };
     }
     // 가격 없는(0이 되는) 항목 제외
     stations = stations.filter(s => s && typeof s.price === 'number' && s.price > 0);
@@ -282,7 +302,14 @@ if (isDOM()) {
       deduped.push(s);
     }
     deduped.sort((a, b) => a.price - b.price);
-    return deduped.slice(0, 20);
+    const result = deduped.slice(0, 20);
+    // 지역 평균가(선택한 시도+연료)는 안내 문구에 쓴다.
+    let avg = null;
+    if (selectedSido) {
+      const sidoEntry = (rawData.today && rawData.today.sido) ? rawData.today.sido[selectedSido] : null;
+      if (sidoEntry && typeof sidoEntry[fuelKey] === 'number' && sidoEntry[fuelKey] > 0) avg = sidoEntry[fuelKey];
+    }
+    return { stations: result, missing, avg, allCount };
   }
 
   function avatarHue(name) {
@@ -297,7 +324,7 @@ if (isDOM()) {
     const av = document.createElement('span');
     av.className = 'ds-avatar' + (rank ? ' ds-avatar-rank' : '');
     // 아바타만 '(주)'·'㈜'·공백을 빼고 첫 글자를 쓴다. 제목은 원문 그대로.
-    const cleanName = String(name || '').replace(/^((주)|㈜|\s)+/, '');
+    const cleanName = String(name || '').replace(/^(\(주\)|㈜|\s)+/, '');
     av.dataset.hue = String(avatarHue(cleanName || name));
     av.textContent = rank ? String(rank) : (cleanName ? cleanName.slice(0, 1) : '—');
     av.setAttribute('aria-hidden', 'true');
@@ -333,26 +360,34 @@ if (isDOM()) {
     const fuelKey = FUEL_TO_KEY[selectedFuel];
     const region = selectedSido || '전국';
     if (title) title.textContent = `${region} ${fuelKey} 최저가 주유소 20곳`;
-    const items = getDisplayLowest();
+    const disp = getDisplayLowest();
+    const items = disp.stations;
+    const total = items.length;
     list.innerHTML = '';
     if (hint) {
-      const total = items ? items.length : 0;
       if (!selectedSido) {
-        hint.textContent = '시도를 고르면 그 지역 주유소만 보여 드려요.';
+        hint.textContent = '시도·시군구·연료를 고르면 바로 바뀝니다.';
       } else if (selectedSigungu) {
         hint.textContent = total
           ? `${selectedSido} ${selectedSigungu} 주유소, 가격 낮은 순이에요.`
-          : `${selectedSido}만 골라 보세요.`;
+          : `${selectedSido}에서 ${selectedSigungu} 주유소를 찾지 못했어요. 전체 시군구로 돌아 가 보세요.`;
+      } else if (disp.missing) {
+        hint.textContent = disp.missing;
       } else if (total < 20) {
-        hint.textContent = total
-          ? `이 지역은 전국 최저가 목록 중 ${total}곳만 있어요.`
-          : `${selectedSido}만 골라 보세요.`;
+        hint.textContent = `이 지역은 전국 최저가 20곳 중 ${total}곳만 있어요. 전체 보려면 모든 시도로 돌아 가세요.`;
       } else {
         hint.textContent = `${selectedSido} 주유소만 보여 드려요.`;
       }
     }
-    if (!items || items.length === 0) {
-      list.innerHTML = `<div class="ds-empty">이 지역·연료의 최저가 데이터가 없습니다. 시도만 골라 보세요.</div>`;
+    if (total === 0) {
+      // 데이터가 비어 있어도 안내가 나오게 한다: 지역 평균 + 전국 최저가 수
+      let msg;
+      if (disp.avg != null) {
+        msg = `${region} ${fuelKey} 평균은 리터당 ${formatPrice(disp.avg)}이에요. 전국 최저가 주유소 20곳에는 이 지역 주유소가 ${disp.allCount}곳뿐이라 목록은 비어 있어요. 다른 시도를 골라 보세요.`;
+      } else {
+        msg = '이 선택의 최저가 주유소 목록은 비어 있어요. 다른 시도나 연료를 골라 보세요.';
+      }
+      list.innerHTML = `<div class="ds-empty">${msg}</div>`;
       return;
     }
     items.forEach((item, i) => {
@@ -514,14 +549,18 @@ if (isDOM()) {
       }
     }
 
+    // 예시 문구는 예시 버튼으로만 다시 나타난다(일반 선택 시 숨김)
+    const el = $('example-line');
+    if (el) el.hidden = true;
+
     // 한 문장
     const nd = $('national-detail');
     if (nd) {
       const region = selectedSido || '전국';
-      const lowest = getDisplayLowest();
-      if (lowest && lowest.length) {
-        const best = lowest[0];
-        const range = lowest.length > 1 ? `~${formatPrice(lowest[lowest.length - 1].price)}` : '';
+      const disp = getDisplayLowest();
+      if (disp.stations.length) {
+        const best = disp.stations[0];
+        const range = disp.stations.length > 1 ? `~${formatPrice(disp.stations[disp.stations.length - 1].price)}` : '';
         nd.textContent = `${region} 최저가 ${best.name}은(는) 리터당 ${formatPrice(best.price)}${range}이에요.`;
       } else {
         nd.textContent = `${region} ${fuelKey} 평균은 리터당 ${np ? np.textContent : '—'}이에요.`;
@@ -539,40 +578,63 @@ if (isDOM()) {
     saveState();
   }
 
+  // 예시: 선택한 연료·시도, 그리고 그 연료의 가장 싼 주유소(한 줄).
+  function exampleTarget() {
+    if (!rawData || !rawData.today || !rawData.today.sido) return null;
+    const fuelKey = FUEL_TO_KEY[selectedFuel];
+    const sidos = Object.keys(rawData.today.sido);
+    const l20 = rawData.lowest_20;
+    // 현재 선택과 같은 시도는 빼고, 그 연료에 주유소가 실제로 있는 시도부터 순서대로.
+    let target = sidos.find(s => s !== selectedSido
+      && (Array.isArray(l20)
+        ? l20.some(st => typeof st.address === 'string' && st.address.startsWith(s))
+        : l20 && typeof l20 === 'object' && Array.isArray(l20[s] && l20[s][fuelKey]) && l20[s][fuelKey].length > 0));
+    if (!target) target = sidos.find(s => s !== selectedSido) || sidos[0] || '';
+    // 예시 문구의 큰 숫자: 그 시도의 가장 싼 주유소(선택한 연료, 없으면 있는 연료).
+    let best = null;
+    if (Array.isArray(l20)) {
+      best = l20
+        .filter(st => st && typeof st.address === 'string' && st.address.startsWith(target) && typeof st.price === 'number' && st.price > 0)
+        .sort((a, b) => a.price - b.price)[0] || null;
+    } else if (l20 && typeof l20 === 'object') {
+      const s = l20[target] || {};
+      let cand = Array.isArray(s[fuelKey]) ? s[fuelKey] : [];
+      if (!cand.length) cand = Object.keys(s).filter(fk => Array.isArray(s[fk])).flatMap(fk => s[fk]);
+      cand = cand.filter(st => st && typeof st.price === 'number' && st.price > 0).sort((a, b) => a.price - b.price);
+      best = cand[0] || null;
+    }
+    return { target, fuelKey, best };
+  }
+
   function showExample() {
     clearStatus();
     if (!rawData || !rawData.today || !rawData.today.sido) {
       showError('먼저 데이터를 불러온 후 예시 버튼을 눌러 주세요.', true);
       return;
     }
-    // 예시: 경유 + 주유소가 실제로 1곳 이상 있는 첫 시도(서울 고정 금지).
-    // 시군구는 비워 두고(전체 시군구) 목록이 비지 않게 한다.
-    const l20 = rawData.lowest_20;
-    const sidos = Object.keys(rawData.today.sido);
-    let target = sidos[0] || '';
-    if (l20 && typeof l20 === 'object' && !Array.isArray(l20)) {
-      target = sidos.find(s => Object.keys(l20[s] || {}).some(fk => Array.isArray(l20[s][fk]) && l20[s][fk].length > 0)) || sidos[0] || '';
-    } else if (Array.isArray(l20)) {
-      target = sidos.find(s => l20.some(st => typeof st.address === 'string' && st.address.startsWith(s))) || sidos[0] || '';
+    const ex = exampleTarget();
+    if (!ex) {
+      showError('데이터에 시도가 없어 예시를 보여 드릴 수 없어요.', true);
+      return;
     }
     selectedFuel = 'diesel';
-    selectedSido = target;
+    selectedSido = ex.target;
     selectedSigungu = '';
     const fuelSel = $('fuel-type');
     if (fuelSel) fuelSel.value = 'diesel';
     const sidoSel = $('sido-select');
-    if (sidoSel) sidoSel.value = target;
+    if (sidoSel) sidoSel.value = ex.target;
     updateSigunguOptions();
-    const siguSel = $('sigungu-select');
-    if (siguSel) siguSel.value = '';
-    selectedSigungu = siguSel ? siguSel.value : '';
     updateDisplay();
     saveState();
-    // 목록 제목 바로 아래(부제)에 예시 문구를 보여 준다.
-    const hint = $('lowest-hint');
-    if (hint) hint.textContent = `예시: 경유 · ${target} 지역을 골랐어요.`;
-    const nd = $('national-detail');
-    if (nd) nd.textContent = `예시로 ${FUEL_TO_KEY[selectedFuel]} + ${target}을(를) 골랐어요.`;
+    // 답 카드 바로 위에 예시 한 줄: 연료·시도, 그리고 그 연료의 가장 싼 주유소.
+    const line = $('example-line');
+    if (line) {
+      line.hidden = false;
+      line.textContent = ex.best
+        ? `예시: ${FUEL_TO_KEY['diesel']} · ${ex.target} — 가장 싼 ${ex.best.name} ${formatPrice(ex.best.price)}`
+        : `예시: ${FUEL_TO_KEY['diesel']} · ${ex.target}을(를) 골랐어요.`;
+    }
   }
 
   // fetched_at 에 'Z'나 '+09:00' 같은 타임존 표시가 없으면 한국 시간(KST)으로 해석한다.

@@ -1,0 +1,1598 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>제출 서류 팩키지 만들기 — 무료 웹 도구 · 커밋 한 모금</title>
+  <style>
+    /* --- DS(데이지) 디자인 토큰 + 공용 클래스: vendor/studio.css에 있다.
+       빌드가 이 주석 대신 studio.css 내용으로 치환한다.
+       src/main.mjs가 있는 이 파일은 빌드 대상이며,
+       빌드 산출물에는 인라인 모듈 스크립트 태그가 있다. */
+    :root {
+      --ds-bg: #f6f6f7; --ds-surface: #ffffff; --ds-surface-2: #efeff1;
+      --ds-ink: #20232a; --ds-ink-2: #5a6272; --ds-ink-3: #8a91a0;
+      --ds-line: #d8dbe0; --ds-line-strong: #b9bec8;
+      --ds-accent: #1a5fb4; --ds-accent-ink: #ffffff; --ds-accent-soft: #e8f0fb; --ds-accent-text: #164d92; --ds-accent-line: #a9c6ea;
+      --ds-good: #1f7a4d; --ds-good-soft: #e3f3ea; --ds-bad: #b3261e; --ds-bad-soft: #fbe9e8; --ds-warn: #8a5a00; --ds-warn-soft: #fdf0d5;
+      --ds-radius: 8px; --ds-radius-l: 12px; --ds-shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.1);
+      --ds-s1: 4px; --ds-s2: 8px; --ds-s3: 12px; --ds-s4: 16px; --ds-s5: 24px; --ds-s6: 32px; --ds-s7: 48px;
+      --ds-fast: 120ms; --ds-ease: cubic-bezier(.2,0,0,1);
+      --ds-max: 960px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--ds-bg); color: var(--ds-ink);
+      font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+    }
+    .ds-band { background: var(--ds-surface); border-bottom: 1px solid var(--ds-line); }
+    .ds-band-thin { border-bottom: 1px solid var(--ds-line); }
+    .ds-page { max-width: var(--ds-max); margin: 0 auto; padding: 0 var(--ds-s4) var(--ds-s7); }
+    .ds-card {
+      background: var(--ds-surface); border: 1px solid var(--ds-line);
+      border-radius: var(--ds-radius-l); box-shadow: var(--ds-shadow); padding: var(--ds-s5); margin-bottom: var(--ds-s5);
+    }
+    .ds-answer { font-size: 18px; font-weight: 700; }
+    .ds-section-title { display: flex; align-items: baseline; gap: var(--ds-s2); flex-wrap: wrap; margin-bottom: var(--ds-s3); }
+    .ds-section-title h2 { margin: 0; font-size: 17px; }
+    .ds-hint { color: var(--ds-ink-2); font-size: 13px; }
+    .ds-bad { color: var(--ds-bad); }
+    .ds-status { padding: var(--ds-s3) var(--ds-s4); border-radius: var(--ds-radius); background: var(--ds-surface-2); border: 1px solid var(--ds-line); font-size: 14px; }
+    .ds-status.ds-status-good { background: var(--ds-good-soft); border-color: var(--ds-good); color: var(--ds-good); }
+    .ds-status.ds-status-bad { background: var(--ds-bad-soft); border-color: var(--ds-bad); color: var(--ds-bad); }
+    .ds-status.ds-status-warn { background: var(--ds-warn-soft); border-color: var(--ds-warn); color: var(--ds-warn); }
+    .ds-badge {
+      display: inline-block; padding: 2px 10px; border-radius: 999px;
+      background: var(--ds-accent-soft); color: var(--ds-accent-text); font-size: 13px; font-weight: 600;
+    }
+    .ds-field { display: flex; flex-direction: column; gap: var(--ds-s1); }
+    .ds-field label, .ds-field .ds-field-label { font-size: 13px; color: var(--ds-ink-2); font-weight: 600; }
+    .ds-input, .input, select.input, textarea.input {
+      font: inherit; padding: 10px 12px; border: 1px solid var(--ds-line-strong); border-radius: var(--ds-radius);
+      background: var(--ds-surface); color: var(--ds-ink); min-height: 44px;
+    }
+    .ds-input:focus, .input:focus, select.input:focus, textarea.input:focus { outline: 2px solid var(--ds-accent); outline-offset: 1px; }
+    .ds-btn {
+      font: inherit; cursor: pointer; border-radius: var(--ds-radius); border: 1px solid var(--ds-line-strong);
+      background: var(--ds-surface); color: var(--ds-ink); padding: 10px 18px; min-height: 44px; font-weight: 600;
+      transition: background var(--ds-fast) var(--ds-ease), border-color var(--ds-fast) var(--ds-ease);
+    }
+    .ds-btn:hover { background: var(--ds-surface-2); }
+    .ds-btn:focus-visible { outline: 2px solid var(--ds-accent); outline-offset: 2px; }
+    .ds-btn[disabled] { opacity: .5; cursor: not-allowed; }
+    .ds-btn-primary { background: var(--ds-accent); border-color: var(--ds-accent); color: var(--ds-accent-ink); }
+    .ds-btn-primary:hover:not([disabled]) { background: var(--ds-accent-text); }
+    .ds-btn-danger { color: var(--ds-bad); border-color: var(--ds-bad); }
+    .ds-row { display: flex; flex-wrap: wrap; gap: var(--ds-s2); align-items: center; }
+    .ds-check { display: inline-flex; align-items: center; gap: var(--ds-s2); }
+    .ds-list-item { display: flex; align-items: center; gap: var(--ds-s3); padding: var(--ds-s3) 0; border-bottom: 1px solid var(--ds-line); }
+    .ds-avatar {
+      width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+      background: var(--ds-accent-soft); color: var(--ds-accent-text); font-weight: 700; flex: 0 0 auto;
+    }
+    .ds-list-main { flex: 1; min-width: 0; }
+    .ds-list-title { font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ds-list-sub { display: block; color: var(--ds-ink-2); font-size: 13px; }
+    .ds-empty { padding: var(--ds-s6) 0; color: var(--ds-ink-2); text-align: center; }
+  </style>
+  <link rel="stylesheet" href="vendor/studio.css">
+  <link rel="stylesheet" href="styles.css">
+<script data-goatcounter="https://commitsip.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><meta name="description" content="제출 서류(PDF·JPG·PNG)를 끌어 놓으면 기기 안에서 순서대로 합치고, 주민등록번호 뒷자리를 검게 가리고, 제출 용량 목표에 맞춰 하나의 PDF(package.pdf)를 만들어 내려받게 하는 앱입니다."><link rel="canonical" href="https://songyonggyu4006.github.io/commit-sip/apps/document-package-builder/"></head>
+<body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 제출 서류 팩키지 만들기 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
+  <header class="ds-band ds-band-thin app-band">
+    <div class="app-head">
+      <h1 style="margin:0; font-size:18px;">제출 서류 팩키지 만들기</h1>
+    </div>
+    <div class="app-status-row">
+      <p id="app-status" class="ds-status" role="status"></p>
+      <span id="privacy-badge" class="ds-badge">파일은 기기 밖으로 나가지 않습니다 · 외부 전송 0건</span>
+    </div>
+    <nav class="app-nav" aria-label="단계">
+      <button id="nav-add" class="ds-btn ds-nav" type="button" data-nav="add" aria-current="page">1 · 서류 담기</button>
+      <button id="nav-review" class="ds-btn ds-nav" type="button" data-nav="review" aria-current="false">2 · 가림 확인</button>
+      <button id="nav-export" class="ds-btn ds-nav" type="button" data-nav="export" aria-current="false">3 · 내보내기</button>
+    </nav>
+  </header>
+
+  <main class="ds-page">
+    <section id="screen-add" class="screen">
+      <div class="ds-card">
+        <div class="ds-section-title"><h2>담긴 서류</h2><span id="add-count" class="ds-answer" aria-live="polite">0개</span></div>
+        <div class="drop-row">
+          <div id="dropzone" role="button" tabindex="0" aria-label="서류를 끌어 놓거나 파일 고르기">
+            <input type="file" id="file-input" multiple accept=".pdf,.jpg,.jpeg,.png">
+            <p class="dz-title">PDF·JPG·PNG를 여기에 끌어 놓으세요</p>
+            <p class="ds-hint">또는 파일을 선택할 수 있어요. 이 기기 안에서만 처리됩니다.</p>
+            <button class="ds-btn ds-btn-primary" type="button" id="choose-button">파일 고르기</button>
+            <button class="ds-btn" type="button" id="example-button">예시로 해 보기</button>
+          </div>
+          <figure class="sample-thumb">
+            <div class="sample-doc" aria-hidden="true">
+              <span>가족관계증명서</span>
+              <span>주민번호 <strong class="sample-mask">900101-1******</strong></span>
+              <span>발행일 2024-05-01</span>
+            </div>
+            <figcaption>내보내면 주민번호 뒷자리가 검게 가려진 PDF가 됩니다.</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="ds-card">
+        <div class="ds-section-title"><h2>서류 목록</h2><span class="ds-hint">위로·아래로 버튼이나 드래그로 순서를 정해요. 순서가 곧 PDF 쪽 순서예요.</span></div>
+        <ul id="file-list" class="ds-list file-list"></ul>
+      </div>
+
+      <div class="ds-card">
+        <div class="ds-section-title"><h2>옵션</h2></div>
+        <fieldset class="opt-group">
+          <legend>PDF 만들기</legend>
+          <div class="opt-item"><label class="ds-check opt-row"><input type="checkbox" id="opt-merge" checked> 순서대로 합치기</label><span class="ds-hint opt-hint">선택한 순서 그대로 하나의 PDF(package.pdf)로 합칩니다.</span></div>
+          <div class="opt-item"><label class="ds-check opt-row"><input type="checkbox" id="opt-mask" checked> 주민번호 뒷자리 가리기</label><span class="ds-hint opt-hint">주민등록번호 뒷자리를 검게 가려 제출합니다.</span></div>
+          <div class="opt-item"><label class="ds-check opt-row"><input type="checkbox" id="opt-shrink" checked> 10MB 이하로 맞추기</label><span class="ds-hint opt-hint">품질과 해상도를 단계적으로 낮춰 목표 용량에 맞춥니다.</span></div>
+          <div class="form-row ds-row">
+            <div class="ds-field">
+              <label for="target-mb">목표 용량 (MB)</label>
+              <select id="target-mb" class="input">
+                <option value="3">3 MB</option>
+                <option value="5">5 MB</option>
+                <option value="10" selected>10 MB</option>
+                <option value="20">20 MB</option>
+              </select>
+            </div>
+            <div class="ds-field">
+              <label for="target-custom">직접 입력한 목표 (MB)</label>
+              <input id="target-custom" class="input" type="text" placeholder="예: 12.5">
+            </div>
+          </div>
+        </fieldset>
+        <fieldset class="opt-group" style="margin-top: var(--ds-s4);">
+          <legend>추출 범위 (선택)</legend>
+          <div class="form-row ds-row">
+            <div class="ds-field" style="flex: 2 1 240px;">
+              <label for="range-input">쪽 수 지정</label>
+              <input id="range-input" class="input" placeholder="예: 1-3, 5">
+            </div>
+            <div class="ds-field">
+              <label for="order-template">정렬 순서</label>
+              <select id="order-template" class="input">
+                <option value="">정렬 안 함</option>
+                <option value="전세대출">전세대출</option>
+                <option value="취업">취업</option>
+                <option value="학교">학교</option>
+                <option value="보험 청구">보험 청구</option>
+              </select>
+              <span class="ds-hint">파일명에 포함된 키워드(등본·가족관계·통장·신분증) 순서로 정렬합니다.</span>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="ds-row form-row">
+        <button class="ds-btn ds-btn-primary" type="button" id="review-button">가림 확인으로 →</button>
+      </div>
+    </section>
+
+    <section id="screen-review" class="screen" hidden>
+      <div class="ds-card">
+        <div class="ds-section-title"><h2>가림 확인</h2><span class="ds-hint">PDF는 텍스트에서 찾은 주민번호 박스, 사진·스캔본은 캔버스에서 직접 그립니다. 모든 박스를 확인해야 내보낼 수 있어요.</span></div>
+      </div>
+      <h2 class="review-subtitle">페이지별 미리보기</h2>
+      <div id="review-list" class="ds-list review-list"></div>
+      <div class="ds-row form-row"><button id="export-button" class="ds-btn ds-btn-primary" type="button" disabled>내보내기로</button></div>
+    </section>
+
+    <section id="screen-export" class="screen" hidden>
+      <div class="ds-card">
+        <div class="ds-section-title"><h2>결과 용량</h2><span id="result-size" class="ds-answer" aria-live="polite">—</span></div>
+        <div class="ds-section-title"><h3>제출 전 점검</h3></div>
+        <ul id="checklist" class="ds-list"></ul>
+        <div class="ds-row form-row">
+          <button class="ds-btn ds-btn-primary" type="button" id="download-button" disabled>package.pdf 내려받기</button>
+          <button class="ds-btn" type="button" id="backup-export">backup.json 내려받기</button>
+          <label class="ds-btn" for="backup-import" style="display:inline-flex; align-items:center;">백업 불러오기
+            <input type="file" id="backup-import" accept=".json,application/json">
+          </label>
+          <button class="ds-btn ds-btn-danger" type="button" id="reset-button">처음으로 초기화</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="max-width: 960px; margin: 0 auto; padding: 0 16px 32px; color: var(--ds-ink-3); font-size: 12px;">
+    모든 처리는 브라우저 안에서만 이뤄지며, 서류는 외부로 전송되지 않습니다. 옵션과 목록은 이 브라우저에만 저장됩니다.
+  </footer>
+
+  <script type="module">
+// 순수 함수: 쪽별 텍스트 항목에서 주민등록번호 뒷 6자리 가림 박스를 계산한다.
+// 부작용·DOM·랜덤이 없으며 입력은 바꾸지 않는다. SPEC 규칙 그대로다.
+
+const PATTERN = /(?<!\d)(\d{6})-?([1-8]\d{6})(?!\d)/g;
+
+const isPlain = (v) =>
+  typeof v === 'object' && v !== null && !Array.isArray(v) && Object.getPrototypeOf(v) === Object.prototype;
+
+const isNumber = (v) => typeof v === 'number';
+
+const isFiniteNumber = (v) => typeof v === 'number' && Number.isFinite(v);
+
+const r2 = (v) => Math.round(v * 100) / 100;
+
+// 앞 6자리를 YY-MM-DD(2000~2099)로 읽었을 때 실제 날짜인지
+function isBirthDate(d6) {
+  const mm = Number(d6.slice(2, 4));
+  if (mm < 1 || mm > 12) return false;
+  const yy = 2000 + Number(d6.slice(0, 2));
+  const dd = Number(d6.slice(4, 6));
+  if (dd < 1) return false;
+  const dim = new Date(yy, mm, 0).getDate();
+  return dd <= dim; // 윤년 2월 29일 포함
+}
+
+function planRedactions(pages) {
+  if (!Array.isArray(pages)) throw new TypeError('pages is not an array');
+  for (const entry of pages) if (!isPlain(entry)) throw new TypeError('a page entry is not a plain object');
+  const seen = new Set();
+  for (const entry of pages) {
+    if (!isNumber(entry.page)) throw new TypeError('page is not a number');
+    if (!Array.isArray(entry.items)) throw new TypeError('items is not an array');
+    for (const item of entry.items) {
+      if (!isPlain(item)) throw new TypeError('an item is not a plain object');
+      if (typeof item.str !== 'string') throw new TypeError('str is not a string');
+      if (!isNumber(item.x)) throw new TypeError('x is not a number');
+      if (!isNumber(item.y)) throw new TypeError('y is not a number');
+      if (!isNumber(item.width)) throw new TypeError('width is not a number');
+      if (!isNumber(item.height)) throw new TypeError('height is not a number');
+    }
+  }
+  for (const entry of pages) {
+    if (!Number.isSafeInteger(entry.page) || entry.page <= 0) throw new RangeError('page is not a positive safe integer');
+    if (seen.has(entry.page)) throw new RangeError('a duplicate page number');
+    seen.add(entry.page);
+    for (const item of entry.items) {
+      if (!isFiniteNumber(item.x) || !isFiniteNumber(item.y)) throw new RangeError('x or y is NaN or infinite');
+      if (!isFiniteNumber(item.width) || !isFiniteNumber(item.height)) throw new RangeError('width or height is NaN or infinite');
+      if (item.width <= 0) throw new RangeError('width must be greater than 0');
+      if (item.height <= 0) throw new RangeError('height must be greater than 0');
+    }
+  }
+
+  const outPages = [];
+  let total = 0;
+  for (const entry of pages) {
+    const { page, items } = entry;
+    let full = '';
+    const itemLens = [];
+    for (const it of items) {
+      itemLens.push(full.length);
+      full += it.str;
+      full += ' ';
+    }
+    const boxes = [];
+    PATTERN.lastIndex = 0;
+    let m;
+    while ((m = PATTERN.exec(full)) !== null) {
+      const d6 = m[1];
+      const back = m[2];
+      const mStart = m.index;
+      const matchLen = m[0].length;
+      if (!isBirthDate(d6)) continue;
+      const start = mStart + matchLen - 6; // 뒷 6자리를 덮는다
+      const end = start + 6;
+      const preview = d6 + '-' + back[0] + '******';
+      let first = true;
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        const sl = itemLens[i];
+        const il = it.str.length;
+        if (il === 0) continue;
+        const a = Math.max(start, sl);
+        const b = Math.min(end, sl + il);
+        if (a >= b) continue;
+        const s0 = a - sl;
+        const s1 = b - sl - 1;
+        const n = s1 - s0 + 1;
+        const box = {
+          x: r2(it.x + (it.width * s0) / il),
+          y: r2(it.y),
+          width: r2((it.width * n) / il),
+          height: r2(it.height),
+        };
+        if (first) box.preview = preview;
+        boxes.push(box);
+        first = false;
+      }
+    }
+    if (boxes.length) {
+      outPages.push({ page, boxes });
+      total += boxes.length;
+    }
+  }
+  outPages.sort((a, b) => a.page - b.page);
+  return { total, pages: outPages };
+}
+
+export { planRedactions };
+
+// 순수 계산: 쪽 범위 문자열, 파일명 키워드 순서, 목표 MB 해석.
+
+const TEMPLATE_KEYWORDS = {
+  전세대출: ['등본', '가족관계', '통장', '신분증'],
+  취업: ['등본', '가족관계', '통장', '신분증'],
+  학교: ['등본', '가족관계', '통장', '신분증'],
+  '보험 청구': ['등본', '가족관계', '통장', '신분증'],
+};
+
+// "1-3, 5" 같은 문자열을 쪽 번호 목록으로. 예: "1-3, 5" → [1,2,3,5]
+export function parseRanges(text) {
+  const out = [];
+  if (typeof text !== 'string') return out;
+  for (const part of text.split(',')) {
+    const t = part.trim();
+    if (!t) continue;
+    const dash = t.indexOf('-');
+    if (dash > 0) {
+      const a = Number(t.slice(0, dash).trim());
+      const b = Number(t.slice(dash + 1).trim());
+      if (Number.isSafeInteger(a) && Number.isSafeInteger(b) && a >= 1 && b >= a) {
+        for (let p = a; p <= b; p++) out.push(p);
+      }
+    } else {
+      const p = Number(t);
+      if (Number.isSafeInteger(p) && p >= 1) out.push(p);
+    }
+  }
+  return out;
+}
+
+// 템플릿 이름과 파일명 목록을 받아, 파일명 키워드(등본·가족관계·통장·신분증) 순서로 정렬된 새 배열을 돌려준다.
+// 일치하지 않는 파일은 뒤에 두고, 원래 순서를 유지한다. 같은 순위는 안정 정렬.
+export function orderByTemplate(template, names) {
+  const kw = TEMPLATE_KEYWORDS[template];
+  if (!kw || !Array.isArray(names)) return names ? [...names] : [];
+  return names
+    .map((name, i) => ({ name, i, rank: kw.findIndex((k) => String(name).includes(k)) }))
+    .sort((a, b) => (a.rank === -1 ? 999 : a.rank) - (b.rank === -1 ? 999 : b.rank) || a.i - b.i)
+    .map((r) => r.name);
+}
+
+// select(3/5/10/20) 값 또는 커스텀 MB 텍스트를 해석해 목표 바이트수를 돌려준다.
+// 합법적 숫자가 아니면 null.
+export function parseTargetMb(selectValue, customText) {
+  const src = (customText && String(customText).trim()) !== '' ? String(customText).trim() : String(selectValue ?? '').trim();
+  if (!src) return null;
+  const num = Number(src);
+  if (!Number.isFinite(num) || num <= 0) return null;
+  return Math.round(num * 1024 * 1024);
+}
+
+// 단일 localStorage 키("submissionpackager.state.v1")에 옵션·파일 이름 목록·예시 데이터를
+// 저장·복원·삭제하고 backup.json 직렬화·검증을 담당한다.
+// Node(테스트)에서는 localStorage가 없어도 기본 상태를 돌려 준다.
+
+const KEY = 'submissionpackager.state.v1';
+
+function defaultState() {
+  return {
+    v: 1,
+    options: { merge: true, mask: true, shrink: true, targetMb: 10, targetCustom: '', range: '' },
+    fileNames: [],
+    boxes: {}, // fileKey(이름+크기 해시 대신 "이름|크기") → 박스 목록
+    sample: null, // "예시로 해 보기"로 불러온 예시 데이터
+  };
+}
+
+function isObj(v) {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+// 저장된 문자열을 복원한다. 없거나 깨졌으면 기본 상태.
+export function loadState() {
+  if (typeof localStorage === 'undefined') return defaultState();
+  let raw;
+  try {
+    raw = localStorage.getItem(KEY);
+  } catch {
+    return defaultState();
+  }
+  if (!raw) return defaultState();
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return defaultState();
+  }
+  const d = defaultState();
+  if (!isObj(data)) return d;
+  return {
+    v: 1,
+    options: {
+      ...d.options,
+      ...(isObj(data.options) ? data.options : {}),
+    },
+    fileNames: Array.isArray(data.fileNames) ? data.fileNames.filter((x) => typeof x === 'string') : [],
+    boxes: isObj(data.boxes) ? data.boxes : {},
+    sample: isObj(data.sample) ? data.sample : null,
+  };
+}
+
+// 상태를 localStorage에 쓴다. 실패(예: 저장 공간)는 조용히 무시한다.
+export function saveState(state) {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch {
+    /* 저장 실패는 무시 */
+  }
+}
+
+// 상태를 전부 지운다.
+export function clearState() {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    /* 무시 */
+  }
+}
+
+// backup.json 문자열(2칸 들여쓰기)을 만든다.
+export function exportBackup(state) {
+  return JSON.stringify(state ?? defaultState(), null, 2);
+}
+
+// backup.json 문자열을 검증해 상태 객체를 돌려준다. 형식이 다르면 null.
+export function importBackup(text) {
+  if (typeof text !== 'string') return null;
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  if (!isObj(data)) return null;
+  if (!isObj(data.options)) return null;
+  const o = data.options;
+  if (typeof o.merge !== 'boolean' || typeof o.mask !== 'boolean' || typeof o.shrink !== 'boolean') return null;
+  if (!Array.isArray(data.fileNames) || !data.fileNames.every((x) => typeof x === 'string')) return null;
+  const d = defaultState();
+  return {
+    v: 1,
+    options: {
+      merge: o.merge,
+      mask: o.mask,
+      shrink: o.shrink,
+      targetMb: Number(o.targetMb) || d.options.targetMb,
+      targetCustom: typeof o.targetCustom === 'string' ? o.targetCustom : '',
+      range: typeof o.range === 'string' ? o.range : '',
+    },
+    fileNames: data.fileNames,
+    boxes: isObj(data.boxes) ? data.boxes : {},
+    sample: isObj(data.sample) ? data.sample : null,
+  };
+}
+
+export { KEY as STORAGE_KEY };
+
+// pdf.js로 PDF 쪽 텍스트·캔버스 렌더를 얻고, pdf-lib으로 이미지 쪽들을 하나의 PDF로 묶는다.
+// Node(테스트)에서는 pdf.js·pdf-lib 전역이 없어 호출 시 명확한 오류를 던질 뿐,
+// 임포트 시점에 부작용이 없다.
+
+function needPdfJs() {
+  if (typeof globalThis.pdfjsLib === 'undefined') {
+    throw new Error('pdf.js 라이브러리가 없어 PDF를 읽을 수 없습니다.');
+  }
+  return globalThis.pdfjsLib;
+}
+
+function needPdfLib() {
+  if (typeof globalThis.PDFLib === 'undefined') {
+    throw new Error('pdf-lib 라이브러리가 없어 PDF를 만들 수 없습니다.');
+  }
+  return globalThis.PDFLib;
+}
+
+function pageDims(page) {
+  // pdf.js의 getViewport({scale:1})은 회전(90/270도)을 이미 반영한 실제
+  // 렌더 크기를 돌려준다. w·h를 다시 뒤집으면 세로(로테이션) 문서에서 박스
+  // 좌표가 캔버스와 어긋나 가림 위치가 어긋나므로, 반환 값 그대로 쓴다.
+  const vp = page.getViewport({ scale: 1 });
+  return { w: vp.width, h: vp.height };
+}
+
+async function pageToItems(page, scale) {
+  const tc = await page.getTextContent();
+  let items = tc.items;
+  if (scale && scale !== 1) {
+    items = items.map((it) => ({
+      str: it.str,
+      x: it.transform[4] * scale,
+      y: it.transform[5] * scale,
+      width: (it.width || 0) * scale,
+      height: (it.height || 0) * scale,
+    }));
+  }
+  // P0(가림이 실제로 적용되지 않음): pdf.js의 getTextContent()은 한글(한글
+  // 코드포인트)이나 한 줄에 걸친 텍스트의 경우 width·height를 null로 돌려준다.
+  // 그 항목을 그대로 planRedactions에 넘기면 박스 좌표가 NaN이 되어
+  // applyBoxes의 fillRect(NaN)은 아무것도 그리지 못해 주민번호가 실제로
+  // 가려지지 않거나, planRedactions가 RangeError를 던져 박스가 0개였다.
+  // 박스 기하(x·y·width·height)가 완결된 항목만 남긴다.
+  return items.filter(
+    (it) =>
+      Number.isFinite(it.x) &&
+      Number.isFinite(it.y) &&
+      Number.isFinite(it.width) &&
+      Number.isFinite(it.height) &&
+      it.width > 0 &&
+      it.height > 0
+  );
+}
+
+// PDF 파일에서 쪽 목록을 읽는다. 각 쪽은 {page, w, h, items}.
+export async function readPdfPages(file, scale = 1) {
+  const lib = needPdfjs();
+  const doc = await lib.getDocument({ data: await file.arrayBuffer() }).promise;
+  const pages = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const { w, h } = pageDims(page);
+    const items = await pageToItems(page, scale);
+    pages.push({ page: i, w, h, items });
+  }
+  await doc.destroy?.();
+  return pages;
+}
+
+// PDF 쪽을 캔버스에 그려 돌려준다(이미지 래스터화 — 원문 텍스트가 픽셀로 바뀜).
+export async function renderPageToCanvas(file, page, scale, quality) {
+  const lib = needPdfjs();
+  const doc = await lib.getDocument({ data: await file.arrayBuffer() }).promise;
+  try {
+    const p = await doc.getPage(page);
+    const vp = p.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(vp.width));
+    canvas.height = Math.max(1, Math.round(vp.height));
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    await p.render({ canvasContext: ctx, viewport: vp, canvas }).promise;
+    return canvas;
+  } finally {
+    await doc.destroy?.();
+  }
+}
+
+// PDF 쪽을 캔버스로만 렌더한다(renderPageToCanvas와 다름: 원본 PDF 파일을 다시 읽지 않고
+// 이미 불러온 pdf.js 문서 객체를 재사용해 빠르게 뺀다).
+export async function pdfToCanvas(doc, page, scale) {
+  needPdfJs();
+  const p = await doc.getPage(page);
+  const vp = p.getViewport({ scale });
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(vp.width));
+  canvas.height = Math.max(1, Math.round(vp.height));
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  await p.render({ canvasContext: ctx, viewport: vp, canvas }).promise;
+  return canvas;
+}
+
+// JPEG 쪽(각각 {bytes, w, h})들을 하나의 PDF로 묶는다.
+// 각 쪽은 A4 종이에 중앙 정렬·비율 유지. {bytes, pageW, pageH} 돌려준다.
+export async function buildPdf(jpgPages) {
+  const { PDFDocument, standardFonts } = needPdfLib();
+  const pdf = await PDFDocument.create();
+  const font = await pdf.embedFont(standardFonts.Helvetica);
+  const pageW = 595.28;
+  const pageH = 841.89;
+  for (const jp of jpgPages) {
+    const img = await pdf.embedJpg(jp.bytes);
+    const ratio = Math.min((pageW * 0.92) / jp.w, (pageH * 0.92) / jp.h);
+    const dw = jp.w * ratio;
+    const dh = jp.h * ratio;
+    const page = pdf.addPage([pageW, pageH]);
+    page.drawImage(img, {
+      x: (pageW - dw) / 2,
+      y: (pageH - dh) / 2,
+      width: dw,
+      height: dh,
+    });
+    // 제목 행(문자열은 그대로, 헬베티카로)
+    if (jp.title) {
+      const t = String(jp.title);
+      const size = 11;
+      let w = 0;
+      for (const ch of t) w += font.widthOfTextAtSize(ch, size);
+      page.drawText(t, { x: (pageW - w) / 2, y: pageH - 28, size, font });
+    }
+  }
+  const bytes = new Uint8Array(await pdf.save());
+  return { bytes, pageW, pageH };
+}
+
+// 사진·이미지 파일을 캔버스로 읽고, 박스를 검게 칠해 래스터화하며
+// JPEG 품질·해상도를 조절한다. Node에서는 브라우저 DOM이 없어
+// 호출 시 명확한 오류를 던질 뿐, 임포트 시 부작용이 없다.
+
+function needDom() {
+  if (typeof document === 'undefined') {
+    throw new Error('이미지를 처리하려면 브라우저에서 열어 주세요.');
+  }
+}
+
+// 이미지 파일을 캔버스로 읽는다. {canvas, w, h} (w·h는 캔버스 픽셀).
+export function loadImageFile(file, maxSide = 1600) {
+  needDom();
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const ratio = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * ratio));
+      const h = Math.max(1, Math.round(img.height * ratio));
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve({ canvas, w, h });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('이미지를 읽을 수 없습니다. JPG·PNG 파일인지 확인해 주세요.'));
+    };
+    img.src = url;
+  });
+}
+
+// 박스들(각각 {x,y,width,height} — 원본 픽셀 좌표)을 검게 칠한 새 캔버스를 만든다.
+// 박스 좌표가 캔버스보다 크게 scale 배율(캔버스W/원본W)을 받아도 된다.
+export function applyBoxes(srcCanvas, boxes, scale = 1) {
+  needDom();
+  const canvas = document.createElement('canvas');
+  canvas.width = srcCanvas.width;
+  canvas.height = srcCanvas.height;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(srcCanvas, 0, 0);
+  ctx.fillStyle = '#000000';
+  for (const b of boxes) {
+    if (!b) continue;
+    const x = (b.x ?? 0) * scale;
+    const y = (b.y ?? 0) * scale;
+    const w = (b.width || 0) * scale;
+    const h = (b.height || 0) * scale;
+    // NaN 박스(기하가 없는 항목에서 계산된 값)는 fillRect가 아무것도 그리지
+    // 않아 가림이 실제로 적용되지 않는다. 그런 박스는 건너뛴다.
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(w) || !Number.isFinite(h)) continue;
+    if (w <= 0 || h <= 0) continue;
+    ctx.fillRect(x, y, w, h);
+  }
+  return canvas;
+}
+
+// 캔버스를 JPEG 바이트로 변환한다. {bytes, w, h}
+export function canvasToJpeg(canvas, quality = 0.85) {
+  needDom();
+  const blob = new Promise((resolve, reject) => {
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('이미지 변환에 실패했습니다.'))), 'image/jpeg', quality);
+  });
+  return blob.then((b) =>
+    b
+      .arrayBuffer()
+      .then((buf) => ({ bytes: new Uint8Array(buf), w: canvas.width, h: canvas.height }))
+  );
+}
+
+// 캔버스를 targetRatio(높이/넓이 비율)만큼 새 캔버스로 확대·축소한다.
+export function scaleCanvas(srcCanvas, targetRatio) {
+  needDom();
+  if (!(targetRatio > 0) || targetRatio >= 1) {
+    return srcCanvas;
+  }
+  const w = Math.max(1, Math.round(srcCanvas.width * targetRatio));
+  const h = Math.max(1, Math.round(srcCanvas.height * targetRatio));
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(srcCanvas, 0, 0, w, h);
+  return canvas;
+}
+
+// JPEG 품질과 해상도를 단계적으로 낮춰 PDF가 목표 용량 이하가 될 때까지
+// 다시 만들고, 최종 크기와 초과 여부를 돌려준다.
+
+
+
+
+const QUALITIES = [0.85, 0.7, 0.55, 0.4, 0.3, 0.22, 0.15];
+const RESOLUTIONS = [1, 0.8, 0.65, 0.5, 0.4];
+
+// pages: 각 {canvas, title} — 이미 박스를 검게 칠한 캔버스.
+// targetBytes: 목표 바이트수. 초과하면 단계적으로 낮추며 반복한다.
+export async function shrinkToTarget(pages, targetBytes) {
+  let best = null;
+  for (const q of QUALITIES) {
+    for (const s of RESOLUTIONS) {
+      const jpgs = [];
+      for (const p of pages) {
+        const c = s < 1 ? scaleCanvas(p.canvas, s) : p.canvas;
+        jpgs.push(await canvasToJpeg(c, q));
+      }
+      const pdf = await buildPdf(jpgs.map((j) => ({ bytes: j.bytes, w: j.w, h: j.h })));
+      const size = pdf.bytes.length;
+      if (size <= targetBytes) {
+        return { bytes: pdf.bytes, size, over: false };
+      }
+      if (!best || size < best.size) best = pdf;
+    }
+  }
+  // 목표에 못 미쳤다면 가장 작은 결과를 돌려준다(화면에서 초과 경고).
+  return { bytes: best.bytes, size: best.size, over: true };
+}
+
+// 세 화면의 DOM 구성, 이벤트 연결, 박스 확인·삭제·직접 그리기,
+// 상태 표시줄 갱신을 textContent(HTML 주입 없음)으로 처리한다.
+
+
+
+
+
+
+
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const MB = 1024 * 1024;
+
+function text(el, str) {
+  el.textContent = str;
+}
+
+function el(tag, attrs = {}, children = []) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') node.className = v;
+    else if (k === 'text') node.textContent = v;
+    else if (k === 'dataset') Object.assign(node.dataset, v);
+    else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (v === false || v == null) continue;
+    else node.setAttribute(k, v === true ? '' : String(v));
+  }
+  for (const c of [].concat(children)) if (c) node.appendChild(c);
+  return node;
+}
+
+function fileKey(name, size) {
+  return name + '|' + size;
+}
+
+function fmtMb(bytes) {
+  return (bytes / MB).toFixed(2);
+}
+
+// ---------- 상태 표시줄 ----------
+export function setStatus(state, msg, cls = '') {
+  const status = $('#app-status');
+  if (!status) return;
+  status.className = 'ds-status' + (cls ? ' ' + cls : '');
+  text(status, msg || '');
+}
+
+// ---------- 공통: 박스 그리기 ----------
+function drawPage(page, canvas) {
+  const boxes = Array.isArray(page.boxes) ? page.boxes : [];
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (page.srcCanvas) {
+    ctx.drawImage(page.srcCanvas, 0, 0, canvas.width, canvas.height);
+  } else if (page.srcDoc && typeof globalThis.pdfjsLib !== 'undefined') {
+    // pdf.js 문서가 이미 로딩되어 있으면 비동기 렌더
+  } else {
+    ctx.fillStyle = '#eef0f4';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#5f6777';
+    ctx.font = '13px -apple-system, "Apple SD Gothic Neo", sans-serif';
+    ctx.fillText('미리보기 없음', 8, 18);
+  }
+  for (const b of boxes) {
+    const x = b.dx != null ? b.dx : (b.x / page.w) * canvas.width;
+    const y = b.dy != null ? b.dy : (b.y / page.h) * canvas.height;
+    const w = b.dw != null ? b.dw : (b.width / page.w) * canvas.width;
+    const h = b.dh != null ? b.dh : (b.height / page.h) * canvas.height;
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(w) || !Number.isFinite(h)) continue;
+    if (w <= 0 || h <= 0) continue;
+    ctx.fillStyle = 'rgba(0,0,0,0.72)';
+    ctx.fillRect(x, y, w, h);
+    if (b.preview) {
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '11px -apple-system, "Apple SD Gothic Neo", sans-serif';
+      ctx.fillText(b.preview, Math.min(x + 3, canvas.width - 40), Math.min(y + h - 3, canvas.height - 3));
+    }
+  }
+}
+
+function makeBox(checked, preview, x, y, w, h) {
+  return { confirmed: !!checked, preview: preview || null, x: x || 0, y: y || 0, width: w || 0, height: h || 0 };
+}
+
+// ---------- 화면 1: 서류 담기 ----------
+export function renderAddScreen(state, ui) {
+  const screen = $('#screen-add');
+  if (!screen) return;
+
+  const fileInput = $('#file-input');
+  const dropzone = $('#dropzone');
+  const count = $('#add-count');
+  const list = $('#file-list');
+  const orderSel = $('#order-template');
+  const targetSel = $('#target-mb');
+  const targetCustom = $('#target-custom');
+  const rangeInput = $('#range-input');
+
+  // 옵션 반영
+  $('#opt-merge').checked = state.options.merge;
+  $('#opt-mask').checked = state.options.mask;
+  $('#opt-shrink').checked = state.options.shrink;
+  targetSel.value = String(state.options.targetMb);
+  targetCustom.value = state.options.targetCustom || '';
+  rangeInput.value = state.options.range || '';
+
+  // 파일 목록
+  const renderList = () => {
+    if (count) count.textContent = state.fileNames.length + '개';
+    list.innerHTML = '';
+    if (!state.fileNames.length) {
+      list.appendChild(
+        el('li', { class: 'ds-empty' }, [
+          el('span', { text: '아직 서류가 없어요. PDF·사진을 끌어 놓거나 "파일 고르기"를 누르세요. "예시로 해 보기"로 바로 체험할 수 있어요.' }),
+        ])
+      );
+      return;
+    }
+    state.fileNames.forEach((name, i) => {
+      const li = el('li', { class: 'ds-list-item', draggable: 'true', dataset: { name } }, [
+        el('span', { class: 'ds-avatar', 'data-hue': String([...name].reduce((s, c) => s + c.codePointAt(0), 0) % 8), 'aria-hidden': 'true', text: [...name][0] || '?' }),
+        el('div', { class: 'ds-list-main' }, [el('span', { class: 'ds-list-title', text: name })]),
+        el('div', { class: 'ds-row file-btns' }, [
+          el('button', { class: 'ds-btn up-button', type: 'button', disabled: i === 0, text: '위로' }),
+          el('button', { class: 'ds-btn down-button', type: 'button', disabled: i === state.fileNames.length - 1, text: '아래로' }),
+          el('button', { class: 'ds-btn remove-button', type: 'button', text: '제거' }),
+        ]),
+      ]);
+      li.querySelector('.up-button').addEventListener('click', () => {
+        if (i === 0) return;
+        [state.fileNames[i - 1], state.fileNames[i]] = [state.fileNames[i], state.fileNames[i - 1]];
+        saveState(state);
+        renderList();
+      });
+      li.querySelector('.down-button').addEventListener('click', () => {
+        if (i === state.fileNames.length - 1) return;
+        [state.fileNames[i + 1], state.fileNames[i]] = [state.fileNames[i], state.fileNames[i + 1]];
+        saveState(state);
+        renderList();
+      });
+      li.querySelector('.remove-button').addEventListener('click', () => {
+        state.fileNames.splice(i, 1);
+        saveState(state);
+        renderList();
+      });
+      // 드래그로 순서 변경
+      li.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', String(i)));
+      li.addEventListener('dragover', (e) => e.preventDefault());
+      li.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const from = Number(e.dataTransfer.getData('text/plain'));
+        if (!Number.isInteger(from) || from === i) return;
+        const [moved] = state.fileNames.splice(from, 1);
+        state.fileNames.splice(i, 0, moved);
+        saveState(state);
+        renderList();
+      });
+      list.appendChild(li);
+    });
+  };
+  renderList();
+
+  // 파일 추가
+  const addFiles = async (files) => {
+    let added = false;
+    for (const f of files) {
+      const lower = f.name.toLowerCase();
+      if (!/\.(pdf|jpe?g|png)$/.test(lower)) {
+        setStatus(state, '"' + f.name + '"은(는) 지원하지 않는 형식이에요. PDF·JPG·PNG 파일만 올릴 수 있어요.');
+        continue;
+      }
+      if (!state.fileNames.includes(f.name)) state.fileNames.push(f.name);
+      added = true;
+    }
+    if (!added) return;
+    saveState(state);
+    renderList();
+    // 실제 파일 내용을 읽어서 쪽(페이지) 목록을 만든다
+    if (typeof ui.ingestFiles === 'function') {
+      await ui.ingestFiles(files);
+    }
+    renderList();
+    if (state.fileNames.length) {
+      setStatus(state, '서류 ' + state.fileNames.length + '개를 담았습니다. 순서와 옵션을 정한 뒤 "가림 확인"으로 가세요.', 'ds-status-good');
+    }
+  };
+  fileInput.addEventListener('change', () => {
+    const files = [...fileInput.files];
+    fileInput.value = '';
+    addFiles(files).catch((e) => setStatus(state, '서류를 읽지 못했어요. (' + (e.message || e) + ')', 'ds-status-bad'));
+  });
+  const chooseButton = $('#choose-button');
+  if (chooseButton) chooseButton.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('click', (e) => {
+    if (e.target.closest('button')) return;
+    fileInput.click();
+  });
+  dropzone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInput.click();
+    }
+  });
+  for (const ev of ['dragover', 'drop']) {
+    dropzone.addEventListener(ev, (e) => {
+      e.preventDefault();
+      if (ev === 'drop' && e.dataTransfer.files.length) {
+        addFiles([...e.dataTransfer.files]).catch((er) => setStatus(state, '서류를 읽지 못했어요. (' + (er.message || er) + ')', 'ds-status-bad'));
+      }
+    });
+  }
+  dropzone.addEventListener('dragenter', () => dropzone.classList.add('drag-over'));
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+  dropzone.addEventListener('drop', () => dropzone.classList.remove('drag-over'));
+
+  // 옵션·입력 바인딩
+  const persist = () => saveState(state);
+  $('#opt-merge').addEventListener('change', (e) => { state.options.merge = e.target.checked; persist(); });
+  $('#opt-mask').addEventListener('change', (e) => { state.options.mask = e.target.checked; persist(); });
+  $('#opt-shrink').addEventListener('change', (e) => { state.options.shrink = e.target.checked; persist(); });
+  targetSel.addEventListener('change', (e) => {
+    const v = e.target.value;
+    if (v === 'custom') {
+      targetCustom.disabled = false;
+      targetCustom.focus();
+      targetCustom.placeholder = '예: 12.5';
+      persist();
+    } else {
+      state.options.targetMb = Number(v);
+      state.options.targetCustom = '';
+      targetCustom.value = '';
+      targetCustom.disabled = true;
+      persist();
+    }
+  });
+  // 기존 상태가 custom이면 입력을 열어둔다
+  targetCustom.disabled = state.options.targetMb !== Number(targetSel.value) || targetSel.value === 'custom';
+  targetCustom.addEventListener('input', (e) => {
+    state.options.targetCustom = e.target.value;
+    persist();
+  });
+  rangeInput.addEventListener('input', (e) => { state.options.range = e.target.value; persist(); });
+  orderSel.addEventListener('change', (e) => {
+    state.fileNames = orderByTemplate(e.target.value, state.fileNames);
+    persist();
+    renderList();
+    setStatus(state, '"' + e.target.value + '" 순서로 서류를 정렬했어요.', 'ds-status-good');
+  });
+
+  // 예시로 해 보기
+  $('#example-button').addEventListener('click', () => {
+    ui.loadExample();
+    renderList();
+    ui.showScreen('review');
+  });
+  $('#review-button').addEventListener('click', () => {
+    if (!state.fileNames.length && !state.sample) {
+      setStatus(state, '서류가 없어요. 파일을 올리거나 "예시로 해 보기"를 눌러 주세요.');
+      return;
+    }
+    ui.showScreen('review');
+  });
+}
+
+// ---------- 화면 2: 가림 확인 ----------
+export async function renderReviewScreen(state, ui) {
+  const screen = $('#screen-review');
+  if (!screen) return;
+  screen.innerHTML = '';
+  const list = el('div', { id: 'review-list', class: 'review-list' });
+  const exportBtn = el('button', { id: 'export-button', class: 'ds-btn ds-btn-primary', type: 'button', disabled: true, text: '내보내기로' });
+  screen.appendChild(list);
+  screen.appendChild(el('div', { class: 'ds-row form-row' }, [exportBtn]));
+
+  const allBoxes = () => {
+    const out = [];
+    for (const p of ui.pages) for (const b of Array.isArray(p.boxes) ? p.boxes : []) out.push(b);
+    return out;
+  };
+  const updateExport = () => {
+    const boxes = allBoxes();
+    exportBtn.disabled = !(boxes.length && boxes.every((b) => b.confirmed));
+  };
+
+  const renderOne = async (page) => {
+    const card = el('div', { class: 'ds-card review-card', 'data-page': String(page.page) }, [
+      el('div', { class: 'ds-section-title' }, [
+        el('h2', { text: '쪽 ' + page.page }),
+        el('span', { class: 'ds-badge', text: page.srcDoc ? 'PDF' : '이미지' }),
+      ]),
+    ]);
+    const canvas = el('canvas', { class: 'review-canvas', width: 320, height: 200 });
+    card.appendChild(canvas);
+    const boxRow = el('div', { class: 'ds-row box-row' });
+    card.appendChild(boxRow);
+
+    if (page.srcDoc) {
+      // PDF: pdf.js 문서에서 직접 캔버스로(원문 텍스트를 픽셀로 바꿔 가림 적용)
+      drawPage(page, canvas);
+      try {
+        page.srcCanvas = await pdfToCanvas(page.srcDoc, page.page, 1);
+      } catch (e) {
+        setStatus(state, (e.message || 'PDF를 렌더하지 못했어요.'));
+      }
+      drawPage(page, canvas);
+    } else if (page.srcCanvas) {
+      drawPage(page, canvas);
+    }
+
+    for (const b of Array.isArray(page.boxes) ? page.boxes : []) {
+      const cbId = 'box-cb-' + page.page + '-' + page.boxes.indexOf(b);
+      const box = el('div', { class: 'ds-row box-item' }, [
+        el('label', { class: 'box-label', for: cbId }, [
+          el('input', { class: 'input box-confirm', type: 'checkbox', checked: b.confirmed, id: cbId }),
+          el('span', { text: b.preview ? '확인 · ' + b.preview : '박스 확인' }),
+        ]),
+        el('button', { class: 'ds-btn box-delete', type: 'button', text: '삭제' }),
+      ]);
+      box.querySelector('.box-confirm').addEventListener('change', (e) => {
+        b.confirmed = e.target.checked;
+        saveState(state);
+        ui.persistBoxes();
+        updateExport();
+      });
+      box.querySelector('.box-delete').addEventListener('click', () => {
+        if (!Array.isArray(page.boxes)) page.boxes = [];
+        page.boxes.splice(page.boxes.indexOf(b), 1);
+        saveState(state);
+        ui.persistBoxes();
+        renderOne(page);
+        updateExport();
+      });
+      boxRow.appendChild(box);
+    }
+    if (!(Array.isArray(page.boxes) && page.boxes.length)) {
+      boxRow.appendChild(el('span', { class: 'ds-hint', text: '가릴 박스가 없어요. 사진은 위에서 직접 그릴 수 있습니다.' }));
+    }
+
+    // 사진·스캔본: 캔버스에서 직접 그리기
+    if (!page.srcDoc && page.srcCanvas) {
+      let drawing = null;
+      canvas.addEventListener('pointerdown', (e) => {
+        const r = canvas.getBoundingClientRect();
+        drawing = { sx: e.clientX - r.left, sy: e.clientY - r.top, cx: e.clientX - r.left, cy: e.clientY - r.top, moved: false };
+        canvas.setPointerCapture(e.pointerId);
+      });
+      canvas.addEventListener('pointermove', (e) => {
+        if (!drawing) return;
+        const r = canvas.getBoundingClientRect();
+        drawing.cx = e.clientX - r.left;
+        drawing.cy = e.clientY - r.top;
+        if (Math.abs(drawing.cx - drawing.sx) > 3 || Math.abs(drawing.cy - drawing.sy) > 3) drawing.moved = true;
+        drawPage(page, canvas);
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = '#c4352b';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(Math.min(drawing.sx, drawing.cx), Math.min(drawing.sy, drawing.cy), Math.abs(drawing.cx - drawing.sx), Math.abs(drawing.cy - drawing.sy));
+      });
+      canvas.addEventListener('pointerup', (e) => {
+        if (drawing && drawing.moved) {
+          const x0 = Math.min(drawing.sx, drawing.cx);
+          const y0 = Math.min(drawing.sy, drawing.cy);
+          const w0 = Math.abs(drawing.cx - drawing.sx);
+          const h0 = Math.abs(drawing.cy - drawing.sy);
+          page.boxes.push(
+            makeBox(true, null, x0 * (page.w / canvas.width), y0 * (page.h / canvas.height), w0 * (page.w / canvas.width), h0 * (page.h / canvas.height))
+          );
+          saveState(state);
+          ui.persistBoxes();
+          drawPage(page, canvas);
+          renderOne(page);
+          updateExport();
+        }
+        drawing = null;
+      });
+    }
+    list.appendChild(card);
+  };
+
+  for (const page of ui.pages) await renderOne(page);
+  if (!ui.pages.length) {
+    list.appendChild(el('div', { class: 'ds-empty' }, [el('span', { text: '가릴 쪽이 없어요. 서류를 담은 뒤 이 화면을 다시 들어오면 미리보기가 여기에 뜹니다.' })]));
+  }
+  exportBtn.addEventListener('click', () => ui.showScreen('export'));
+  updateExport();
+}
+
+// ---------- 화면 3: 내보내기 ----------
+export function renderExportScreen(state, ui) {
+  const screen = $('#screen-export');
+  if (!screen) return;
+  const result = $('#result-size');
+  const checklist = $('#checklist');
+  const downloadBtn = $('#download-button');
+
+  // 확인된 박스로 매스킹한 쪽들을 만든다
+  const maskedPages = [];
+  const target = parseTargetMb(state.options.targetMb, state.options.targetCustom) || 10 * MB;
+  for (const page of ui.pages) {
+    const confirmed = (Array.isArray(page.boxes) ? page.boxes : []).filter((b) => b.confirmed);
+    if (!confirmed.length) continue;
+    if (page.srcCanvas) {
+      const canvas = applyBoxes(page.srcCanvas, confirmed);
+      maskedPages.push({ canvas, title: page.srcName || '쪽 ' + page.page, page: page.page });
+    }
+    // PDF 쪽은 renderPageToCanvas에서 매스킹 처리(아래 exportRun)
+  }
+
+  const renderChecklist = (over) => {
+    checklist.innerHTML = '';
+    const items = [
+      ['박스 모두 확인', state.options.mask ? '주민번호 뒷자리를 검게 가렸어요.' : '가림 옵션이 꺼져 있어요. 필요하면 서류 담기에서 켜세요.'],
+      ['용량 확인', over ? '목표 ' + (target / MB).toFixed(0) + 'MB를 넘었어요. 품질을 더 낮춰 보세요.' : '목표 ' + (target / MB).toFixed(0) + 'MB 이내에 들어가요.'],
+      ['파일 다운로드', 'package.pdf로 제출용 파일을 만들었어요.'],
+    ];
+    for (const [t, d] of items) {
+      checklist.appendChild(
+        el('li', { class: 'ds-list-item' }, [
+          el('span', { class: 'ds-avatar', 'data-hue': over ? '6' : '1', 'aria-hidden': 'true', text: over ? '!' : '○' }),
+          el('div', { class: 'ds-list-main' }, [el('span', { class: 'ds-list-title', text: t }), el('span', { class: 'ds-list-sub', text: d })]),
+        ])
+      );
+    }
+  };
+
+  const exportRun = async () => {
+    setStatus(state, 'PDF를 만들고 있어요. 잠시만 기다려 주세요…');
+    try {
+      const pages = [];
+      for (const page of ui.pages) {
+        const confirmed = (Array.isArray(page.boxes) ? page.boxes : []).filter((b) => b.confirmed);
+        if (!confirmed.length) continue;
+        if (page.srcCanvas) {
+          pages.push({ canvas: applyBoxes(page.srcCanvas, confirmed), title: page.srcName || '쪽 ' + page.page });
+        } else if (page.srcDoc && page.srcFile) {
+          // PDF 쪽: 원본 렌더 + 박스 덮기
+          const canvas = await renderPageToCanvas(page.srcFile, page.page, 1);
+          const s = canvas.width / page.w;
+          const masked = applyBoxes(canvas, confirmed.map((b) => ({ x: b.x * s, y: b.y * s, width: b.width * s, height: b.height * s })), 1);
+          pages.push({ canvas: masked, title: page.srcName || '쪽 ' + page.page });
+        }
+      }
+      if (!pages.length) {
+        setStatus(state, '가릴 쪽이 없어요. 가림 확인에서 박스를 확인해 주세요.', 'ds-status-bad');
+        text(result, '0.00 MB');
+        checklist.innerHTML = '';
+        renderChecklist(false);
+        downloadBtn.disabled = true;
+        ui.resultBytes = null;
+        return;
+      }
+      const useShrink = state.options.shrink;
+      const out = useShrink ? await shrinkToTarget(pages, target) : await shrinkToTarget(pages, Number.MAX_SAFE_INTEGER);
+      ui.resultBytes = out.bytes;
+      ui.resultOver = out.over;
+      text(result, fmtMb(out.size) + ' MB');
+      renderChecklist(out.over);
+      downloadBtn.disabled = false;
+      if (out.over) {
+        setStatus(state, '목표 ' + (target / MB).toFixed(0) + 'MB를 넘었어요(' + fmtMb(out.size) + 'MB). 그래도 내릴 수 있지만, 용량이 맞지 않을 수 있어요.');
+      } else {
+        setStatus(state, '목표 ' + (target / MB).toFixed(0) + 'MB 이하로 만들었어요. "package.pdf 내려받기"를 눌러 주세요.', 'ds-status-good');
+      }
+    } catch (e) {
+      setStatus(state, 'PDF를 만들지 못했어요. (' + (e.message || e) + ') 서류 형식을 다시 확인해 주세요.', 'ds-status-bad');
+      text(result, '—');
+      checklist.innerHTML = '';
+      renderChecklist(false);
+      ui.resultBytes = null;
+      downloadBtn.disabled = true;
+    }
+  };
+
+  if (!ui.pages.some((p) => Array.isArray(p.boxes) && p.boxes.length)) {
+    text(result, '—');
+    renderChecklist(false);
+    downloadBtn.disabled = true;
+    setStatus(state, '아직 가릴 박스가 없어요. 가림 확인에서 박스를 확인한 뒤 다시 와 보세요.');
+  } else {
+    text(result, '계산 중…');
+    renderChecklist(false);
+    downloadBtn.disabled = true;
+    exportRun();
+  }
+
+  downloadBtn.addEventListener('click', () => {
+    if (!ui.resultBytes) return;
+    const blob = new Blob([ui.resultBytes.buffer], { type: 'application/pdf' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'package.pdf';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    setStatus(state, 'package.pdf를 내려받았어요.', 'ds-status-good');
+  });
+
+  // backup·reset·import는 main.js의 ui 콜백으로 위임한다
+  $('#backup-export').addEventListener('click', () => ui.doBackup());
+  $('#reset-button').addEventListener('click', () => ui.doReset());
+  $('#backup-import').addEventListener('change', (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    f.text().then((t) => ui.doImport(t));
+    e.target.value = '';
+  });
+}
+
+// 진입 모듈: 저장 상태를 복원하고, 상단 nav 버튼으로 화면을 전환하며,
+// "예시로 해 보기"와 초기 화면(서류 담기)을 설정한다.
+
+
+
+
+
+
+
+
+// 예시 PDF는 코드 안에(네트워크 없이) — A4 한 장, 주민등록번호가 들어 있는 텍스트.
+function makeExamplePdfBytes() {
+  const w = 595.28;
+  const h = 841.89;
+  const lines = [
+    ['가족관계증명서', 32, 780],
+    ['주민등록번호 900101-1234567', 18, 740],
+    ['발행일 2024-05-01', 14, 712],
+    ['제출 서류 예시', 12, 680],
+  ];
+  const content = lines
+    .map(([t, size, y]) => `BT /F1 ${size} Tf 60 ${y} Td (${t}) Tj ET`)
+    .join('\n');
+  const objs = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`,
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${w} ${h}] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>`,
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
+  ];
+  let pdf = '%PDF-1.4\n';
+  const offsets = [];
+  objs.forEach((body, i) => {
+    offsets.push(pdf.length);
+    pdf += `${i + 1} 0 obj\n${body}\nendobj\n`;
+  });
+  const xref = pdf.length;
+  pdf += 'xref\n0 ' + (objs.length + 1) + '\n0000000000 65535 f \n';
+  for (const o of offsets) pdf += String(o).padStart(10, '0') + ' 00000 n \n';
+  pdf += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  const bytes = new Uint8Array(pdf.length);
+  for (let i = 0; i < pdf.length; i++) bytes[i] = pdf.charCodeAt(i) & 0xff;
+  return bytes;
+}
+
+// 예시 서류를 캔버스로 그린다(네트워크·pdf.js 없이 흰 배경 + 텍스트).
+// PDF 라이브러리가 없는 환경(이 브라우저 빌드)에서도 미리보기와 가림이
+// 실제로 보이도록 만든다. 문서 좌표(상단 0, A4 595x842)를 1px=1pt로 사용한다.
+function drawExampleCanvas(page) {
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(page.w));
+  canvas.height = Math.max(1, Math.round(page.h));
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#1a1a1a';
+  for (const it of page.items) {
+    const fontSize = Math.max(8, Math.round(it.height || 12));
+    ctx.font = fontSize + 'px -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+    // PDF 좌표(y 아래 기준)를 캔버스(y 위 기준)로 바꾼다.
+    const ty = canvas.height - it.y - (it.height || 0);
+    ctx.fillText(it.str, it.x, ty + it.height * 0.8);
+  }
+  return canvas;
+}
+
+function makeExamplePage() {
+  return {
+    page: 1,
+    w: 595.28,
+    h: 841.89,
+    srcDoc: null,
+    srcFile: null,
+    srcCanvas: null,
+    srcName: '예시 서류.pdf',
+    boxes: [],
+    items: [
+      { str: '가족관계증명서', x: 60, y: 780, width: 220, height: 32 },
+      // 앞 6자리(900101)가 유효한 날짜(1990-01-01)여야 planRedactions가 주민번호로
+      // 인정한다. 뒷자리 1234567(첫 자리는 성별)로 가림 박스가 실제로 계산된다.
+      { str: '주민등록번호 900101-1234567', x: 60, y: 740, width: 260, height: 18 },
+      { str: '발행일 2024-05-01', x: 60, y: 712, width: 150, height: 14 },
+      { str: '제출 서류 예시', x: 60, y: 680, width: 120, height: 12 },
+    ],
+  };
+}
+
+// ---------- 외부 전송 카운트(PerformanceObserver) ----------
+function startPrivacyCounter(state, ui) {
+  const badge = () => document.getElementById('privacy-badge');
+  const own = new Set();
+  const url = location.href;
+  // 페이지 자체 리소스(스크립트·스타일)는 외부 전송이 아니다
+  if (typeof performance !== 'undefined' && performance.getEntriesByType) {
+    for (const e of performance.getEntriesByType('resource')) own.add(e.name);
+  }
+  own.add(url);
+  const update = () => {
+    let ext = 0;
+    try {
+      const entries = performance.getEntriesByType('resource');
+      for (const e of entries) {
+        if (!own.has(e.name)) ext++;
+      }
+    } catch {
+      /* 무시 */
+    }
+    state.extCount = ext;
+    const b = badge();
+    if (b) b.textContent = '파일은 기기 밖으로 나가지 않습니다 · 외부 전송 ' + ext + '건';
+  };
+  update();
+  if (typeof PerformanceObserver !== 'undefined') {
+    try {
+      new PerformanceObserver((list) => {
+        for (const e of list.getEntries()) if (!own.has(e.name) && !own.has(e.name)) own.add(e.name);
+        update();
+      }).observe({ type: 'resource', buffered: true });
+    } catch {
+      /* 일부 브라우저에서는 실패 */
+    }
+  }
+  // 2초마다 갱신(새 리소스가 생길 수 있음)
+  const t = setInterval(update, 2000);
+  if (typeof ui === 'object' && ui) ui.privacyTimer = t;
+}
+
+// ---------- ui 컨텍스트 ----------
+function makeUi(state) {
+  return {
+    state,
+    pages: [],
+    resultBytes: null,
+    resultOver: false,
+    privacyTimer: null,
+    showScreen: null,
+    loadExample: null,
+    ingestFiles: null,
+    applyRange: null,
+    persistBoxes: () => saveState(state),
+    doBackup: null,
+    doReset: null,
+    doImport: null,
+  };
+}
+
+export function showScreen(name) {
+  for (const id of ['add', 'review', 'export']) {
+    const el = document.getElementById('screen-' + id);
+    if (el) el.hidden = id !== name;
+  }
+  for (const btn of document.querySelectorAll('[data-nav]')) {
+    btn.setAttribute('aria-current', btn.dataset.nav === name ? 'page' : 'false');
+  }
+}
+
+export async function init() {
+  const state = loadState();
+  const ui = makeUi(state);
+
+  // 텍스트가 있는 쪽(PDF 또는 코드 예시)의 박스를 주민번호 패턴으로 자동
+  // 계산한다(옵션 mask). 코드 예시 쪽은 pdf.js가 없지만 srcCanvas로 미리보기
+  //를 만들 수 있어 박스만 채우면 가림 확인→내보내기 흐름이 실제로 작동한다.
+  const planAutoBoxes = () => {
+    if (!ui.pages.some((p) => p.items && p.items.length)) return;
+    try {
+      const r = planRedactions(ui.pages);
+      for (const pg of r.pages) {
+        const target = ui.pages.find((p) => p.page === pg.page);
+        if (!target) continue;
+        if (!Array.isArray(target.boxes)) target.boxes = [];
+        const existing = new Set(target.boxes.map((b) => b.x + ',' + b.y));
+        for (const b of pg.boxes) {
+          if (!Number.isFinite(b.x) || !Number.isFinite(b.y) || !Number.isFinite(b.width) || !Number.isFinite(b.height)) continue;
+          if (!existing.has(b.x + ',' + b.y)) target.boxes.push({ ...b, confirmed: true });
+        }
+      }
+    } catch (e) {
+      // 계산 실패는 조용히 넘긴다. 상태 문구까지 바꾸면 "예시를 불러왔어요" 안내를
+      // 덮어써 오류 메시지가 화면에 남는 일(검수에서 확인됨)을 막기 위함.
+    }
+  };
+
+  ui.showScreen = (name) => {
+    showScreen(name);
+    if (name === 'add') renderAddScreen(state, ui);
+    else if (name === 'review') {
+      // 추출 쪽수(옵션)를 적용하고, PDF 쪽의 박스를 자동 계산한다
+      if (ui.applyRange) ui.applyRange();
+      if (state.options.mask) planAutoBoxes();
+      saveState(state);
+      // 페이지가 없으면(파일/예시 없음) 빈 미리보기만
+      if (!ui.pages.length && state.sample) {
+        const p = makeExamplePage();
+        p.srcCanvas = drawExampleCanvas(p);
+        ui.pages = [p];
+      }
+      renderReviewScreen(state, ui).catch((e) => setStatus(state, e.message || '가림 확인을 열지 못했어요.'));
+    } else if (name === 'export') {
+      renderExportScreen(state, ui);
+    }
+  };
+
+  ui.loadExample = () => {
+    // 내장 예시를 불러온다(예시 데이터는 코드에). srcCanvas를 그리면
+    // pdf.js가 없는 환경에서도 미리보기·가림·내보내기가 실제로 작동한다.
+    const page = makeExamplePage();
+    page.srcCanvas = drawExampleCanvas(page);
+    const bytes = makeExamplePdfBytes();
+    state.sample = { name: '예시 서류.pdf', bytes };
+    state.fileNames = ['예시 서류.pdf'];
+    ui.pages = [page];
+    if (state.options.mask) planAutoBoxes();
+    saveState(state);
+    setStatus(state, '예시를 불러왔어요. 박스를 확인한 뒤 "내보내기"로 가세요.', 'ds-status-good');
+  };
+
+  // 파일(File[]) → 쪽(페이지) 목록. PDF는 pdf.js로, 사진은 canvas로.
+  ui.ingestFiles = async (files) => {
+    let ok = 0;
+    for (const f of files) {
+      const lower = f.name.toLowerCase();
+      if (/\.pdf$/.test(lower)) {
+        const buf = await f.arrayBuffer();
+        try {
+          const doc = await readPdfPages(buf, { maxBytes: 20 * 1024 * 1024 });
+          for (const pg of doc.pages) {
+            ui.pages.push({
+              page: pg.page,
+              w: pg.w,
+              h: pg.h,
+              srcDoc: doc.doc,
+              srcFile: null,
+              srcCanvas: null,
+              srcName: f.name,
+              items: pg.items,
+              boxes: [],
+            });
+          }
+          ok++;
+          if (state.options.mask) planAutoBoxes();
+        } catch (e) {
+          setStatus(state, '"' + f.name + '"은(는) PDF로 읽지 못했어요. (' + (e.message || e) + ')', 'ds-status-bad');
+        }
+      } else if (/\.(jpe?g|png)$/.test(lower)) {
+        try {
+          const { canvas, srcW, srcH } = await loadImageFile(f);
+          const scale = srcW > 2000 ? 2000 / srcW : 1;
+          const c = scale < 1 ? scaleCanvas(canvas, scale) : canvas;
+          ui.pages.push({
+            page: ui.pages.length + 1,
+            w: c.width,
+            h: c.height,
+            srcDoc: null,
+            srcFile: null,
+            srcCanvas: c,
+            srcName: f.name,
+            items: [],
+            boxes: [],
+          });
+          ok++;
+        } catch (e) {
+          setStatus(state, '"' + f.name + '"은(는) 불러오지 못했어요. (' + (e.message || e) + ')', 'ds-status-bad');
+        }
+      }
+    }
+    if (ok) saveState(state);
+  };
+
+  // 추출 쪽수(옵션 range)를 적용한다
+  ui.applyRange = () => {
+    const ranges = parseRanges(state.options.range);
+    if (!state.options.range || !ranges.length) return;
+    const keep = (p) => ranges.includes(p.page);
+    for (const p of ui.pages) {
+      if (!keep(p)) {
+        ui.pages.splice(ui.pages.indexOf(p), 1);
+      }
+    }
+  };
+
+  ui.doBackup = () => {
+    const text = exportBackup(state);
+    const blob = new Blob([text], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'backup.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    setStatus(state, 'backup.json을 내려받았어요. 다음에 다시 가져올 수 있어요.', 'ds-status-good');
+  };
+
+  ui.doImport = (text) => {
+    const imported = importBackup(text);
+    if (!imported) {
+      setStatus(state, 'backup.json 형식이 다르고 복원할 수 없어요. 다시 내려받은 뒤 불러와 주세요.', 'ds-status-bad');
+      return;
+    }
+    Object.assign(state, imported);
+    ui.pages = [];
+    ui.resultBytes = null;
+    saveState(state);
+    renderAddScreen(state, ui);
+    setStatus(state, '백업에서 복원했어요. 서류 ' + state.fileNames.length + '개가 다시 담겼습니다.', 'ds-status-good');
+  };
+
+  ui.doReset = () => {
+    clearState();
+    state.options = { merge: true, mask: true, shrink: true, targetMb: 10, targetCustom: '', range: '' };
+    state.fileNames = [];
+    state.sample = null;
+    ui.pages = [];
+    ui.resultBytes = null;
+    ui.resultOver = false;
+    saveState(state);
+    ui.showScreen('add');
+    setStatus(state, '처음으로 초기화했어요. 모든 서류와 설정이 지워졌습니다.', 'ds-status-good');
+  };
+
+  // nav 버튼
+  for (const btn of document.querySelectorAll('[data-nav]')) {
+    btn.addEventListener('click', () => ui.showScreen(btn.dataset.nav));
+  }
+
+  startPrivacyCounter(state, ui);
+  ui.showScreen('add');
+
+  // 초기 상태 문구
+  setStatus(state, '서류를 끌어 놓거나 "예시로 해 보기"를 눌러 시작하세요. 모든 처리는 이 기기 안에서 이뤄져요.');
+}
+
+function boot() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => runInit());
+  } else {
+    runInit();
+  }
+}
+function runInit() {
+  try {
+    init();
+  } catch (e) {
+    const s = document.getElementById('app-status');
+    if (s) {
+      s.className = 'ds-status ds-status-bad';
+      s.textContent = '앱을 열지 못했어요: ' + (e && e.message ? e.message : e);
+    }
+    if (typeof console !== 'undefined') console.error('init failed', e);
+  }
+}
+boot();
+</script>
+
+</body>
+</html>

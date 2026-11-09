@@ -1,0 +1,235 @@
+/* 제출 서류 팩키지 앱 — vendor/studio.css 뒤에 로드. 토큰(var(--ds-...))만 쓴다. */
+
+/* 상단 띠: 앱 이름 + 상태 + nav */
+.app-band {
+  display: block;
+  padding-bottom: var(--ds-s4);
+}
+.app-head {
+  max-width: var(--ds-max);
+  margin: 0 auto;
+  padding: 0 var(--ds-s4);
+}
+.app-status-row {
+  max-width: var(--ds-max);
+  margin: var(--ds-s4) auto 0;
+  padding: 0 var(--ds-s4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-s2) var(--ds-s3);
+  align-items: center;
+}
+#app-status {
+  flex: 1 1 320px;
+}
+#privacy-badge {
+  flex: 0 0 auto;
+}
+.app-nav {
+  max-width: var(--ds-max);
+  margin: var(--ds-s3) auto 0;
+  padding: 0 var(--ds-s4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-s2);
+}
+.ds-nav[aria-current="page"] {
+  background: var(--ds-accent);
+  border-color: var(--ds-accent);
+  color: var(--ds-accent-ink);
+}
+
+/* 화면 */
+.screen { margin-top: var(--ds-s4); }
+
+/* 답 카드 */
+#add-count, #result-size { color: var(--ds-accent-text); }
+
+/* 옵션 체크 */
+.opt-group {
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  padding: var(--ds-s3) var(--ds-s4);
+  margin: 0;
+}
+.opt-group legend {
+  padding: 0 4px;
+}
+.opt-row .ds-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 var(--ds-s3);
+  font-size: 15px;
+  color: var(--ds-ink);
+  cursor: pointer;
+}
+.opt-row .ds-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ds-accent);
+  cursor: pointer;
+}
+/* 체크박스 줄과 그 설명(hint)을 한 블록으로 묶어, 좁은 화면(390px)에서
+   fieldset이 flex-wrap이면 hint가 다음 줄로 내려가 label 글자와 겹치는 것을 막는다. */
+.opt-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--ds-s2);
+}
+.opt-item .opt-hint {
+  flex-basis: 100%;
+  min-width: 0;
+}
+
+/* 끌어놓기 + 예시 썸네일 */
+.drop-row {
+  display: grid;
+  gap: var(--ds-s4);
+}
+@media (min-width: 860px) {
+  .drop-row { grid-template-columns: 1.4fr 1fr; }
+}
+#dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-s2);
+  text-align: center;
+  padding: var(--ds-s6) var(--ds-s4);
+  border: 1.5px dashed var(--ds-accent-line);
+  border-radius: var(--ds-radius-l);
+  background: var(--ds-accent-soft);
+  min-height: 200px;
+  justify-content: center;
+  transition: border-color var(--ds-fast) var(--ds-ease), background var(--ds-fast) var(--ds-ease);
+}
+#dropzone.drag-over {
+  border-color: var(--ds-accent);
+  background: var(--ds-accent-soft);
+}
+.dz-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+#file-input, #backup-import {
+  display: none;
+}
+
+/* 예시 썸네일 */
+.sample-thumb {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-s2);
+}
+.sample-doc {
+  width: 100%;
+  max-width: 260px;
+  /* A4 비율(210/297) 그대로면 260px 폭에 368px 높이라, 좁은 화면(390px)에서
+     미리보기 상단(제목·사진)이 접히는 높이를 넘겨 화면 밖으로 밀려났다.
+     비율을 살짝 눌러 한 화면 안에 들어오게 한다. */
+  aspect-ratio: 210 / 255;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--ds-s2);
+  padding: var(--ds-s4);
+  box-shadow: var(--ds-shadow);
+}
+.sample-doc span {
+  font-size: 12px;
+  color: var(--ds-ink-3);
+}
+.sample-mask {
+  font-size: 18px;
+  color: var(--ds-ink);
+  background: var(--ds-surface-2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.sample-thumb figcaption {
+  font-size: 13px;
+  color: var(--ds-ink-3);
+}
+
+/* 파일 목록 */
+.file-list .ds-list-item .file-btns {
+  gap: var(--ds-s1);
+}
+.file-list .ds-btn {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+/* 폼 행 */
+.form-row .ds-field {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+.form-row {
+  margin-top: var(--ds-s3);
+}
+
+/* 가림 확인 */
+.review-list {
+  display: grid;
+  gap: var(--ds-s4);
+}
+@media (min-width: 860px) {
+  .review-list { grid-template-columns: repeat(2, 1fr); }
+}
+.review-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-s3);
+}
+.review-canvas {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  background: var(--ds-surface-2);
+  touch-action: none;
+}
+.box-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--ds-s1);
+}
+.box-item {
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  padding: var(--ds-s2) var(--ds-s3);
+}
+.box-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.box-label input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ds-accent);
+}
+
+/* 내보내기 */
+#checklist .ds-list-item {
+  min-height: 56px;
+}
+
+/* 답 카드가 띠 아래로 내려온 것을 막는다(띠가 thin이라) */
+.ds-band.ds-band-thin.app-band + .ds-page > .ds-answer:first-child {
+  margin-top: 0;
+}

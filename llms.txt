@@ -20,6 +20,8 @@
 
 ## 최근 글
 
+- [284B 모델을 64GB RAM에 GPU 없이 돌리는 CPU 추론 키트, 받아서 직접 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-09-llama-modchip.html)
+- [PixelOE: AI 없이 사진이 픽셀 아트가 되는 오픈소스, 받아서 직접 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-08-pixeloe.html)
 - [agent-autoloop, 명령줄 AI를 백그라운드에서 혼자 일게 하는 오픈소스](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-07-agent-autoloop.html)
 - [구글 공식 AI 에이전트 스킬 저장소, 설치 없이 돌려 본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-06-skills.html)
 - [fsearch, 오타가 나도 0.1ms 만에 파일 찾는 Mac용 검색 도구](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-06-fsearch.html)
@@ -30,11 +32,10 @@
 - [Craft Anything, 설치 없이 받아서 직접 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-03-craft-anything.html)
 - [AI가 만든 '강력한 비밀번호' 100개, 겹치는 게 있었다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-02-zxcvbn-python.html)
 - [unslop, 바이브코딩 UI를 디자인처럼 다듬는 Claude 스킬을 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-02-unslop.html)
-- [NES CPU를 LLM 가중치에 컴파일한 nesformer, 설치 없이 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-01-nesformer.html)
-- [Lightpanda, 크롬 대신 쓰는 AI용 헤드리스 브라우저](https://songyonggyu4006.github.io/commit-sip/blog/2026-10-31-browser.html)
 
 ## 앱 실험실
 
+- [제출 서류 팩키지 만들기](https://songyonggyu4006.github.io/commit-sip/apps/document-package-builder/): 제출 서류(PDF·JPG·PNG)를 끌어 놓으면 기기 안에서 순서대로 합치고, 주민등록번호 뒷자리를 검게 가리고, 제출 용량 목표에 맞춰 하나의 PDF(package.pdf)를 만들어 내려받게 하는 앱입니다.
 - [LLM 작업 자동화 비용 대시보드](https://songyonggyu4006.github.io/commit-sip/apps/llm-automation-cost-dashboard/): OpenRouter 모델 가격과 Hugging Face 신규 모델 데이터로, 코딩·테스트·문서화·운영 작업 1회당 가장 싼 자동화 비용과 4주 전 대비 변화를 계산하고 날짜별 기록을 브라우저에 남기는 대시보드예요.
 - [제출용 PDF 만들기](https://songyonggyu4006.github.io/commit-sip/apps/submission-pdf-maker/): 사진(JPG/PNG)을 올려 제출처의 용량 제한(예: 5MB)을 넘지 않는 A4 PDF 하나로 합치고, 브라우저 안에서만 처리되며 외부로 전송되지 않음을 화면에서 확인할 수 있어요.
 - [Claude 플러그인 업데이트 보드](https://songyonggyu4006.github.io/commit-sip/apps/claude-plugin-update-board/): GitHub에서 최근 7일 내 새로 뜬 저장소 중 이름·설명에 Claude가 언급되는 항목을 골라, 최근 3일 내 업데이트 여부와 별 수(채택 신호)를 한 표로 비교해 보여 주는 앱입니다.

@@ -1,11 +1,11 @@
 {
  "id": "gh_new_repos",
  "name": "GitHub 최근 인기 저장소",
- "url": "https://api.github.com/search/repositories?q=created:%3E2026-11-01&sort=stars&order=desc&per_page=50",
- "fetched_at": "2026-11-08T04:03:10",
+ "url": "https://api.github.com/search/repositories?q=created:%3E2026-11-02&sort=stars&order=desc&per_page=50",
+ "fetched_at": "2026-11-09T04:03:48",
  "terms": "GitHub API(키 없이 분당 10회)",
  "cors": true,
  "items": 50,
- "bytes": 298301,
+ "bytes": 288398,
  "trimmed": false
 }

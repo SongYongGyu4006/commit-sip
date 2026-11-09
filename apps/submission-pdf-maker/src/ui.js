@@ -58,6 +58,16 @@ function updateNetCheck() {
   n.textContent = 'external requests: ' + count;
 }
 
+// ---------- 결과 카드: 아직 만든 적이 없으면 문구를 숨긴다(안내문은 구역 제목의 p 가 이미 맡고 있어서 중복이 없게). ----------
+function refreshSizeResult() {
+  const p = el.sizeResult();
+  if (!p) return;
+  if (!url) {
+    p.hidden = true;
+    p.textContent = '';
+  }
+}
+
 // ---------- 계획: 리스트가 비거나 목표 용량이 잘못된 걸로 판단할 때 null ----------
 function currentPlan() {
   if (!list.length) return null;
@@ -75,7 +85,10 @@ function renderFileList() {
     const li = document.createElement('li');
     li.className = 'ds-empty';
     li.textContent = '아직 올린 사진이 없어요. 파일 고르기로 올리거나 예시로 해 보기를 눌러 보세요.';
-    ul.appendChild(li);
+    const main = document.createElement('div');
+    main.className = 'ds-list-main';
+    main.appendChild(li);
+    ul.appendChild(main);
     return;
   }
   list.forEach((f, i) => {
@@ -132,11 +145,15 @@ function refreshAnswer(finalInfo) {
   if (finalInfo) {
     label.textContent = '완성된 PDF';
     num.textContent = finalInfo.finalMb.toFixed(2) + 'MB';
-    const pct = Math.round((1 - finalInfo.finalBytes / finalInfo.totalBytes) * 100);
     if (finalInfo.ok) {
-      text.textContent = finalInfo.pageCount + '장 · 목표 ' + target + 'MB 이하 · 원본 ' + finalInfo.totalMb.toFixed(2) + 'MB에서 ' + Math.max(0, pct) + '% 줄었어요.';
+      if (finalInfo.finalBytes >= finalInfo.totalBytes) {
+        text.textContent = finalInfo.pageCount + '장 · 목표 ' + target + 'MB 이하 · 원본 ' + finalInfo.totalMb.toFixed(2) + 'MB, 결과 ' + finalInfo.finalMb.toFixed(2) + 'MB예요. 그대로 내도 돼요.';
+      } else {
+        const pct = Math.round((1 - finalInfo.finalBytes / finalInfo.totalBytes) * 100);
+        text.textContent = finalInfo.pageCount + '장 · 목표 ' + target + 'MB 이하 · 원본 ' + finalInfo.totalMb.toFixed(2) + 'MB에서 ' + pct + '% 줄었어요.';
+      }
     } else {
-      text.textContent = finalInfo.pageCount + '장 · 목표 ' + target + 'MB를 넘었어요. 더 작은 용량으로 다시 시도해 보세요.';
+      text.textContent = finalInfo.pageCount + '장 · 목표 ' + target + 'MB를 넘었어요. 목표 용량 칸에 더 작은 숫자를 넣고 다시 만들어 보세요.';
     }
   } else if (n === 0) {
     label.textContent = '다음 PDF';
@@ -173,12 +190,14 @@ function refreshPlan() {
       pre.textContent = '';
     }
   }
-  // 빈 상태 안내는 각각의 칸(목표 용량 안내, 사진 목록)이 맡는다. 상태 채널은 오류와 진행에만 쓴다.
-  if (el.targetHint()) el.targetHint().hidden = plan !== null;
-  if (el.sizeResult()) el.sizeResult().textContent = '';
+  // 목표 용량 안내는 입력 값 검사로만 정한다: 0보다 크고 100 이하 숫자가 아니면 표시.
+  // plan 과는 섞지 않는다 — 사진이 없어서 plan 이 null 이어도 목표 용량이 올바르면 안내를 띄우지 않는다.
+  // 빈 상태 안내(사진 목록, 결과)는 각 칸이 맡는다. 상태 채널은 오류와 진행에만 쓴다.
+  if (el.targetHint()) el.targetHint().hidden = parseTargetMb(el.targetMb().value) !== null;
   if (el.download()) { el.download().hidden = true; if (url) { URL.revokeObjectURL(url); url = null; } }
   renderFileList();
   renderPlanPages(plan);
+  refreshSizeResult();
   refreshAnswer();
 }
 
@@ -200,6 +219,7 @@ function renderPlanPages(plan) {
     sub.className = 'ds-list-sub';
     sub.textContent = '사진을 최대 ' + Math.round(plan.scale * 100) + '% 크기로, 화질 ' + Math.round(plan.quality * 100) + '% 로 저장';
     main.append(title, sub);
+    li.appendChild(main);
     ul.appendChild(li);
   }
   for (const p of plan.pages) {
@@ -214,6 +234,7 @@ function renderPlanPages(plan) {
     sub.className = 'ds-list-sub';
     sub.textContent = p.outWidthPx + '×' + p.outHeightPx + 'px로 저장';
     main.append(title, sub);
+    li.appendChild(main);
     ul.appendChild(li);
   }
 }
@@ -282,17 +303,25 @@ async function build(label) {
   if (url) URL.revokeObjectURL(url);
   url = URL.createObjectURL(pdf);
   const a = el.download();
+  // 만든 뒤엔 결과 문구를 다시 보여 준다(초기 빈 상태에선 구역 제목의 안내문과 중복이 없게 숨겨 두었음).
+  el.sizeResult().hidden = false;
   if (ok) {
     a.href = url;
     a.hidden = false;
-    el.sizeResult().textContent =
-      '원본 ' + (plan.totalBytes / MB1).toFixed(2) + 'MB → 결과 ' + finalMb.toFixed(2) + 'MB (목표 ' + target + 'MB) · 성공: 목표 이하예요.';
+    const totalMb = (plan.totalBytes / MB1).toFixed(2);
+    if (pdf.size < plan.totalBytes) {
+      el.sizeResult().textContent =
+        '원본 ' + totalMb + 'MB에서 ' + Math.round((1 - pdf.size / plan.totalBytes) * 100) + '% 줄었어요. 결과 ' + finalMb.toFixed(2) + 'MB (목표 ' + target + 'MB) · 성공: 목표 이하예요.';
+    } else {
+      el.sizeResult().textContent =
+        '원본 ' + totalMb + 'MB, 결과 ' + finalMb.toFixed(2) + 'MB예요. 목표 ' + target + 'MB 이하라서 그대로 내도 돼요.';
+    }
     handleAppError('');
   } else {
     a.hidden = true;
     el.sizeResult().textContent =
       '원본 ' + (plan.totalBytes / MB1).toFixed(2) + 'MB → 결과 ' + finalMb.toFixed(2) + 'MB (목표 ' + target + 'MB) · 실패: 여전히 목표 초과예요.';
-    handleAppError('목표 ' + target + 'MB 를 넘었어요. 더 작은 목표(예: ' + Math.max(0.1, +(target * 0.8).toFixed(1)) + ')로 다시 만들어 보세요.');
+    handleAppError('목표 ' + target + 'MB 를 넘었어요. 목표 용량 칸에 더 작은 숫자(예: ' + Math.max(0.1, +(target * 0.8).toFixed(1)) + ')를 넣고 다시 만들어 보세요.');
   }
   refreshAnswer({ ok, pageCount: plan.pageCount, totalBytes: plan.totalBytes, totalMb: plan.totalBytes / MB1, finalBytes: pdf.size, finalMb });
   const st = loadState();
@@ -308,7 +337,6 @@ async function runExample() {
   if (parseTargetMb(el.targetMb().value) === null) el.targetMb().value = '5';
   const files = await createExampleFiles();
   list = files;
-  renderFileList();
   refreshPlan();
   handleAppError('');
   saveState({ targetMb: el.targetMb().value, history: loadState().history });
@@ -325,6 +353,7 @@ function reset() {
   if (el.planPages()) el.planPages().textContent = '';
   el.planJson().textContent = '';
   el.sizeResult().textContent = '';
+  el.sizeResult().hidden = true;
   el.download().hidden = true;
   el.download().href = '';
   handleAppError('');
