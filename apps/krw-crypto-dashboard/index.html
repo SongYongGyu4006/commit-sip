@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko" data-accent="blue">
+<html lang="ko" data-accent="blue" data-theme="auto">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,21 +11,18 @@
 <body><div id="cs-bar" style="position:sticky;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#f6efe6;color:#3b2418;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;border-bottom:1px solid #e3d2bc"><span><a href="../" style="color:#8a5524;text-decoration:none">← 커밋 한 모금 앱 실험실</a> · <a href="guide.html" style="color:#8a5524">쓰는 법</a> · AI가 만든 초안이에요(실수가 있을 수 있어요)</span><a href="mailto:syg4006@gmail.com?subject=앱 의뢰: 원화 코인 대시보드 같은 앱" style="color:#fff;background:#c8873f;padding:6px 12px;border-radius:8px;text-decoration:none">이런 앱 의뢰하기</a></div>
 
 <header class="ds-band">
-  <div class="ds-band-head">
-    <div>
-      <h1>원화 코인 대시보드</h1>
-      <p>원화 시세와 24시간 변동을 달러 변동·환율 효과로 나눠 보여 줍니다</p>
-      <div class="ds-band-meta" id="band-meta">
-        <span id="band-rates" class="ds-badge ds-num">오늘 1$ — 원</span>
-        <span id="band-sub">보유 코인 기준 · 1백만 원어치로 계산</span>
-      </div>
-    </div>
-    <nav class="topnav" aria-label="화면 이동">
-      <button id="nav-dashboard" class="ds-btn ds-btn-primary nav-btn active" type="button">대시보드</button>
-      <button id="nav-coins" class="ds-btn ds-btn-ghost nav-btn" type="button">코인 선택</button>
-      <button id="nav-backup" class="ds-btn ds-btn-ghost nav-btn" type="button">백업</button>
-    </nav>
+  <h1>원화 코인 대시보드</h1>
+  <p>비트코인·이더리움의 원화 가격과 24시간 수익을 달러 변동과 환율 효과로 나눠 보여 줍니다.</p>
+  <div class="ds-band-meta" id="band-meta">
+    <p id="fx-line" class="ds-band-label ds-num" role="presentation">오늘 1$ = —원</p>
+    <p id="data-time" class="ds-band-label">데이터 기준: —</p>
+    <span id="band-sub">보유 코인 기준 · 1백만 원어치로 계산</span>
   </div>
+  <nav class="topnav" aria-label="화면 이동">
+    <button id="nav-dashboard" class="ds-btn ds-btn-primary nav-btn active" type="button">대시보드</button>
+    <button id="nav-coins" class="ds-btn ds-btn-ghost nav-btn" type="button">코인 선택</button>
+    <button id="nav-backup" class="ds-btn ds-btn-ghost nav-btn" type="button">백업</button>
+  </nav>
 </header>
 
 <p id="app-status" role="status" class="ds-status app-status"></p>
@@ -35,60 +32,38 @@
 
   <section id="screen-dashboard">
     <section class="ds-answer" aria-labelledby="answer-label">
-      <p class="ds-answer-label" id="answer-label">보유한 코인 24시간 원화 변동</p>
+      <p class="ds-answer-label" id="answer-label">24시간 수익 (원화 기준)</p>
       <p class="ds-answer-num" id="answer-num"><small>—</small></p>
       <p class="ds-answer-text" id="answer-text">시세를 불러오는 중이에요</p>
       <dl class="ds-answer-meta">
-        <div><dt>오늘 1$</dt><dd id="answer-rate" class="ds-num">—</dd></div>
         <div><dt>24시간 달러 변동</dt><dd id="answer-usd" class="ds-num">—</dd></div>
         <div><dt>24시간 환율 효과</dt><dd id="answer-fx" class="ds-num">—</dd></div>
+        <div><dt>오늘 1$</dt><dd id="answer-rate" class="ds-num">—</dd></div>
       </dl>
     </section>
 
-    <div class="ds-section-title" id="charts-title">
-      <h2>시세 차트</h2>
-      <p>원화 시세, 비트코인 시세, 두 가지를 함께 본 통합 차트까지 — 앱 열자마자 바로 보입니다.</p>
-    </div>
-    <div class="chart-grid">
-      <div class="ds-card chart-cell">
-        <h3 class="chart-h">원화 시세 · 24시간 변동</h3>
-        <p class="chart-sub">코인별 달러 변동과 환율 효과를 나눠, 원화 실질 변동을 한눈에 보여 줍니다.</p>
-        <div class="chart-canvas-wrap"><canvas id="krw-price-chart" aria-label="코인별 달러 변동과 환율 효과, 원화 실질 변동 차트"></canvas></div>
-      </div>
-      <div class="ds-card chart-cell">
-        <h3 class="chart-h">비트코인 시세</h3>
-        <p class="chart-sub">현재 원화 가격과 24시간 전 가격을 함께 보여 줍니다.</p>
+    <div class="ds-card" id="btc-chart-card">
+      <div class="chart-cell">
+        <span class="ds-avatar" data-hue="6" aria-hidden="true">비</span>
+        <div class="ds-list-main">
+          <span class="ds-list-title">비트코인 시세</span>
+          <span class="ds-list-sub">24시간 전 → 현재 원화 가격</span>
+        </div>
         <div class="chart-canvas-wrap"><canvas id="btc-price-chart" aria-label="비트코인 24시간 전과 현재 원화 가격 차트"></canvas></div>
       </div>
-      <div class="ds-card chart-cell chart-cell-wide">
-        <h3 class="chart-h">원화·비트코인 반영 통합</h3>
-        <p class="chart-sub">24시간 원화 변동(%)과 원화 금액 변동(원)을 한 차트에 함께 보여 줍니다.</p>
-        <div class="chart-canvas-wrap"><canvas id="integrated-chart" aria-label="24시간 원화 변동 백분율과 원화 금액 변동 통합 차트"></canvas></div>
-      </div>
     </div>
-
-    <div class="ds-section-title" id="coin-list-title">
-      <h2>코인 시세</h2>
-      <p>원화 가격과 24시간 변동을 코인별로 보여 줍니다. 원화 변동은 달러 변동과 환율 효과의 합이에요.</p>
-    </div>
-    <details class="ds-card collapse" open>
-      <summary class="ds-card-summary">코인 시세 목록을 접거나 펼치기</summary>
-      <ul id="coin-list" class="ds-list"></ul>
-    </details>
 
     <div class="ds-section-title" id="sim-title">
       <h2>그때 샀더라면</h2>
       <p>24시간 전에 돈을 넣었더라면 지금 얼마가 될까요? 투자금을 바꾸면 바로 다시 계산해요.</p>
     </div>
-    <details class="ds-card collapse" id="sim-card" open>
-      <summary class="ds-card-summary">시뮬레이터를 접거나 펼치기</summary>
+    <div class="ds-card" id="sim-card">
       <div class="ds-grid sim-grid">
         <div class="ds-stack">
           <label class="ds-label" for="sim-coin">코인</label>
           <select class="ds-select" id="sim-coin">
             <option value="bitcoin">비트코인</option>
             <option value="ethereum">이더리움</option>
-            <option value="solana" hidden>솔라나</option>
           </select>
           <label class="ds-label" for="sim-amount">투자금(원)</label>
           <input class="ds-input ds-num" id="sim-amount" type="text" inputmode="numeric" value="1000000" placeholder="1000000">
@@ -101,7 +76,57 @@
         </div>
       </div>
       <p id="sim-result" class="sim-result" aria-live="polite"></p>
+    </div>
+
+    <details class="more-block" id="coin-block">
+      <summary class="more-summary">
+        <div class="ds-section-title">
+          <h2 id="coin-list-title">코인 시세</h2>
+          <p>코인별 원화 가격과 24시간 수익. 원화 수익은 코인(달러) 변동 + 환율 효과입니다.</p>
+        </div>
+        <span class="more-hint" id="coin-peek" aria-hidden="true"></span>
+      </summary>
+      <div class="more-body">
+        <ul id="coin-list" class="ds-list"></ul>
+      </div>
     </details>
+
+    <details class="more-block" id="charts-block">
+      <summary class="more-summary">
+        <div class="ds-section-title">
+          <h2 id="charts-title">시세 차트</h2>
+          <p>원화 수익 = 코인(달러) 변동 + 환율 효과. 원화 시세, 비트코인 시세, 통합 차트입니다.</p>
+        </div>
+        <span class="more-hint">펼치기</span>
+      </summary>
+      <div class="more-body">
+        <div class="ds-card chart-card">
+          <ul class="ds-list chart-list">
+            <li class="ds-list-item chart-cell">
+              <span class="ds-avatar" data-hue="2" aria-hidden="true">원</span>
+              <div class="ds-list-main">
+                <span class="ds-list-title">원화 시세 · 24시간</span>
+                <span class="ds-list-sub">코인 가격(달러) · 환율 효과 · 원화 수익</span>
+              </div>
+              <div class="chart-canvas-wrap"><canvas id="krw-price-chart" aria-label="코인별 코인 가격(달러) 변동, 환율 효과, 원화 수익 차트"></canvas></div>
+            </li>
+            <li class="ds-list-item chart-cell chart-cell-wide">
+              <span class="ds-avatar" data-hue="4" aria-hidden="true">통</span>
+              <div class="ds-list-main">
+                <span class="ds-list-title">원화 · 비트코인 통합</span>
+                <span class="ds-list-sub">24시간 원화 수익(%)과 원화 금액 변동</span>
+              </div>
+              <div class="chart-canvas-wrap"><canvas id="integrated-chart" aria-label="24시간 원화 수익 백분율과 원화 금액 변동 통합 차트"></canvas></div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <div class="ds-card-tint">
+      <h2>알아 두세요</h2>
+      <p class="ds-hint">환율은 하루 한 번만 갱신돼요. 그래서 24시간 환율 효과는 데이터 시점 기준이고, 원화 수익을 더 정확히 보고 싶으시면 시뮬레이터에서 매수 시점 환율을 직접 넣어 보세요.</p>
+    </div>
 
     <p id="source-line" class="ds-footer"></p>
   </section>

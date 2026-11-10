@@ -43,7 +43,7 @@ export function krwChartData(rows) {
     datasets: [
       { label: "달러 변동", data: rows.map((r) => r.usdChangePct), backgroundColor: "var(--ds-c2)" },
       { label: "환율 효과", data: rows.map((r) => r.fxEffectPct), backgroundColor: "var(--ds-c3)" },
-      { label: "원화 실질 변동", data: rows.map((r) => r.krwChangePct), backgroundColor: "var(--ds-c1)" },
+      { label: "원화 수익", data: rows.map((r) => r.krwChangePct), backgroundColor: "var(--ds-c1)" },
     ],
   };
 }
@@ -57,8 +57,8 @@ export function btcChartData(rows) {
   return {
     labels: [coinName(b.id)],
     datasets: [
-      { label: "24시간 전", data: [prev], backgroundColor: "var(--ds-c2)" },
-      { label: "현재", data: [current], backgroundColor: "var(--ds-c1)" },
+      { label: "24시간 전 가격", data: [prev], backgroundColor: "var(--ds-c2)" },
+      { label: "현재 가격", data: [current], backgroundColor: "var(--ds-c1)" },
     ],
   };
 }
@@ -69,7 +69,7 @@ export function integratedChartData(rows) {
   return {
     labels: rows.map((r) => coinName(r.id)),
     datasets: [
-      { label: "24시간 변동(%)", data: rows.map((r) => r.krwChangePct), backgroundColor: "var(--ds-c1)", yAxisID: "y" },
+      { label: "원화 수익(%)", data: rows.map((r) => r.krwChangePct), backgroundColor: "var(--ds-c1)", yAxisID: "y" },
       { label: "24시간 원화 변동(원)", data: rows.map((r) => Math.round((r.krwPrice * r.krwChangePct) / 100)), backgroundColor: "var(--ds-c4)", yAxisID: "y1" },
     ],
   };

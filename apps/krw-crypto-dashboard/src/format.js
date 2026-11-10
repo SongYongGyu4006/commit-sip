@@ -54,6 +54,19 @@ export function formatSeoulTime(iso) {
   return date + " " + time;
 }
 
+// ISO 문자열 → "11/10(월) 오후 5:03" (Asia/Seoul, 화면 상단 띠용)
+export function formatSeoulClock(iso) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso);
+  const tz = { timeZone: "Asia/Seoul" };
+  const parts = new Intl.DateTimeFormat("ko", {
+    month: "2-digit", day: "2-digit", weekday: "short",
+    hour: "numeric", minute: "2-digit", hour12: true, ...tz,
+  }).formatToParts(d);
+  const g = (t) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${g("month")}/${g("day")}(${g("weekday")}) ${g("dayPeriod")} ${g("hour")}:${g("minute")}`;
+}
+
 // ISO 문자열 → "N분 전" / "N시간 전" 상대 시간
 export function formatRelativeTime(iso) {
   const d = new Date(iso);

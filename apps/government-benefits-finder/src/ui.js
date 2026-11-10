@@ -34,12 +34,16 @@ const deadlineBadge = (item) => {
     if (item.daysLeft === 0) b.dataset.day = '0';
     return b;
   }
-  if (item.status === 'open') return el('span', 'ds-badge', item.daysLeft + '일 남음');
+  if (item.status === 'open' && item.daysLeft !== null) return el('span', 'ds-badge', item.daysLeft + '일 남음');
+  // daysLeft가 null인데 status가 'none'이 아닌 경계(날짜 파싱 실패 등)도 '상시'로 — 'D-null' 금지
   const b = el('span', 'ds-badge', '상시');
   b.title = '상시/기한 미표시';
   b.setAttribute('aria-label', '상시/기한 미표시');
   return b;
 };
+
+// 남은 일수 문장: D-day / n일 남음 (ui.js 만 사용 — app.js 의 daysWord 와 같은 문구)
+const daysWord = (d) => (d === 0 ? '오늘 마감(D-day)' : d + '일 남음');
 
 // 보조 줄: 남은 일수 + 마감일을 한 줄로('27일 남음 · 2026-11-30', 상시는 '상시(기한 미표시)')
 const dueLine = (item) =>
@@ -66,8 +70,13 @@ export function buildCard(item) {
   }
   title.textContent = item.name;
   main.append(title);
+  const TARGET_LABEL = { youth: '청년', childcare: '출산·육아', selfemployed: '자영업', lowincome: '저소득', senior: '노인' };
+  if (item.targets.length) {
+    const badge = el('span', 'ds-badge ds-badge-accent target-badge', item.targets.map((t) => TARGET_LABEL[t]).join(' · '));
+    badge.title = '이 혜택의 대상입니다';
+    main.append(badge);
+  }
   if (item.field) main.append(el('span', 'ds-list-sub field-label', item.field));
-  if (item.targets.length) main.append(el('span', 'ds-list-sub target-label', item.targets.join(' · ')));
   if (item.summary) main.append(el('span', 'ds-list-sub', item.summary));
   if (item.agency) main.append(el('span', 'ds-list-sub', item.agency));
 
@@ -81,53 +90,21 @@ export function buildCard(item) {
   return li;
 }
 
-// 첫 화면 TOP 5: 답 카드 안의 짧은 카드(이름 + 남은 일수)
-export function renderSoonList(ol, items) {
-  ol.textContent = '';
-  for (const i of items) {
-    const li = el('li', 'ds-list-item soon-item');
-    const av = el('span', 'ds-avatar ds-avatar-s');
-    av.setAttribute('aria-hidden', 'true');
-    av.dataset.hue = String(hue(i.name));
-    const first = i.name.match(/[가-힣0-9A-Za-z]/);
-    av.textContent = first ? first[0] : '혜';
-
-    const main = el('div', 'ds-list-main');
-    const title = el(i.url.startsWith('https://') ? 'a' : 'span', 'ds-list-title');
-    if (i.url.startsWith('https://')) {
-      title.classList.add('detail-link');
-      title.href = i.url;
-      title.target = '_blank';
-      title.rel = 'noopener';
-    }
-    title.textContent = i.name;
-    main.append(title);
-    if (i.field) main.append(el('span', 'ds-list-sub', i.field));
-
-    const end = el('div', 'ds-list-end');
-    if (i.daysLeft !== null) {
-      end.append(el('span', 'ds-list-amount soon-amount', i.daysLeft === 0 ? 'D-day' : i.daysLeft + '일 남음'));
-      if (i.deadline) end.append(el('span', 'ds-list-sub', i.deadline));
-    } else {
-      const b = el('span', 'ds-badge', '상시');
-      b.title = '상시/기한 미표시';
-      b.setAttribute('aria-label', '상시/기한 미표시');
-      end.append(b);
-    }
-    li.append(av, main, end);
-    ol.append(li);
-  }
-}
+// '임박순'을 화면 목록에 맞게 재정렬: 0~14일(closing) → 15일 초과(open) → 상시(none).
+// 순서만 바꾸고 요소를 안 건드리므로(정렬 안정성) 순수 함수의 정렬 결과는 그대로 유지돼요.
+const reorderByImminency = (items) => {
+  const rank = (i) => (i.status === 'closing' ? 0 : i.status === 'open' ? 1 : 2);
+  const cmp = (a, b) => rank(a) - rank(b)
+    || (a.daysLeft === null ? 1 : b.daysLeft === null ? -1 : a.daysLeft - b.daysLeft);
+  return [...items].sort(cmp);
+};
 
 // limit: 처음 limit개만 보이고, 0(또는 items보다 큰 값)이면 전부. #more-button 은 app.js 가 관리
-export function renderList(list, items, limit = 0) {
+// sort='deadline' 이면 '마감 임박(14일 이내)순' 의 의미에 맞게 재분류한 뒤 그 순서대로 뽑는다.
+export function renderList(list, items, limit = 0, sort = '') {
+  const shown = sort === 'deadline' ? reorderByImminency(items) : items;
   list.textContent = '';
-  const n = limit > 0 ? Math.min(limit, items.length) : items.length;
-  for (let i = 0; i < n; i++) list.append(buildCard(items[i]));
+  const n = limit > 0 ? Math.min(limit, shown.length) : shown.length;
+  for (let i = 0; i < n; i++) list.append(buildCard(shown[i]));
 }
 
-export function renderMeta(totalEl, closingEl, noneEl, n, closing, none) {
-  totalEl.textContent = n + '건';
-  closingEl.textContent = closing + '건';
-  noneEl.textContent = none + '건';
-}

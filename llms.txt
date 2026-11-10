@@ -20,6 +20,8 @@
 
 ## 최근 글
 
+- [Gemini가 개인 파일을 사람 리뷰어한테 보낸다고? 받아서 직접 확인해 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-11-gemini-files.html)
+- [rea-video: 영상 받아서 돌려보니](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-10-rea-video.html)
 - [284B 모델을 64GB RAM에 GPU 없이 돌리는 CPU 추론 키트, 받아서 직접 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-09-llama-modchip.html)
 - [PixelOE: AI 없이 사진이 픽셀 아트가 되는 오픈소스, 받아서 직접 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-08-pixeloe.html)
 - [agent-autoloop, 명령줄 AI를 백그라운드에서 혼자 일게 하는 오픈소스](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-07-agent-autoloop.html)
@@ -30,8 +32,6 @@
 - [Craft Anything, 직접 받아서 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-04-craft-anything.html)
 - [Qwen-Agent로 버그 숨긴 앱 검사, 10개 중 5개까지?](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-03-qwen-agent.html)
 - [Craft Anything, 설치 없이 받아서 직접 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-03-craft-anything.html)
-- [AI가 만든 '강력한 비밀번호' 100개, 겹치는 게 있었다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-02-zxcvbn-python.html)
-- [unslop, 바이브코딩 UI를 디자인처럼 다듬는 Claude 스킬을 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-02-unslop.html)
 
 ## 앱 실험실
 

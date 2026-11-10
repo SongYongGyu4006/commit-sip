@@ -1,6 +1,6 @@
 // 대시보드를 매번 처음부터 다시 그린다(누적 상태 없음, li 중복 없음)
-// 구조: 띠(오늘 1$) → 답 카드(24시간 원화 변동 금액) → 시세 차트 3개(원화·비트코인·통합) → 코인 목록(접음) → 그때 샀더라면(접음) → 출처
-import { formatWon, formatRate, formatSigned, coinName, formatRelativeTime, barWidth } from "./format.js";
+// 구조: 띠(오늘 1$ · 데이터 기준) → 답 카드(24시간 수익) → 시세 차트 3개(원화·비트코인·통합) → 코인 시세 → 그때 샀더라면 → 안내 → 출처
+import { formatWon, formatRate, formatSigned, coinName, formatSeoulClock, barWidth } from "./format.js";
 import { round2 } from "./app.js";
 import { renderAllCharts } from "./chart.js";
 import { simDefaults, renderSimResult, simCoinChange } from "./simulator.js";
@@ -124,9 +124,9 @@ function renderCoinList(result) {
 }
 
 export function renderDashboard(result, meta, isExample) {
-  // 띠: 오늘 1$ 환율 + 기준 정보(데이터 시각)
-  const fxTime = isExample ? "" : " (" + formatRelativeTime(meta.fxMeta.fetched_at) + " 갱신)";
-  $("#band-rates").textContent = "오늘 1$" + formatRate(result.usdKrw) + "원";
+  // 띠: 오늘 1$ 환율 + 데이터 기준(서울 시각)
+  $("#fx-line").textContent = "오늘 1$ = " + formatRate(result.usdKrw);
+  $("#data-time").textContent = "데이터 기준: " + formatSeoulClock(meta.coinMeta.fetched_at);
   $("#band-sub").textContent = isExample ? "예시 데이터" : "보유 코인 기준 · 1백만 원어치로 계산";
 
   renderAnswerCard(result);
@@ -157,7 +157,8 @@ export function renderDashboard(result, meta, isExample) {
 export function renderError(message, statusText) {
   $("#app-status").textContent = statusText;
   $("#coin-list").textContent = "";
-  $("#band-rates").textContent = "오늘 1$ — 원";
+  $("#fx-line").textContent = "오늘 1$ = —원";
+  $("#data-time").textContent = "데이터 기준: —";
   $("#band-sub").textContent = message;
   $("#source-line").textContent = "";
   $("#sim-result").textContent = "";

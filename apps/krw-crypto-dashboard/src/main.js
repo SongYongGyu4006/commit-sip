@@ -13,6 +13,7 @@ let isExample = false;
 let liveData = null;
 
 function show(name) {
+  const wasActive = $("#nav-" + name).classList.contains("active");
   for (const id of ["dashboard", "coins", "backup"]) {
     const section = $("#screen-" + id);
     if (id === name) section.removeAttribute("hidden");
@@ -20,6 +21,15 @@ function show(name) {
   }
   for (const id of ["dashboard", "coins", "backup"]) {
     $("#nav-" + id).classList.toggle("active", id === name);
+  }
+  // 이미 같은 화면에서 다시 눌렀을 때: 뷰포트 밖이라면 첫 단위로 부드럽게 스크롤해
+  // "누르면 다시 처음" 피드백. 뷰포트 안에 있으면 스크롤 위치가 그대로(초기 상태 유지).
+  if (wasActive && name === "dashboard") {
+    const el = $("#screen-dashboard .ds-answer");
+    if (el) {
+      const r = el.getBoundingClientRect();
+      if (r.top < 0 || r.top > 160) window.scrollTo({ top: window.scrollY + r.top - 12, behavior: "smooth" });
+    }
   }
 }
 
@@ -38,7 +48,7 @@ function refresh() {
 
 async function boot() {
   for (const name of ["dashboard", "coins", "backup"]) {
-    $("#nav-" + name).addEventListener("click", () => show(name));
+    $(`#nav-${name}`).addEventListener("click", () => show(name));
   }
   initCoinsScreen(() => coinIds, (ids) => {
     coinIds = ids;

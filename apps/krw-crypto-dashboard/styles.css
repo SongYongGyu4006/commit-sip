@@ -1,468 +1,220 @@
-/* 스타일: vendor/studio.css(디자인 시스템) 위에 앱 전용 규칙만. 토큰·ds- 구성 요소 우선 사용 */
-:root {
-  --ds-c3: #0c8599;
-  --ds-c4: #3756e3;
-}
+/* app/styles.css — 화면(화면) 레이아웃. studio.css 는 건드리지 않습니다.
+   구역 순서: 밴드(제목) → 핵심 숫자(대답 블록) → 24시간 수익 분석(비트코인)
+   → 그때 샀더라면(시뮬레이터) → [더 보기: 코인 시세 목록] → [더 보기: 원화·통합 차트]
+   → 알아 두세요. 핵심은 첫 화면에, 보조는 접어 둡니다. */
 
-/* 다크 모드: 앱 색이 모두 토큰이라 여기서 토큰을 직접 바꾼다 */
-@media (prefers-color-scheme: dark) {
-  :root, :root[data-accent] {
-    color-scheme: dark;
-    --ds-bg: #111214; --ds-surface: #1a1b1e; --ds-surface-2: #232428;
-    --ds-ink: #eeeff1; --ds-ink-2: #b4b4b4; --ds-ink-3: #a3a3a3; --ds-line: #2e3035;
-    --ds-accent: #7c9bff; --ds-accent-text: #7c9bff; --ds-accent-ink: #0b0e14;
-    --ds-accent-soft: #1c2540; --ds-accent-line: #34457a;
-    --ds-band: #1b2540; --ds-band-ink: #eeeff1; --ds-band-ink-2: #c4c8d4;
-    --ds-up: #ff7b72; --ds-down: #79a8ff;
-    --ds-up-bg: #331a18; --ds-down-bg: #1a2640;
-    --ds-c1: #7c9bff; --ds-c3: #3fc1cf; --ds-c4: #f47fb0;
-    --ds-shadow: 0 1px 2px rgba(0, 0, 0, .35);
-  }
-}
+/* 밴드: 첫 화면에 제목만, 메타 행은 줄이고 여백을 조인다. */
+.ds-band { padding-block: 20px; }
+.ds-band h1 { margin-bottom: 10px; }
+.ds-band .ds-band-meta { margin-top: 12px; row-gap: 4px; }
+.ds-band .topnav { margin-top: 12px; }
 
-/* 상단 밴드: 좌(제목·설명·기준) + 우(내비게이션) */
-.ds-band {
-  padding-top: 20px;
-  padding-bottom: 16px;
+/* 답변 블록(첫 화면의 주인공) */
+.ds-answer {
+  padding: 22px 26px;
 }
-.ds-band-head {
+.ds-answer .ds-answer-num { margin-top: 6px; }
+
+/* 비트코인 24시간 분석 카드: 대문자 카드가 아니라 한 줄 셀. 캔버스는 160px. */
+#btc-chart-card {
+  border-radius: 16px;
+}
+#btc-chart-card .chart-cell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 0 20px;
+  align-items: center;
+  padding: 18px 22px;
+}
+#btc-chart-card .chart-canvas-wrap {
+  height: 160px;
+  min-height: 160px;
+}
+#btc-chart-card .chart-canvas-wrap canvas { width: 100%; height: 100%; }
+#btc-chart-card .ds-avatar { margin: 0; }
+
+/* 시뮬레이터: 입력은 2열, 결과는 카드 안에서 바로. */
+.sim-grid {
+  margin-bottom: 18px;
+  --studio-grid-gap: 24px;
+}
+.sim-result {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--studio-hairline);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.sim-result:empty { display: none; }
+
+/* 더 보기(접기) 블록: 목록과 차트는 첫 화면에 넣지 않고 접어 둔다. */
+.more-block {
+  margin-bottom: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--ds-line);
+  background: color-mix(in oklab, var(--ds-surface) 80%, var(--ds-bg) 20%);
+}
+.more-summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
-}
-.ds-band h1 {
-  font-size: 24px;
-  margin-bottom: 4px;
-}
-.ds-band-head > div:first-child {
-  max-width: 640px;
-}
-.ds-band-meta {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-  font-size: 14px;
-  color: var(--ds-band-ink-2);
-}
-.ds-band-meta span {
-  color: var(--ds-band-ink-2);
-}
-.ds-band p {
-  font-size: 15px;
-  color: var(--ds-band-ink-2);
-}
-#band-rates {
-  display: inline-flex;
-  gap: 6px;
-  word-spacing: .25em;
-  color: var(--ds-band-ink);
-  font-size: 15px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-/* 상단 내비게이션 */
-.topnav {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.nav-btn {
-  min-height: 44px;
-  padding: 0 14px;
-  border-radius: var(--ds-radius);
-}
-.ds-band .ds-btn-ghost {
-  color: var(--ds-band-ink);
-  border: 1px solid color-mix(in srgb, var(--ds-band-ink) 55%, transparent);
-  background: transparent;
-}
-.ds-band .ds-btn-ghost:hover {
-  background: color-mix(in srgb, var(--ds-band-ink) 14%, transparent);
-  border-color: color-mix(in srgb, var(--ds-band-ink) 55%, transparent);
-}
-.ds-band .nav-btn.active {
-  background: var(--ds-band-ink);
-  color: var(--ds-band);
-  border-color: var(--ds-band-ink);
-}
-.ds-band .nav-btn.active:hover {
-  filter: none;
-  border-color: var(--ds-band-ink);
-}
-
-/* 상태 바: 비면 숨기고, 본문과 같은 왼쪽 선에 맞춘다 */
-.app-status:empty {
-  display: none;
-}
-.app-status {
-  width: min(calc(100% - 32px), calc(var(--ds-max) - 32px));
-  margin: 12px auto 0;
-  padding: 10px 14px;
-  border-radius: var(--ds-radius);
-  background: var(--ds-surface-2);
-  color: var(--ds-ink);
-  border: 1px solid var(--ds-line);
-  font-size: 14px;
-}
-
-/* 예시 버튼: 띠 바로 아래(휴대폰에선 띠 아래·답 카드 위로) */
-.example-btn {
-  display: block;
-  width: min(calc(100% - 32px), calc(var(--ds-max) - 32px));
-  margin: 16px auto 0;
-  position: relative;
-  z-index: 2;
-  min-height: 48px;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-/* 첫 화면: 답 카드(24시간 원화 변동) → 시세 차트 3개를 스크롤 전까지, 그 아래 목록·시뮬레이터(접을 수 있음) */
-#screen-dashboard {
-  display: flex;
-  flex-direction: column;
-}
-.ds-answer {
-  margin-top: 16px;
-  position: relative;
-  z-index: 1;
-}
-.ds-answer-num {
-  margin-top: 4px;
-  font-size: clamp(40px, 10vw, 56px);
-  font-weight: 800;
-}
-.ds-answer-text {
-  font-size: 15px;
-  line-height: 1.45;
-  max-width: 44ch;
-}
-.ds-answer-meta {
-  margin-top: 8px;
-  padding: 6px 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 0;
-}
-.ds-answer-meta dt {
-  font-size: 13px;
-}
-.ds-answer-meta dd {
-  font-size: 17px;
-}
-.ds-answer-meta > div {
-  padding: 0 16px;
-}
-/* 환율은 띠에 이미 있으니 답 카드에서는 숨긴다 */
-.ds-answer-meta > div:first-child {
-  display: none;
-}
-.ds-answer-meta > div:nth-child(2) {
-  padding-left: 16px;
-}
-.ds-answer-meta > div:nth-child(3) {
-  border-left: 1px solid var(--ds-line);
-}
-
-/* 섹션 제목(시세 차트 / 코인 시세 / 그때 샀더라면): 제목 아래 설명을 세로로 쌓는다 */
-.ds-section-title {
-  display: block;
-  margin: 32px 0 12px;
-}
-.ds-section-title h2 {
-  font-size: 20px;
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-.ds-section-title p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  max-width: 60ch;
-  color: var(--ds-ink-2);
-}
-#charts-title p {
-  display: none;
-}
-
-/* 첫 화면 순서: 답 카드 → 코인 시세 목록 → 시세 차트 → 시뮬레이터 */
-#coin-list-title,
-#screen-dashboard > details:has(#coin-list) {
-  order: 1;
-}
-#charts-title,
-.chart-grid {
-  order: 2;
-}
-#sim-title,
-#sim-card {
-  order: 3;
-}
-#source-line {
-  order: 4;
-}
-
-/* ── 차트(첫 화면 3개) ── */
-.chart-canvas-wrap {
-  position: relative;
-  height: 260px;
-}
-.chart-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.chart-cell {
-  box-shadow: none;
-  border: 1px solid var(--ds-line);
-  border-radius: 20px;
-  padding: 12px;
-}
-.chart-cell-wide {
-  grid-column: 1 / -1;
-}
-.chart-h {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 1px;
-}
-.chart-sub {
-  display: none;
-}
-.chart-h {
-  margin-bottom: 8px;
-}
-.chart-cell .chart-canvas-wrap {
-  height: 120px;
-}
-.chart-cell-wide .chart-canvas-wrap {
-  height: 130px;
-}
-
-/* ── 접는 구역(목록·시뮬레이터) ── */
-details.collapse {
-  overflow: hidden;
-}
-.ds-card-summary {
+  padding: 16px 20px;
   cursor: pointer;
-  padding: 12px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ds-ink-2);
-  user-select: none;
-}
-details.collapse[open] .ds-card-summary {
-  border-bottom: 1px solid var(--ds-line);
-}
-
-/* ── 시뮬레이터 ── */
-.sim-grid {
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-#sim-card .ds-input {
-  width: 100%;
-  max-width: 260px;
-}
-.sim-result {
-  margin-top: 14px;
-  font-size: 15px;
-  font-weight: 500;
-  min-height: 24px;
-}
-/* ds-up::before 등 노랩 요소가 카드 밖으로 나가 페이지 가로 스크롤을 만드는 것을 막는다 */
-.sim-result .ds-up, .sim-result .ds-down, .sim-result .ds-flat {
-  white-space: normal;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-}
-
-/* ── 코인 목록(ds-list 구조) ── */
-.coin-list {
-  margin: 0;
-  padding: 0;
   list-style: none;
 }
-.coin-row {
+.more-summary::-webkit-details-marker { display: none; }
+.more-summary .ds-section-title h2 { margin: 0; font-size: 17px; }
+.more-summary .ds-section-title p { margin: 4px 0 0; font-size: 12.5px; }
+.more-hint {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ds-ink-3);
+  white-space: nowrap;
+}
+.more-block[open] .more-hint { text-decoration: none; }
+/* 접힌 <details>의 본문은 레이아웃에서 완전히 빼야 한다.
+   안 그러면 본문(코인 목록·차트)이 answer 카드나 summary 제목 위로 겹쳐
+   글자가 겹쳐 읽히게 된다(1280px 데스크톱 실측: usd-change/fx-effect 와
+   #answer-text, ds-avatar"원" 와 #charts-title). */
+.more-body { display: none; }
+.more-block[open] .more-body {
+  display: block;
+  padding: 0 20px 18px;
+  border-top: 1px solid var(--ds-line);
+}
+.more-block[open] .more-body { border-top-color: transparent; }
+.more-block[open] .more-summary { border-bottom: 1px solid var(--ds-line); padding-bottom: 14px; }
+/* 더 보기 카드 안의 기존 카드 테두리를 빼고 블록 경계로 쓴다. */
+.more-block .more-body > .ds-card,
+.more-block .more-body > ul.ds-list {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 18px 0 0;
+}
+.more-block .more-body .ds-card .chart-list { margin-top: 0; }
+
+/* 차트 셀: 캔버스 200px로 높이를 고정해 첫 화면을 부풀리지 않는다. */
+.chart-cell {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas:
-    "avatar main end"
-    ". bar bar";
-  gap: 4px 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 440px);
+  gap: 0 20px;
   align-items: center;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--ds-line);
+  padding: 18px 22px;
 }
-.coin-row:last-child {
-  border-bottom: none;
+.chart-cell .chart-canvas-wrap {
+  height: 200px;
+  min-height: 200px;
 }
-.coin-row .ds-avatar {
-  grid-area: avatar;
+.chart-cell .chart-canvas-wrap canvas { width: 100%; height: 100%; }
+.chart-cell-wide .chart-canvas-wrap {
+  height: 240px;
+  min-height: 240px;
 }
-.coin-row .ds-list-main {
-  grid-area: main;
-  min-width: 0;
+
+/* 코인 목록 행: 이름 + 24시간 뱃지 / 달러·환율 보조 / 원화 가격 + 24시간 금액, 막대가 행 전체에. */
+#coin-list .ds-list-item {
+  flex-wrap: wrap;
 }
-.coin-row .ds-list-end {
-  grid-area: end;
+#coin-list .ds-list-item .ds-list-main {
+  flex: 1 1 180px;
+}
+#coin-list .ds-list-item .coin-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+#coin-list .ds-list-item .coin-name { white-space: normal; }
+#coin-list .ds-list-item .real-change {
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+#coin-list .ds-list-item .real-change.up { background: color-mix(in oklab, var(--ds-up) 12%, transparent); }
+#coin-list .ds-list-item .real-change.down { background: color-mix(in oklab, var(--ds-down) 12%, transparent); }
+#coin-list .ds-list-item .real-change.flat { color: var(--ds-ink-3); }
+#coin-list .ds-list-item .ds-list-end {
+  flex: 0 1 auto;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
 }
-.coin-row .bar-wrap {
-  grid-area: bar;
-  height: 4px;
+#coin-list .ds-list-item .bar-wrap {
+  flex-basis: 100%;
+  height: 6px;
+  border-radius: 3px;
   background: var(--ds-line);
-  border-radius: 2px;
   overflow: hidden;
+  margin-top: 4px;
 }
-.coin-row .bar-wrap .real-bar {
+#coin-list .ds-list-item .real-bar {
   height: 100%;
-  border-radius: 2px;
+  border-radius: 3px;
 }
-.coin-row .real-bar.up { background: var(--ds-up); }
-.coin-row .real-bar.down { background: var(--ds-down); }
-.coin-row .real-bar.flat { background: var(--ds-ink-3); }
+#coin-list .ds-list-item .real-bar.up { background: var(--ds-up); }
+#coin-list .ds-list-item .real-bar.down { background: var(--ds-down); }
+#coin-list .ds-list-item .real-bar.flat { background: var(--ds-ink-3); }
 
-.coin-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.coin-name {
-  font-size: 15px;
-  font-weight: 600;
-}
-.real-change {
-  font-size: 14px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--ds-radius-sm, 8px);
-}
-.real-change.up { background: var(--ds-up-bg); color: var(--ds-up); }
-.real-change.down { background: var(--ds-down-bg); color: var(--ds-down); }
-.real-change.flat { background: var(--ds-surface-2); color: var(--ds-ink-2); }
+/* 코인 시세 미리보기(한 줄 요약) */
+#coin-peek { display: none; }
+#coin-peek.has-rows { display: inline; }
 
-.ds-list-sub {
-  margin-top: 3px;
-  display: flex;
-  gap: 8px 12px;
-  flex-wrap: wrap;
+/* 알아 두세요: 카드가 아니라 연한 밴드로. */
+.ds-card-tint {
+  border-radius: 16px;
+  padding: 18px 22px;
+  background: color-mix(in oklab, var(--studio-card) 60%, var(--studio-canvas) 40%);
 }
-.usd-change, .fx-effect {
-  font-size: 14px;
-  color: var(--ds-ink-2);
-}
-.krw-price {
-  font-size: 20px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.real-amount {
-  font-size: 13px;
-  color: var(--ds-ink-3);
-  white-space: nowrap;
-}
+.ds-card-tint h2 { margin: 0 0 8px; font-size: 16px; }
+.ds-card-tint p { margin: 0; font-size: 13.5px; }
 
+/* 소스 행 */
 .ds-footer {
-  margin: 18px 0 0;
-  font-size: 14px;
-  text-align: left;
-  color: var(--ds-ink-3);
+  margin-top: 8px;
+  padding-top: 16px;
+  font-size: 12.5px;
+  color: var(--studio-text-3);
+  text-align: center;
 }
 
-/* ── 코인 선택 화면 ── */
-#screen-coins .ds-card {
-  max-width: 420px;
+/* 예시 버튼: 밴드 바로 아래에 얹는 작은 액션 */
+.example-btn { margin-top: 14px; }
+
+/* 예시 데이터 적용 시 강조: 첫 화면 주인공에 1초 반짝임 */
+.ds-flash {
+  animation: ds-flash 1s ease-out 1;
+}
+@keyframes ds-flash {
+  0% { box-shadow: 0 0 0 3px color-mix(in oklab, var(--studio-accent) 55%, transparent); }
+  100% { box-shadow: 0 0 0 3px transparent; }
 }
 
-/* ── 백업 화면 ── */
-#screen-backup .ds-card {
-  max-width: 520px;
-}
-.btn-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 14px;
-}
-.import-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.import-input {
-  display: none;
+/* 상태 텍스트: 화면 위, 왼쪽에 얇게 */
+.app-status {
+  margin: 12px auto 0;
+  max-width: 1040px;
+  font-size: 12.5px;
+  color: var(--studio-text-3);
 }
 
-/* 휴대폰: 시뮬레이터 1열·목록은 그대로(그리드 자체로 좁아짐) */
-@media (max-width: 640px) {
-  .ds-band {
-    padding: 20px 16px 16px;
-  }
-  .ds-band h1 {
-    font-size: 24px;
-  }
-  .ds-band-head {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .topnav {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .nav-btn {
-    padding: 0 6px;
-  }
-  .example-btn {
-    width: calc(100% - 32px);
-    margin: 16px auto 0;
-  }
-  .ds-answer-meta {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-  .ds-answer-meta > div {
-    padding: 0 12px;
-  }
-  .chart-grid {
-    grid-template-columns: 1fr;
-  }
-  .chart-cell .chart-canvas-wrap {
-    height: 140px;
-  }
-  .chart-cell-wide .chart-canvas-wrap {
-    height: 150px;
-  }
-  .ds-band-meta {
+/* 휴대폰(390px 이하): 차트 셀을 2열→1열로. 2열이면 240px 최소 폭 차트가
+   한 줄에 들어가지 못해 캔버스가 0px으로 줄어 차트가 안 보이므로(실측),
+   비트코인 카드는 #btc-chart-card 선택자(240px 최소) 때문에 반드시 포함해야 한다. */
+@media (max-width: 600px) {
+  .chart-cell,
+  #btc-chart-card .chart-cell {
+    grid-template-columns: minmax(0, 1fr);
     gap: 10px;
   }
-  .coin-row .ds-list-end {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 4px 12px;
-    text-align: left;
+  .chart-cell .chart-canvas-wrap,
+  #btc-chart-card .chart-canvas-wrap { height: 150px; min-height: 150px; }
+  .chart-cell-wide .chart-canvas-wrap { height: 180px; min-height: 180px; }
+  #coin-list .ds-list-item {
+    grid-template-columns: minmax(0, 1fr) minmax(120px, 1fr);
   }
-  .sim-grid {
-    grid-template-columns: 1fr;
-  }
-  .coin-row {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas:
-      "avatar main"
-      ". end"
-      ". bar";
-    padding: 14px 14px;
-  }
+  #coin-list .ds-list-item .ds-list-value { grid-column: 1 / -1; justify-content: flex-start; margin-top: 4px; }
+  .more-summary .ds-section-title p { display: none; }
+  .sim-grid { --studio-grid-gap: 14px; }
 }

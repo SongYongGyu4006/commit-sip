@@ -1,10 +1,13 @@
 /* GovBenefit Finder — app-local styles on top of vendor/studio.css */
 #app-status{margin:var(--ds-s3) 0}
 #app-status:empty{display:none}
+.copy-link-status{flex:1 1 100%;order:99;margin:var(--ds-s1) 0 0;font-size:13px;text-align:center}
+.copy-link-status:empty,.copy-link-status[hidden]{display:none}
 #total-line:empty{display:none}
 #data-time:empty{display:none}
 #source-line:empty{display:none}
 .ds-band b{font-weight:700}
+.ds-band-date{font-size:14px;color:var(--ds-band-ink-2)}
 
 /* 띠 안 1·2·3 단계: 첫 화면 맨 위에서 "이렇게 쓰세요" */
 .ds-band-steps{list-style:none;margin:var(--ds-s3) 0 0;padding:0;display:grid;gap:6px}
@@ -14,19 +17,9 @@
 
 /* 답 카드: 숫자 0이면 강조 색이 아니라 옅은 회색 */
 .answer-num-zero{color:var(--ds-ink-3)}
-/* 큰 숫자 앞 "가장 빠른 마감까지" */
+/* 큰 숫자 + "건" 단위(전체 n건) */
 .ds-answer-num{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px}
-.ds-answer-num .ds-answer-num-prefix{font-size:15px;font-weight:600;color:var(--ds-ink-2)}
-/* vendor 의 .ds-answer-num(56px)과 스펙이 겹쳐서 prefix·"일"이 숫자 위로 올라가 겹치는 문제: vendor 보다 늦게 적어 15px 로 유지 */
-.ds-answer-num .ds-answer-num-prefix,.ds-answer-num small{font-size:15px}
-
-/* 답 카드 안 TOP 5(soon-list): 조용한 보조 목록 */
-#soon-list{margin:var(--ds-s3) 0 0;padding:0 0 var(--ds-s2);border-bottom:1px solid var(--ds-line)}
-#soon-list .soon-item{min-height:48px;padding:var(--ds-s2) 0}
-#soon-list .soon-item + .soon-item{margin-top:2px}
-#soon-list .ds-list-sub{font-size:15px;margin-top:0}
-#soon-list .soon-amount{font-size:15px}
-#soon-list .ds-avatar{width:28px;height:28px;font-size:12px}
+.ds-answer-num small{font-size:15px}
 
 /* 예시·처음으로 버튼: vendor 의 폭 100%가 세로 쌓이게 하지 않음 */
 .answer-actions{margin-top:var(--ds-s3)}
@@ -36,30 +29,16 @@
 /* 대상 칩 존: 띠 바로 아래(첫 화면 상단). 칩 6개 한 줄 */
 .target-title{margin:var(--ds-s3) 0 var(--ds-s2)}
 .target-title h2{font-size:18px}
-#target-zone{margin-bottom:var(--ds-s2)}
-#target-chips{margin:0}
-#filter-card{margin:0 0 var(--ds-s2)}
-/* 대상 칩 아래 현재 선택 안내: 숫자가 무엇의 숫자인지 보여 줌 */
-#target-hint{margin:var(--ds-s2) 0 0;font-size:13.5px}
-
-/* 조건 조절 접기 */
-.ds-filter-toggle{display:flex;align-items:center;gap:var(--ds-s2);width:100%;min-height:44px;padding:0 var(--ds-s3);border:1px solid var(--ds-line);border-radius:var(--ds-radius);background:var(--ds-surface);color:var(--ds-ink);font:600 15px/1 var(--ds-font);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform var(--ds-fast) var(--ds-ease),border-color var(--ds-fast) var(--ds-ease)}
-.ds-filter-toggle:hover{border-color:var(--ds-ink-3)}
-.ds-filter-toggle:active:not(:disabled){transform:scale(.99)}
-.ds-filter-toggle:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
-.ds-filter-toggle-count{margin-left:auto;display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;background:var(--ds-accent-soft);color:var(--ds-accent-text)}
-.ds-filter-toggle-count[hidden]{display:none!important}
-.ds-filter-toggle[aria-expanded="true"] .ds-filter-toggle-icon{transform:rotate(180deg)}
-.ds-filter-toggle-icon{display:inline-block;font-size:12px;transition:transform var(--ds-fast) var(--ds-ease)}
-.ds-filter-body{margin-top:var(--ds-s3)}
-.ds-filter-body[hidden]{display:none}
-
-/* 대상 칩: 6개 한 줄(390px). 칩은 줄바꿈 허용이라 고정 폭·nowrap 없이도 깨지지 않음 */
+#target-chips{margin:0 0 var(--ds-s2)}
 .ds-chip-row{display:flex;flex-wrap:wrap;gap:var(--ds-s2)}
 .ds-chip-row .ds-chip{flex:0 1 auto;min-width:0;white-space:normal}
 .ds-chip .ds-chip-count{font-weight:500;color:var(--ds-ink-3)}
 .ds-chip[aria-pressed="true"] .ds-chip-count{color:var(--ds-accent-text);font-weight:700}
 
+/* 조건 조절 카드 */
+#filter-card{margin:0 0 var(--ds-s2)}
+.ds-actions{margin:var(--ds-s3) 0 0}
+.ds-actions .ds-btn{flex:1 1 auto;min-width:0}
 /* 분야·대상·정렬: 좁은 화면 세로, ≥860px 세 개 한 줄 */
 .ds-filter-row{display:grid;gap:var(--ds-s3);margin-top:var(--ds-s3)}
 .ds-filter > .ds-label{margin:0 0 var(--ds-s1)}
@@ -74,6 +53,11 @@
 .benefit-card .ds-list-sub{font-size:15px;color:var(--ds-ink-2)}
 .ds-hint{font-size:15px}
 #summary-line{font-size:15px}
+/* 카드 이름 아래 대상 배지: "이 혜택이 누구 대상인지" 한눈에 (vendor .ds-badge 스타일) */
+.target-badge{margin-top:4px}
+/* 카드 오른쪽 남은 일수 숫자: vendor 에 .ds-list-num 이 없어 local 에서 정의 */
+.ds-list-num{font-size:15px;font-weight:600;color:var(--ds-ink-2);white-space:nowrap}
+
 @media (max-width:859px){
   #benefit-list .ds-list-item{flex-wrap:wrap}
   #benefit-list .ds-list-main{flex:1 1 100%}
@@ -83,10 +67,10 @@
   #benefit-list .ds-list-title{font-size:16px;-webkit-line-clamp:3}
   #benefit-list .ds-list-sub{font-size:15px;-webkit-line-clamp:2}
 }
-/* 모바일 카드: 보조 정보 2줄(분야+요약 1줄, 기관+마감일+방법 1줄)로 높이를 줄여 */
+/* 모바일 카드: 보조 정보 줄을 줄여 높이를 줄여(대상 배지는 유지) */
 @media (max-width:859px){
-  #benefit-list .ds-list-main .ds-list-sub:nth-child(3),
-  #benefit-list .ds-list-main .ds-list-sub:nth-child(4){display:none}
+  #benefit-list .ds-list-main .ds-list-sub:nth-of-type(3),
+  #benefit-list .ds-list-main .ds-list-sub:nth-of-type(4){display:none}
 }
 
 /* 마감 임박 카드: 색만(선·그림자 겹치기 없음) */
@@ -96,14 +80,13 @@
 /* 상세 링크: 블록 말줄임 + 상세화면 가리키는 화살표 */
 .benefit-card .detail-link{display:block;font-weight:600;text-decoration:none}
 .benefit-card .detail-link::after{content:"›"}
-#soon-list .detail-link::after{content:none}
 
 /* 푸터: 출처·이용조건, 줄바꿈(첫 화면에서는 답 카드 메타로 한 줄을 보여 주고, 여기엔 전체 문구를 둠) */
 #source-line{font-size:13px;line-height:1.7;white-space:normal;overflow-wrap:anywhere}
 .ds-card-tint h2{font-size:18px;margin:0 0 var(--ds-s1)}
 .ds-card-tint p{font-size:15px;margin:0}
 
-/* 첫 화면(390x844)에 답+TOP5+칩+첫 카드를 올리기 위한 간격 압축 */
+/* 첫 화면(390x844)에 띠+답+칩+첫 카드를 올리기 위한 간격 압축 */
 @media (max-width:859px){
   .ds-band{padding:var(--ds-s2) var(--ds-s4) var(--ds-s3)}
   .ds-band h1{font-size:19px;margin-bottom:0}
@@ -113,16 +96,13 @@
   .ds-answer{padding:var(--ds-s2) 14px;margin-bottom:0}
   .ds-answer-label{font-size:14px}
   .ds-answer-num{font-size:34px;margin-top:var(--ds-s1)}
-  .ds-answer-num .ds-answer-num-prefix{font-size:14px}
+  .ds-answer-num small{font-size:14px}
   .ds-answer-text{font-size:15px;margin-top:var(--ds-s1)}
-  /* 통계 4칸: 가로 4칸이 아니라 2×2. 각 칸 min-width:0 + 줄바꿈 허용 → 가로 넘침의 원인을 휴대폰에서 제거 */
-  .ds-answer-meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 0;margin-top:var(--ds-s2);padding:0}
-  .ds-answer-meta>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 8px;padding:var(--ds-s2) var(--ds-s2);min-width:0;border-left:0}
-  .ds-answer-meta>div:nth-child(even){border-left:1px solid var(--ds-line)}
-  .ds-answer-meta>div:nth-child(n+3){border-top:1px solid var(--ds-line)}
-  .ds-answer-meta dt{font-size:12px;font-weight:500;color:var(--ds-ink-3);white-space:normal;overflow-wrap:anywhere;min-width:0}
-  .ds-answer-meta dd{font-size:15px;white-space:normal;overflow-wrap:anywhere;min-width:0}
-  #soon-list .soon-item{min-height:42px;padding:6px 0}
+  /* 통계 3칸(14일 이내 마감·마감일 없는 상시·데이터 기준): vendor 의 flex 행 그대로 두고 폰트만 축소 */
+  .ds-answer-meta{margin-top:var(--ds-s2)}
+  .ds-answer-meta>div{padding:0 var(--ds-s2)}
+  .ds-answer-meta dt{font-size:12px;font-weight:500;white-space:normal;overflow-wrap:anywhere;min-width:0}
+  .ds-answer-meta dd{font-size:14px;white-space:normal;overflow-wrap:anywhere;min-width:0}
   .answer-actions{margin-top:var(--ds-s2)}
   .answer-actions .ds-btn{min-height:36px;font-size:14px;padding:0 12px}
   .answer-actions .ds-hint{font-size:14px;margin-top:2px}
@@ -130,12 +110,11 @@
   .target-title h2{font-size:16px}
   .ds-card{padding:var(--ds-s1) 16px}
   .ds-chip-row .ds-chip{min-height:36px;padding:0 10px;font-size:14px;min-width:0}
-  .ds-filter-toggle{min-height:40px;font-size:14px}
+  .ds-actions{margin:var(--ds-s2) 0 0}
+  .ds-actions .ds-btn{flex:1 1 auto;min-height:36px;font-size:14px;padding:0 8px}
   .ds-filter-row{margin-top:var(--ds-s2);gap:var(--ds-s2)}
   .ds-filter > .ds-label{font-size:13px}
   .ds-filter > .ds-select{min-height:40px;font-size:14px;padding:6px 10px}
-  .ds-actions{margin:var(--ds-s2) 0 0}
-  .ds-actions .ds-btn{flex:1 1 auto;min-height:36px;font-size:14px;padding:0 8px}
   .ds-card .ds-list{margin-top:var(--ds-s2)}
   #benefit-list .ds-list-item{min-height:44px;padding:var(--ds-s1) 0}
   #benefit-list .ds-list-item + .ds-list-item{margin-top:var(--ds-s1)}
@@ -147,6 +126,6 @@
 }
 /* 휴대폰: 고정 폭·nowrap 해제. 본문이 화면보다 넓어져 페이지 축소·가로 스크롤이 생기지 않도록 */
 @media (max-width:859px){
-  .ds-answer-meta dd,.ds-badge,.ds-filter-toggle-count,.ds-band-meta,.ds-list-sub,.ds-hint{white-space:normal}
-  .ds-badge,.ds-filter-toggle-count,.ds-band-meta,.ds-list-sub,.ds-hint,.ds-chip{overflow-wrap:anywhere}
+  .ds-answer-meta dd,.ds-badge,.ds-band-meta,.ds-list-sub,.ds-hint,.ds-chip,.ds-chip-count{white-space:normal}
+  .ds-badge,.ds-band-meta,.ds-list-sub,.ds-hint,.ds-chip,.ds-chip-count{overflow-wrap:anywhere}
 }
