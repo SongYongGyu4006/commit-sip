@@ -20,6 +20,8 @@
 
 ## 최근 글
 
+- [reflota: 디스크에서 지운 파일 복구하는 오픈소스, 설치 없이 직접 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-14-reflota.html)
+- [프롬프트를 다윈 진화로 자동 고쳐주는 오픈소스, 설치 없이 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-13-darwinian-evolver.html)
 - [8GB만으로 로컬 AI 회의록? 오픈소스 Yogurt 설치 없이 코드 직접 돌린 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-12-yogurt.html)
 - [Gemini가 개인 파일을 사람 리뷰어한테 보낸다고? 받아서 직접 확인해 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-11-gemini-files.html)
 - [rea-video: 영상 받아서 돌려보니](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-10-rea-video.html)
@@ -30,8 +32,6 @@
 - [fsearch, 오타가 나도 0.1ms 만에 파일 찾는 Mac용 검색 도구](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-06-fsearch.html)
 - [Sill: Mac 창을 iPhone·iPad로 띄우는 오픈소스, 받아서 코드로만 시험해 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-05-sill.html)
 - [gstack: Claude Code를 가상 개발 팀으로 만드는 오픈소스, 설치 없이 직접 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-05-gstack.html)
-- [Craft Anything, 직접 받아서 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-04-craft-anything.html)
-- [Qwen-Agent로 버그 숨긴 앱 검사, 10개 중 5개까지?](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-03-qwen-agent.html)
 
 ## 앱 실험실
 
