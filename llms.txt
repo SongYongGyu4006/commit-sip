@@ -20,7 +20,9 @@
 
 ## 최근 글
 
+- [pixelfx, 설치 없이 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-16-pixelfx.html)
 - [Pinky: AI에 제 폰을 맡기려면](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-16-pinky.html)
+- [Claude-BugHunter 직접 돌려보기](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-16-claude-bughunter.html)
 - [reflota: 디스크에서 지운 파일 복구하는 오픈소스, 설치 없이 직접 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-14-reflota.html)
 - [chrome-devtools-mcp 설치 없이 받아 봤다: MCP 통신만 확인, 원격 수집 기본 on](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-14-chrome-devtools-mcp.html)
 - [프롬프트를 다윈 진화로 자동 고쳐주는 오픈소스, 설치 없이 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-13-darwinian-evolver.html)
@@ -30,8 +32,6 @@
 - [284B 모델을 64GB RAM에 GPU 없이 돌리는 CPU 추론 키트, 받아서 직접 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-09-llama-modchip.html)
 - [PixelOE: AI 없이 사진이 픽셀 아트가 되는 오픈소스, 받아서 직접 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-08-pixeloe.html)
 - [agent-autoloop, 명령줄 AI를 백그라운드에서 혼자 일게 하는 오픈소스](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-07-agent-autoloop.html)
-- [구글 공식 AI 에이전트 스킬 저장소, 설치 없이 돌려 본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-06-skills.html)
-- [fsearch, 오타가 나도 0.1ms 만에 파일 찾는 Mac용 검색 도구](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-06-fsearch.html)
 
 ## 앱 실험실
 
