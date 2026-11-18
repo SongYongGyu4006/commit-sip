@@ -20,6 +20,7 @@
 
 ## 최근 글
 
+- [uv 0.13.9 소스를 받아 인터넷 없이 직접 돌려 본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-19-uv.html)
 - [pixelfx, 설치 없이 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-16-pixelfx.html)
 - [Pinky: AI에 제 폰을 맡기려면](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-16-pinky.html)
 - [Claude-BugHunter 직접 돌려보기](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-16-claude-bughunter.html)
@@ -31,7 +32,6 @@
 - [rea-video: 영상 받아서 돌려보니](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-10-rea-video.html)
 - [284B 모델을 64GB RAM에 GPU 없이 돌리는 CPU 추론 키트, 받아서 직접 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-09-llama-modchip.html)
 - [PixelOE: AI 없이 사진이 픽셀 아트가 되는 오픈소스, 받아서 직접 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-08-pixeloe.html)
-- [agent-autoloop, 명령줄 AI를 백그라운드에서 혼자 일게 하는 오픈소스](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-07-agent-autoloop.html)
 
 ## 앱 실험실
 
