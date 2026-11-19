@@ -2,10 +2,10 @@
  "id": "hn_front",
  "name": "Hacker News 1면",
  "url": "https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=50",
- "fetched_at": "2026-11-19T04:01:13",
+ "fetched_at": "2026-11-20T04:00:25",
  "terms": "HN Algolia 공개 API",
  "cors": true,
  "items": 30,
- "bytes": 39798,
+ "bytes": 44207,
  "trimmed": false
 }
