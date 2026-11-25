@@ -20,6 +20,7 @@
 
 ## 최근 글
 
+- [PeakCut, 긴 영상에서 클립 찾아 자막 붙여 주는 오픈소스를 설치 없이 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-26-peakcut.html)
 - [AI 상사가 나를 서브에이전트로 착각하는 게임 worker755, 설치 없이 돌려봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-23-worker755.html)
 - [로컬 Mac 코딩 에이전트 localcode, 설치 없이 직접 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-23-localcode.html)
 - [GTA VI, Xbox 패키지 직접 맥에서 살펴본 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-23-leonida.html)
@@ -31,7 +32,6 @@
 - [chrome-devtools-mcp 설치 없이 받아 봤다: MCP 통신만 확인, 원격 수집 기본 on](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-14-chrome-devtools-mcp.html)
 - [프롬프트를 다윈 진화로 자동 고쳐주는 오픈소스, 설치 없이 받아서 돌려 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-13-darwinian-evolver.html)
 - [8GB만으로 로컬 AI 회의록? 오픈소스 Yogurt 설치 없이 코드 직접 돌린 기록](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-12-yogurt.html)
-- [Gemini가 개인 파일을 사람 리뷰어한테 보낸다고? 받아서 직접 확인해 봤다](https://songyonggyu4006.github.io/commit-sip/blog/2026-11-11-gemini-files.html)
 
 ## 앱 실험실
 
